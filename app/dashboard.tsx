@@ -379,8 +379,34 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         if (error) throw error;
       }
       await onSignOut();
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể xóa dữ liệu."); }
-    finally { setSaving(false); }
+    } catch (error) {
+      showNotice(error instanceof Error ? error.message : "Không thể xóa dữ liệu.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function downloadData() {
+    const exportData = {
+      profile,
+      wallets,
+      categories,
+      transactions,
+      transfers,
+      budgets,
+      goals,
+      recurring,
+      exported_at: new Date().toISOString(),
+    };
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `so-chi-tieu-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showNotice("Đã tải xuống tệp dữ liệu cá nhân.");
   }
 
   const firstName = profile.full_name.trim().split(" ").pop() || user.name;
@@ -396,34 +422,113 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       <aside className={`sidebar ${mobileNav ? "open" : ""}`}>
         <div className="brand"><span className="brand-mark"><i /><i /><i /></span><span>SỔ CHI TIÊU</span></div>
         <button className="close-nav" onClick={() => setMobileNav(false)} aria-label="Đóng menu">×</button>
-        <nav aria-label="Điều hướng chính"><p>{language === "vi" ? "KHÔNG GIAN CỦA BẠN" : "YOUR WORKSPACE"}</p>{navItems.map(item => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => { setView(item.id); setMobileNav(false); }}><span className="nav-glyph">{item.icon}</span>{language === "vi" ? item.label : item.en}{item.id === "transactions" && <span className="count">{transactions.length}</span>}</button>)}</nav>
-        <div className="sidebar-total"><small>{language === "vi" ? "TỔNG SỐ DƯ" : "TOTAL BALANCE"}</small><strong>{money(totalBalance)}</strong><span>{wallets.length} {language === "vi" ? "ví đang hoạt động" : "active wallets"}</span></div>
-        <button type="button" onClick={onSignOut} className="user-card" title="Đăng xuất"><span className="avatar">{profile.full_name.charAt(0).toUpperCase()}</span><span><b>{profile.full_name}</b><small>{user.email}</small></span><em>↗</em></button>
+        <nav aria-label="Điều hướng chính"><p className="nav-section-title">{language === "vi" ? "KHÔNG GIAN CỦA BẠN" : "YOUR WORKSPACE"}</p>{navItems.map(item => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => { setView(item.id); setMobileNav(false); }}><span className="nav-glyph">{item.icon}</span>{language === "vi" ? item.label : item.en}{item.id === "transactions" && <span className="count">{transactions.length}</span>}</button>)}</nav>
+        <div className="sidebar-total-card"><small>{language === "vi" ? "TỔNG SỐ DƯ" : "TOTAL BALANCE"}</small><strong>{money(totalBalance)}</strong><span>{wallets.length} {language === "vi" ? "ví đang hoạt động" : "active wallets"}</span></div>
+        <button type="button" onClick={onSignOut} className="user-profile-card" title="Đăng xuất"><span className="avatar-circle">{profile.full_name.charAt(0).toUpperCase()}</span><span className="user-info"><b>{profile.full_name}</b><small>{user.email}</small></span><em className="logout-icon">↗</em></button>
       </aside>
       {mobileNav && <button className="nav-backdrop" aria-label="Đóng menu" onClick={() => setMobileNav(false)} />}
 
       <section className="dashboard-main">
-        <header className="topbar">
-          <button className="menu-button" onClick={() => setMobileNav(true)} aria-label="Mở menu">☰</button>
-          <div><p>{new Date().toLocaleDateString(locale, { weekday: "long", day: "2-digit", month: "long" }).toUpperCase()}</p><h1>{view === "overview" ? (language === "vi" ? `Chào bạn, ${firstName}.` : `Welcome, ${firstName}.`) : (language === "vi" ? navItems.find(item => item.id === view)?.label : navItems.find(item => item.id === view)?.en)}</h1></div>
-          <div className="top-actions"><button className="ghost-action" onClick={() => openModal({ kind: "transfer" })} disabled={wallets.length < 2}>⇄ {language === "vi" ? "Chuyển tiền" : "Transfer"}</button><button className="add-button" onClick={() => openModal({ kind: "transaction" })}><b>＋</b> {language === "vi" ? "Thêm giao dịch" : "Add transaction"}</button></div>
-        </header>
+        <div className="dashboard-container">
+          <header className="topbar">
+            <button className="menu-button" onClick={() => setMobileNav(true)} aria-label="Mở menu">☰</button>
+            <div><p className="top-date">{new Date().toLocaleDateString(locale, { weekday: "long", day: "2-digit", month: "long" }).toUpperCase()}</p><h1 className="top-greeting">{view === "overview" ? (language === "vi" ? `Chào bạn, ${firstName}.` : `Welcome, ${firstName}.`) : (language === "vi" ? navItems.find(item => item.id === view)?.label : navItems.find(item => item.id === view)?.en)}</h1></div>
+            <div className="top-actions"><button className="ghost-action" onClick={() => openModal({ kind: "transfer" })} disabled={wallets.length < 2}>⇄ {language === "vi" ? "Chuyển tiền" : "Transfer"}</button><button className="add-button" onClick={() => openModal({ kind: "transaction" })}><b>＋</b> {language === "vi" ? "Thêm giao dịch" : "Add transaction"}</button></div>
+          </header>
 
-        {notice && <div className="toast" role="status"><span>✓</span>{notice}</div>}
-        {loading && <div className="loading-banner"><i /> Đang đồng bộ dữ liệu an toàn…</div>}
+          {notice && <div className="toast" role="status"><span>✓</span>{notice}</div>}
+          {loading && <div className="loading-banner"><i /> Đang đồng bộ dữ liệu an toàn…</div>}
 
-        {view === "overview" && <>
-          <section className="summary-grid">
-            <article className="balance-card"><p>TỔNG SỐ DƯ KHẢ DỤNG <span>{wallets.length} VÍ</span></p><h2>{money(totalBalance)}</h2><div><span className="trend">↗ {monthTotals.income ? Math.round((monthTotals.income - monthTotals.expense) / monthTotals.income * 100) : 0}%</span><small>tỷ lệ giữ lại trong tháng</small></div><div className="sparkline"><svg viewBox="0 0 300 70"><path d="M0 59 C25 51,35 60,58 48 S97 39,115 44 S144 54,164 31 S198 20,214 30 S249 42,267 15 S292 12,300 6" fill="none" stroke="#d9f45f" strokeWidth="3" /></svg></div></article>
-            <article className="stat-card"><div className="stat-icon income">↙</div><p>THU NHẬP THÁNG</p><h3>{money(monthTotals.income)}</h3><small>{monthTransactions.filter(item => item.type === "income").length} khoản thu đã ghi nhận</small></article>
-            <article className="stat-card"><div className="stat-icon expense">↗</div><p>CHI TIÊU THÁNG</p><h3>{money(monthTotals.expense)}</h3><small>{monthTransactions.filter(item => item.type === "expense").length} khoản chi đã ghi nhận</small></article>
-          </section>
-          <section className="overview-grid">
-            <article className="panel"><div className="panel-head"><div><p>VÍ CỦA BẠN</p><h3>Số dư theo tài khoản</h3></div><button onClick={() => setView("wallets")}>Quản lý →</button></div><div className="wallet-mini-list">{wallets.slice(0, 4).map(wallet => <div key={wallet.id}><span className="wallet-dot" style={{ background: wallet.color }}>{wallet.icon}</span><span><b>{wallet.name}</b><small>{wallet.type === "cash" ? "Tiền mặt" : wallet.type === "bank" ? "Ngân hàng" : "Ví điện tử"}</small></span><strong>{money(walletBalances.get(wallet.id) ?? 0)}</strong></div>)}</div></article>
-            <article className="panel"><div className="panel-head"><div><p>CẢNH BÁO NGÂN SÁCH</p><h3>Tiến độ tháng này</h3></div><button onClick={() => setView("planning")}>Xem hết →</button></div><div className="budget-stack">{budgets.length ? budgets.slice(0, 3).map(budget => { const spent = monthTransactions.filter(item => item.type === "expense" && (!budget.category_id || item.category_id === budget.category_id)).reduce((sum, item) => sum + item.amount, 0); const percent = Math.round(spent / budget.amount * 100); return <div key={budget.id}><div><b>{budget.name}</b><span className={percent >= 100 ? "danger" : percent >= budget.alert_percent ? "warning" : ""}>{percent}%</span></div><div className="meter"><i style={{ width: `${Math.min(100, percent)}%` }} /></div><small>{money(spent)} / {money(budget.amount)}</small></div>; }) : <Empty text="Chưa có ngân sách. Hãy đặt hạn mức đầu tiên." />}</div></article>
-          </section>
-          <article className="panel transaction-panel"><div className="panel-head"><div><p>GIAO DỊCH GẦN ĐÂY</p><h3>Dòng tiền mới nhất</h3></div><button onClick={() => setView("transactions")}>Xem tất cả →</button></div><TransactionTable items={transactions.slice(0, 6)} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} /></article>
-        </>}
+          {view === "overview" && <>
+            <section className="summary-grid">
+              <article className="balance-card">
+                <div className="card-top-row">
+                  <p>TỔNG SỐ DƯ KHẢ DỤNG</p>
+                  <span className="wallet-badge">{wallets.length} VÍ</span>
+                </div>
+                <h2>{money(totalBalance)}</h2>
+                <div className="card-sub-row">
+                  <span className="trend-badge">↗ {monthTotals.income ? Math.round((monthTotals.income - monthTotals.expense) / monthTotals.income * 100) : 0}%</span>
+                  <small>tỷ lệ giữ lại trong tháng</small>
+                </div>
+                <div className="sparkline">
+                  <svg viewBox="0 0 300 70">
+                    <path d="M0 59 C25 51,35 60,58 48 S97 39,115 44 S144 54,164 31 S198 20,214 30 S249 42,267 15 S292 12,300 6" fill="none" stroke="#D2F544" strokeWidth="3.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+              </article>
+              <article className="stat-card">
+                <div className="stat-icon-wrapper income">✓</div>
+                <p>THU NHẬP THÁNG</p>
+                <h3>{money(monthTotals.income)}</h3>
+                <small>{monthTransactions.filter(item => item.type === "income").length} khoản thu đã ghi nhận</small>
+              </article>
+              <article className="stat-card">
+                <div className="stat-icon-wrapper expense">↗</div>
+                <p>CHI TIÊU THÁNG</p>
+                <h3>{money(monthTotals.expense)}</h3>
+                <small>{monthTransactions.filter(item => item.type === "expense").length} khoản chi đã ghi nhận</small>
+              </article>
+            </section>
+            <section className="overview-grid">
+              <article className="panel">
+                <div className="panel-head">
+                  <div>
+                    <p>VÍ CỦA BẠN</p>
+                    <h3>Số dư theo tài khoản</h3>
+                  </div>
+                  <button className="pill-button" onClick={() => setView("wallets")}>Quản lý →</button>
+                </div>
+                <div className="wallet-mini-list">
+                  {wallets.slice(0, 4).map(wallet => (
+                    <div key={wallet.id} className="wallet-mini-item">
+                      <span className="wallet-dot-box" style={{ background: `${wallet.color}25`, color: wallet.color }}>{wallet.icon}</span>
+                      <span className="wallet-info">
+                        <b>{wallet.name}</b>
+                        <small>{wallet.type === "cash" ? "Tiền mặt" : wallet.type === "bank" ? "Ngân hàng" : "Ví điện tử"}</small>
+                      </span>
+                      <strong>{money(walletBalances.get(wallet.id) ?? 0)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </article>
+              <article className="panel">
+                <div className="panel-head">
+                  <div>
+                    <p>CẢNH BÁO NGÂN SÁCH</p>
+                    <h3>Tiến độ tháng này</h3>
+                  </div>
+                  <button className="pill-button" onClick={() => setView("planning")}>Xem hết →</button>
+                </div>
+                <div className="budget-stack">
+                  {budgets.length ? budgets.slice(0, 3).map(budget => {
+                    const spent = monthTransactions.filter(item => item.type === "expense" && (!budget.category_id || item.category_id === budget.category_id)).reduce((sum, item) => sum + item.amount, 0);
+                    const percent = Math.round(spent / budget.amount * 100);
+                    return (
+                      <div key={budget.id} className="budget-item">
+                        <div className="budget-item-head">
+                          <b>{budget.name}</b>
+                          <span className={percent >= 100 ? "danger" : percent >= budget.alert_percent ? "warning" : ""}>{percent}%</span>
+                        </div>
+                        <div className="meter"><i style={{ width: `${Math.min(100, percent)}%` }} /></div>
+                        <small>{money(spent)} / {money(budget.amount)}</small>
+                      </div>
+                    );
+                  }) : <Empty text="Chưa có ngân sách. Hãy đặt hạn mức đầu tiên." />}
+                </div>
+              </article>
+            </section>
+            <article className="panel transaction-panel">
+              <div className="panel-head">
+                <div>
+                  <p>GIAO DỊCH GẦN ĐÂY</p>
+                  <h3>Dòng tiền mới nhất</h3>
+                </div>
+                <button className="pill-button" onClick={() => setView("transactions")}>Xem tất cả →</button>
+              </div>
+              <TransactionTable items={transactions.slice(0, 6)} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} />
+            </article>
+          </>}
 
         {view === "transactions" && <>
           <section className="section-toolbar"><div><p>TOÀN BỘ DÒNG TIỀN</p><h2>{filteredTransactions.length} giao dịch</h2></div><button className="add-button" onClick={() => openModal({ kind: "transaction" })}>＋ Thêm khoản thu / chi</button></section>
@@ -437,10 +542,69 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           <article className="panel"><div className="panel-head"><div><p>LỊCH SỬ CHUYỂN TIỀN</p><h3>Điều chuyển giữa các ví</h3></div></div><div className="compact-list">{transfers.map(item => <div key={item.id}><span className="round-icon">⇄</span><span><b>{walletById.get(item.from_wallet_id)?.name} → {walletById.get(item.to_wallet_id)?.name}</b><small>{formatDate(item.occurred_at, language)} · {item.note || "Không có ghi chú"}</small></span><strong>{money(item.amount)}</strong><button onClick={() => remove("transfers", item.id, "lệnh chuyển tiền")}>×</button></div>)}{!transfers.length && <Empty text="Chưa có giao dịch chuyển tiền." />}</div></article>
         </>}
 
-        {view === "categories" && <>
-          <section className="section-toolbar"><div><p>CẤU TRÚC DÒNG TIỀN</p><h2>Danh mục thu & chi</h2></div><button className="add-button" onClick={() => openModal({ kind: "category" })}>＋ Tạo danh mục</button></section>
-          <section className="category-columns">{(["expense", "income"] as TransactionType[]).map(kind => <article className="panel" key={kind}><div className="panel-head"><div><p>{kind === "expense" ? "KHOẢN CHI" : "KHOẢN THU"}</p><h3>{kind === "expense" ? "Danh mục chi tiêu" : "Nguồn thu nhập"}</h3></div><span className="pill">{categories.filter(item => item.kind === kind).length}</span></div><div className="category-manage-list">{categories.filter(item => item.kind === kind).map(item => <div key={item.id}><span style={{ background: `${item.color}20`, color: item.color }}>{item.icon}</span><span><b>{item.name}</b><small>{item.parent_id ? `Con của ${categoryById.get(item.parent_id)?.name ?? "danh mục khác"}` : item.is_default ? "Danh mục gợi ý" : "Danh mục riêng"}</small></span><button onClick={() => openModal({ kind: "category", item })}>Sửa</button><button onClick={() => remove("categories", item.id, item.name)}>×</button></div>)}</div></article>)}</section>
-        </>}
+        {view === "categories" && (
+          <section className="category-main-card">
+            <div className="category-main-head">
+              <div>
+                <p>CẤU TRÚC DÒNG TIỀN</p>
+                <h2>Danh mục thu & chi</h2>
+              </div>
+              <button className="category-create-button" onClick={() => openModal({ kind: "category" })}>
+                <b>＋</b> Tạo danh mục
+              </button>
+            </div>
+
+            {(["expense", "income"] as TransactionType[]).map(kind => {
+              const items = categories.filter(item => item.kind === kind);
+              return (
+                <article className="category-section-card" key={kind}>
+                  <div className="category-section-head">
+                    <div>
+                      <p>{kind === "expense" ? "KHOẢN CHI" : "KHOẢN THU"}</p>
+                      <h3>{kind === "expense" ? "Danh mục chi tiêu" : "Nguồn thu nhập"}</h3>
+                    </div>
+                    <span className="category-section-count">{items.length}</span>
+                  </div>
+
+                  <div className="category-row-list">
+                    {items.map(item => (
+                      <div className="category-item-row" key={item.id}>
+                        <div className="category-item-left">
+                          <span className="drag-dots-handle" title="Kéo để sắp xếp">
+                            <i>::</i>
+                          </span>
+                          <span className="category-item-icon">{item.icon}</span>
+                          <span className="category-item-name">{item.name}</span>
+                        </div>
+
+                        <div className="category-item-right">
+                          <button
+                            type="button"
+                            className="category-action-btn"
+                            onClick={() => openModal({ kind: "category", item })}
+                            title="Chỉnh sửa danh mục"
+                          >
+                            <span>✎</span> Sửa
+                          </button>
+                          <button
+                            type="button"
+                            className="category-action-btn delete"
+                            onClick={() => remove("categories", item.id, item.name)}
+                            title="Xóa danh mục"
+                          >
+                            <span>🗑</span> Xóa
+                          </button>
+                          <span className="drag-handle-icon" title="Kéo để di chuyển">⇗</span>
+                        </div>
+                      </div>
+                    ))}
+                    {!items.length && <Empty text={kind === "expense" ? "Chưa có danh mục chi tiêu." : "Chưa có danh mục thu nhập."} />}
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+        )}
 
         {view === "planning" && <>
           <section className="section-toolbar"><div><p>KẾ HOẠCH TÀI CHÍNH</p><h2>Ngân sách & mục tiêu tiết kiệm</h2></div><div><button className="ghost-action" onClick={() => openModal({ kind: "goal" })}>＋ Mục tiêu</button><button className="add-button" onClick={() => openModal({ kind: "budget" })}>＋ Ngân sách</button></div></section>
@@ -448,22 +612,389 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           <article className="panel"><div className="panel-head"><div><p>TÍCH LŨY TƯƠNG LAI</p><h3>Mục tiêu tiết kiệm</h3></div></div><div className="plan-list">{goals.map(goal => { const percent = Math.round(goal.current_amount / goal.target_amount * 100); return <div className="goal-plan" key={goal.id}><header><span style={{ background: `${goal.color}25`, color: goal.color }}>◎</span><div><b>{goal.title}</b><small>{goal.deadline ? `Hạn ${new Date(`${goal.deadline}T00:00:00`).toLocaleDateString(locale)}` : "Không có thời hạn"}</small></div><strong>{Math.min(100, percent)}%</strong></header><div className="meter"><i style={{ width: `${Math.min(100, percent)}%`, background: goal.color }} /></div><p>{money(goal.current_amount)} / {money(goal.target_amount)}</p><footer><button onClick={() => openModal({ kind: "goal", item: goal })}>Cập nhật</button><button onClick={() => remove("savings_goals", goal.id, goal.title)}>Xóa</button></footer></div>; })}{!goals.length && <Empty text="Chưa có mục tiêu tiết kiệm nào." />}</div></article></section>
         </>}
 
-        {view === "recurring" && <>
-          <section className="section-toolbar"><div><p>DÒNG TIỀN LẶP LẠI</p><h2>Lịch giao dịch định kỳ</h2></div><button className="add-button" onClick={() => openModal({ kind: "recurring" })}>＋ Tạo lịch</button></section>
-          <div className="automation-note"><span>✦</span><p><b>Tự động khi bạn mở ứng dụng</b><br />Các lịch bật “Tự động ghi nhận” sẽ được tạo thành giao dịch ngay khi đến hạn; lịch còn lại sẽ hiển thị nút nhắc.</p></div>
-          <section className="recurring-grid">{recurring.map(item => { const due = item.active && new Date(item.next_run_at) <= new Date(); return <article className={`recurring-card ${due ? "due" : ""}`} key={item.id}><header><span className={item.type}>{item.type === "income" ? "↙" : "↗"}</span><div><b>{item.title}</b><small>{categoryById.get(item.category_id ?? "")?.name ?? "Chưa chọn danh mục"} · {walletById.get(item.wallet_id ?? "")?.name ?? "Chưa chọn ví"}</small></div><i className={item.active ? "on" : ""}>{item.active ? "Đang bật" : "Đã tắt"}</i></header><strong>{item.type === "expense" ? "−" : "+"}{money(item.amount)}</strong><p>Kỳ tiếp theo: <b>{formatDate(item.next_run_at, language)}</b></p><div className="frequency-row"><span>{item.frequency === "daily" ? "Hàng ngày" : item.frequency === "weekly" ? "Hàng tuần" : item.frequency === "monthly" ? "Hàng tháng" : "Hàng năm"}</span><span>{item.auto_create ? "Tự động ghi nhận" : "Chỉ nhắc nhở"}</span></div><footer>{due && !item.auto_create && <button className="due-action" onClick={() => createDueTransaction(item)}>Ghi nhận ngay</button>}<button onClick={() => openModal({ kind: "recurring", item })}>Sửa</button><button onClick={() => remove("recurring_transactions", item.id, item.title)}>Xóa</button></footer></article>; })}{!recurring.length && <Empty text="Tạo lịch cho tiền thuê nhà, lương, hóa đơn hoặc khoản đăng ký định kỳ." />}</section>
-        </>}
+        {view === "recurring" && (
+          <section className="recurring-main-card">
+            <div className="recurring-main-head">
+              <div>
+                <p>DÒNG TIỀN LẶP LẠI</p>
+                <h2>Lịch giao dịch định kỳ</h2>
+              </div>
+              <button className="recurring-create-btn" onClick={() => openModal({ kind: "recurring" })}>
+                <b>＋</b> Tạo lịch
+              </button>
+            </div>
 
-        {view === "reports" && <>
-          <section className="section-toolbar"><div><p>PHÂN TÍCH DÒNG TIỀN</p><h2>Báo cáo & thống kê</h2></div><div className="period-tabs">{(["day", "week", "month", "year"] as const).map(item => <button key={item} className={reportPeriod === item ? "active" : ""} onClick={() => setReportPeriod(item)}>{item === "day" ? "Ngày" : item === "week" ? "Tuần" : item === "month" ? "Tháng" : "Năm"}</button>)}</div></section>
-          <section className="report-summary"><article><span>THU NHẬP</span><strong>{money(report.current.income)}</strong><small className={comparison(report.current.income, report.previous.income) >= 0 ? "positive" : "negative"}>{comparison(report.current.income, report.previous.income) >= 0 ? "+" : ""}{comparison(report.current.income, report.previous.income)}% so với kỳ trước</small></article><article><span>CHI TIÊU</span><strong>{money(report.current.expense)}</strong><small className={comparison(report.current.expense, report.previous.expense) <= 0 ? "positive" : "negative"}>{comparison(report.current.expense, report.previous.expense) >= 0 ? "+" : ""}{comparison(report.current.expense, report.previous.expense)}% so với kỳ trước</small></article><article><span>TIẾT KIỆM RÒNG</span><strong>{money(report.current.income - report.current.expense)}</strong><small>{report.current.income ? Math.round((report.current.income - report.current.expense) / report.current.income * 100) : 0}% thu nhập được giữ lại</small></article></section>
-          <section className="report-grid"><article className="panel"><div className="panel-head"><div><p>BIỂU ĐỒ CỘT</p><h3>Thu và chi theo thời gian</h3></div></div><div className="bar-chart">{report.buckets.map(bucket => <div className="bar-group" key={bucket.index}><div><i className="income" style={{ height: `${Math.max(2, bucket.income / maxReportBar * 100)}%` }} title={`Thu ${money(bucket.income)}`} /><i className="expense" style={{ height: `${Math.max(2, bucket.expense / maxReportBar * 100)}%` }} title={`Chi ${money(bucket.expense)}`} /></div><span>{bucket.label}</span></div>)}</div><div className="chart-legend"><span><i className="income" /> Thu nhập</span><span><i className="expense" /> Chi tiêu</span></div></article><article className="panel"><div className="panel-head"><div><p>BIỂU ĐỒ TRÒN</p><h3>Chi tiêu theo danh mục</h3></div></div><div className="report-pie-wrap"><div className="report-pie" style={{ background: pie }}><span><small>TỔNG CHI</small><b>{money(report.current.expense)}</b></span></div><div className="report-category-list">{report.categories.slice(0, 6).map(item => <div key={item.id}><i style={{ background: item.color }} /><span>{item.name}</span><b>{Math.round(item.amount / reportExpense * 100)}%</b><small>{money(item.amount)}</small></div>)}{!report.categories.length && <Empty text="Chưa có khoản chi trong kỳ này." />}</div></div></article></section>
-        </>}
+            <div className="automation-note">
+              <div className="automation-note-icon">🪄</div>
+              <div className="automation-note-content">
+                <b>Tự động khi bạn mở ứng dụng</b>
+                <p>Các lịch bật "Tự động ghi nhận" sẽ được tạo thành giao dịch ngay khi đến hạn; lịch còn lại sẽ hiển thị nút nhắc.</p>
+              </div>
+            </div>
 
-        {view === "settings" && <>
-          <section className="section-toolbar"><div><p>TÀI KHOẢN CÁ NHÂN</p><h2>Hồ sơ & tùy chọn</h2></div></section>
-          <section className="settings-grid"><form className="panel settings-form" onSubmit={saveProfile}><div className="panel-head"><div><p>THÔNG TIN CƠ BẢN</p><h3>Hồ sơ của bạn</h3></div></div><label>Tên tài khoản<input name="username" defaultValue={profile.username ?? ""} minLength={3} maxLength={24} pattern="[A-Za-z0-9_]+" autoCapitalize="none" required /></label><label>Họ và tên<input name="fullName" defaultValue={profile.full_name} required /></label><label>Email<input value={user.email} disabled /></label><div className="form-grid"><label>Đơn vị tiền tệ<select name="currency" defaultValue={profile.currency}><option>VND</option><option>USD</option><option>SGD</option><option>EUR</option><option>JPY</option><option>THB</option></select></label><label>Ngôn ngữ<select name="language" defaultValue={profile.language}><option value="vi">Tiếng Việt</option><option value="en">English</option></select></label></div><button className="save-button" disabled={saving}>Lưu hồ sơ & tùy chọn</button></form><article className="panel security-panel"><div className="panel-head"><div><p>QUYỀN RIÊNG TƯ</p><h3>Dữ liệu cá nhân</h3></div></div><div className="security-row"><span>✓</span><p><b>Dữ liệu riêng theo tài khoản</b><br />Thông tin được bảo vệ bằng phân quyền ở cơ sở dữ liệu.</p></div><div className="security-row"><span>✓</span><p><b>Hóa đơn riêng tư</b><br />Tệp đính kèm chỉ được mở bằng liên kết tạm thời của chính bạn.</p></div><div className="danger-zone"><b>Xóa dữ liệu tài chính</b><p>Xóa vĩnh viễn ví, giao dịch, hóa đơn, ngân sách, mục tiêu và tùy chọn. Tài khoản đăng nhập vẫn được giữ.</p><button onClick={deletePersonalData} disabled={saving}>Xóa toàn bộ dữ liệu cá nhân</button></div></article></section>
-        </>}
+            {recurring.length > 0 ? (
+              <section className="recurring-grid">
+                {recurring.map(item => {
+                  const due = item.active && new Date(item.next_run_at) <= new Date();
+                  const category = categoryById.get(item.category_id ?? "");
+                  const wallet = walletById.get(item.wallet_id ?? "");
+                  return (
+                    <article className={`recurring-card ${due ? "due" : ""}`} key={item.id}>
+                      <div>
+                        <div className="recurring-card-header">
+                          <span className={`recurring-card-type-icon ${item.type}`}>
+                            {category?.icon ?? (item.type === "income" ? "↙" : "↗")}
+                          </span>
+                          <div className="recurring-card-info">
+                            <b>{item.title}</b>
+                            <small>{category?.name ?? "Chưa chọn danh mục"} · {wallet?.name ?? "Chưa chọn ví"}</small>
+                          </div>
+                          <span className={`recurring-status-badge ${item.active ? "on" : "off"}`}>
+                            {item.active ? "Đang bật" : "Đã tắt"}
+                          </span>
+                        </div>
+
+                        <div className="recurring-card-amount">
+                          {item.type === "expense" ? "−" : "+"}{money(item.amount)}
+                        </div>
+
+                        <div className="recurring-card-next">
+                          Kỳ tiếp theo: <b>{formatDate(item.next_run_at, language)}</b>
+                        </div>
+
+                        <div className="recurring-card-tags">
+                          <span className="recurring-tag">
+                            {item.frequency === "daily" ? "Hàng ngày" : item.frequency === "weekly" ? "Hàng tuần" : item.frequency === "monthly" ? "Hàng tháng" : "Hàng năm"}
+                          </span>
+                          <span className="recurring-tag">
+                            {item.auto_create ? "Tự động ghi nhận" : "Chỉ nhắc nhở"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <footer className="recurring-card-footer">
+                        {due && !item.auto_create && (
+                          <button type="button" className="recurring-due-btn" onClick={() => createDueTransaction(item)}>
+                            Ghi nhận ngay
+                          </button>
+                        )}
+                        <button type="button" className="recurring-action-btn" onClick={() => openModal({ kind: "recurring", item })}>
+                          ✎ Sửa
+                        </button>
+                        <button type="button" className="recurring-action-btn" onClick={() => remove("recurring_transactions", item.id, item.title)}>
+                          🗑 Xóa
+                        </button>
+                      </footer>
+                    </article>
+                  );
+                })}
+              </section>
+            ) : (
+              <div className="recurring-empty-box">
+                <div className="recurring-empty-illustration">
+                  <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="25" y="30" width="70" height="65" rx="14" fill="#F4F8F6" stroke="#D0DCD6" strokeWidth="2.5" />
+                    <path d="M25 45 H95" stroke="#D0DCD6" strokeWidth="2.5" />
+                    <circle cx="45" cy="24" r="5" fill="#161E1F" />
+                    <circle cx="75" cy="24" r="5" fill="#161E1F" />
+                    <rect x="37" y="55" width="10" height="10" rx="3" fill="#D2F544" />
+                    <rect x="55" y="55" width="10" height="10" rx="3" fill="#E2EAE6" />
+                    <rect x="73" y="55" width="10" height="10" rx="3" fill="#E2EAE6" />
+                    <rect x="37" y="72" width="10" height="10" rx="3" fill="#E2EAE6" />
+                    <rect x="55" y="72" width="10" height="10" rx="3" fill="#E2EAE6" />
+                    <circle cx="78" cy="77" r="18" fill="#FFFFFF" stroke="#161E1F" strokeWidth="2.5" />
+                    <path d="M78 68 V77 L83 80" stroke="#161E1F" strokeWidth="2.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div className="empty-plus-circle">＋</div>
+                <p className="recurring-empty-text">Tạo lịch cho tiền thuê nhà, lương, hóa đơn hoặc khoản đăng ký định kỳ.</p>
+                <button type="button" className="recurring-create-btn" onClick={() => openModal({ kind: "recurring" })}>
+                  <b>＋</b> Tạo lịch
+                </button>
+              </div>
+            )}
+          </section>
+        )}
+
+        {view === "reports" && (
+          <>
+            <section className="section-toolbar">
+              <div>
+                <p>PHÂN TÍCH DÒNG TIỀN</p>
+                <h2>Báo cáo & thống kê</h2>
+              </div>
+              <div className="report-period-pill">
+                {(["day", "week", "month", "year"] as const).map(item => (
+                  <button
+                    key={item}
+                    type="button"
+                    className={reportPeriod === item ? "active" : ""}
+                    onClick={() => setReportPeriod(item)}
+                  >
+                    {item === "day" ? "Ngày" : item === "week" ? "Tuần" : item === "month" ? "Tháng" : "Năm"}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Top 3 Stat Cards */}
+            <section className="report-stat-grid">
+              <article className="report-stat-card">
+                <div>
+                  <div className="report-stat-card-top">
+                    <span className="report-stat-icon-box income">📊</span>
+                    <p>THU NHẬP</p>
+                  </div>
+                  <h3 className="report-stat-amount">{money(report.current.income)}</h3>
+                </div>
+                <div className={`report-stat-trend ${comparison(report.current.income, report.previous.income) >= 0 ? "positive" : "negative"}`}>
+                  <span>{comparison(report.current.income, report.previous.income) >= 0 ? "+" : ""}{comparison(report.current.income, report.previous.income)}%</span>
+                  <span>↑</span>
+                </div>
+              </article>
+
+              <article className="report-stat-card">
+                <div>
+                  <div className="report-stat-card-top">
+                    <span className="report-stat-icon-box expense">💸</span>
+                    <p>CHI TIÊU</p>
+                  </div>
+                  <h3 className="report-stat-amount">{money(report.current.expense)}</h3>
+                </div>
+                <div className={`report-stat-trend ${comparison(report.current.expense, report.previous.expense) <= 0 ? "positive" : "negative"}`}>
+                  <span>{comparison(report.current.expense, report.previous.expense) >= 0 ? "+" : ""}{comparison(report.current.expense, report.previous.expense)}%</span>
+                  <span>↑</span>
+                </div>
+              </article>
+
+              <article className="report-stat-card">
+                <div>
+                  <div className="report-stat-card-top">
+                    <span className="report-stat-icon-box saving">🪙</span>
+                    <p>TIẾT KIỆM RÒNG</p>
+                  </div>
+                  <h3 className="report-stat-amount">{money(report.current.income - report.current.expense)}</h3>
+                </div>
+                <div className="report-stat-trend positive">
+                  <span>+{report.current.income ? Math.round((report.current.income - report.current.expense) / report.current.income * 100) : 0}%</span>
+                  <span>↑</span>
+                </div>
+              </article>
+            </section>
+
+            {/* Bottom 2 Charts Grid */}
+            <section className="report-charts-grid">
+              {/* Bar Chart */}
+              <article className="report-chart-card">
+                <div className="panel-head">
+                  <div>
+                    <p>BIỂU ĐỒ CỘT</p>
+                    <h3>Thu và chi theo thời gian</h3>
+                  </div>
+                  <div className="report-chart-legend">
+                    <span><i className="legend-dot income" /> Thu nhập</span>
+                    <span><i className="legend-dot expense" /> Chi tiêu</span>
+                  </div>
+                </div>
+
+                <div className="bar-chart-container">
+                  {report.buckets.map(bucket => (
+                    <div className="bar-column-group" key={bucket.index}>
+                      <div className="bar-bars-wrapper">
+                        {bucket.income > 0 && (
+                          <div
+                            className="single-bar income"
+                            style={{ height: `${Math.max(4, Math.min(100, bucket.income / maxReportBar * 100))}%` }}
+                            title={`Thu nhập: ${money(bucket.income)}`}
+                          >
+                            <span className="bar-val-label">{bucket.income > 1000 ? `${Math.round(bucket.income / 1000)}k` : bucket.income}</span>
+                          </div>
+                        )}
+                        {bucket.expense > 0 && (
+                          <div
+                            className="single-bar expense"
+                            style={{ height: `${Math.max(4, Math.min(100, bucket.expense / maxReportBar * 100))}%` }}
+                            title={`Chi tiêu: ${money(bucket.expense)}`}
+                          >
+                            <span className="bar-val-label">{bucket.expense > 1000 ? `${Math.round(bucket.expense / 1000)}k` : bucket.expense}</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="bar-x-label">{bucket.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </article>
+
+              {/* Donut Chart */}
+              <article className="report-chart-card">
+                <div className="panel-head">
+                  <div>
+                    <p>BIỂU ĐỒ TRÒN</p>
+                    <h3>Chi tiêu theo danh mục</h3>
+                  </div>
+                </div>
+
+                <div className="donut-wrap-box">
+                  <div className="donut-circle-ring" style={{ background: pie }}>
+                    <div className="donut-center-label">
+                      <small>TỔNG CHI</small>
+                      <b>{money(report.current.expense)}</b>
+                    </div>
+                  </div>
+
+                  <div className="donut-legend-list">
+                    {report.categories.slice(0, 6).map(item => (
+                      <div className="donut-legend-item" key={item.id}>
+                        <div className="donut-legend-left">
+                          <i style={{ background: item.color }} />
+                          <span>{item.name}</span>
+                        </div>
+                        <div className="donut-legend-right">
+                          <b>{Math.round(item.amount / reportExpense * 100)}%</b>
+                          <small>({money(item.amount)})</small>
+                        </div>
+                      </div>
+                    ))}
+                    {!report.categories.length && <Empty text="Chưa có khoản chi trong kỳ này." />}
+                  </div>
+                </div>
+              </article>
+            </section>
+          </>
+        )}
+
+        {view === "settings" && (
+          <div className="settings-container">
+            <section className="section-toolbar">
+              <div>
+                <p>TÀI KHOẢN CÁ NHÂN</p>
+                <h2>Hồ sơ & tùy chọn</h2>
+              </div>
+            </section>
+
+            {/* Card 1: Thông tin cơ bản */}
+            <form className="settings-card" onSubmit={saveProfile}>
+              <div className="settings-card-head">
+                <p>THÔNG TIN CƠ BẢN</p>
+                <h3>Hồ sơ của bạn</h3>
+              </div>
+
+              <div className="form-grid">
+                <label>
+                  <span>Tên tài khoản</span>
+                  <input
+                    name="username"
+                    defaultValue={profile.username ?? ""}
+                    minLength={3}
+                    maxLength={24}
+                    pattern="[A-Za-z0-9_]+"
+                    autoCapitalize="none"
+                    required
+                    placeholder="Username"
+                  />
+                </label>
+                <label>
+                  <span>
+                    Số điện thoại <small style={{ fontWeight: 400, color: "#8B989B", fontSize: "12px", marginLeft: 4 }}>(optional)</small>
+                  </span>
+                  <div className="phone-input-group">
+                    <span className="phone-prefix">+84</span>
+                    <input name="phone" placeholder="Nhập số điện thoại…" />
+                  </div>
+                </label>
+              </div>
+
+              <label>
+                Họ và tên
+                <input name="fullName" defaultValue={profile.full_name} required placeholder="Họ và tên hiển thị" />
+              </label>
+
+              <label>
+                Email
+                <input value={user.email} disabled style={{ background: "#F4F7F5", color: "#788689", cursor: "not-allowed" }} />
+              </label>
+
+              <div className="form-grid" style={{ marginTop: 24 }}>
+                <label>
+                  Đơn vị tiền tệ
+                  <select name="currency" defaultValue={profile.currency}>
+                    <option>VND</option>
+                    <option>USD</option>
+                    <option>SGD</option>
+                    <option>EUR</option>
+                    <option>JPY</option>
+                    <option>THB</option>
+                  </select>
+                </label>
+                <label>
+                  Ngôn ngữ
+                  <select name="language" defaultValue={profile.language}>
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="en">English</option>
+                  </select>
+                </label>
+              </div>
+
+              <button className="save-button" disabled={saving}>
+                {saving ? "Đang lưu…" : "Lưu hồ sơ & tùy chọn"}
+              </button>
+            </form>
+
+            {/* Card 2: Quyền riêng tư */}
+            <article className="settings-card">
+              <div className="settings-card-head">
+                <p>QUYỀN RIÊNG TƯ</p>
+                <h3>Dữ liệu cá nhân</h3>
+              </div>
+
+              <div className="privacy-rows-list">
+                <div className="privacy-row-item">
+                  <div className="privacy-row-left">
+                    <span className="privacy-check-icon">✓</span>
+                    <div className="privacy-row-content">
+                      <b>Dữ liệu riêng theo tài khoản</b>
+                      <p>Thông tin được bảo vệ bằng phân quyền ở cơ sở dữ liệu.</p>
+                    </div>
+                  </div>
+                  <span className="privacy-row-more">Tìm hiểu thêm ∨</span>
+                </div>
+
+                <div className="privacy-row-item">
+                  <div className="privacy-row-left">
+                    <span className="privacy-check-icon">✓</span>
+                    <div className="privacy-row-content">
+                      <b>Hóa đơn riêng tư</b>
+                      <p>Tệp đính kèm chỉ được mở bằng liên kết tạm thời của chính bạn.</p>
+                    </div>
+                  </div>
+                  <span className="privacy-row-more">Tìm hiểu thêm ∨</span>
+                </div>
+
+                <div className="privacy-row-item">
+                  <div className="privacy-row-left">
+                    <span className="privacy-check-icon">✓</span>
+                    <div className="privacy-row-content">
+                      <b>Xóa dữ liệu tài chính</b>
+                      <p>Xóa vĩnh viễn ví, giao dịch, hóa đơn, ngân sách, mục tiêu và tùy chọn. Tài khoản đăng nhập vẫn được giữ.</p>
+                    </div>
+                  </div>
+                  <span className="privacy-row-more">Tìm hiểu thêm ∨</span>
+                </div>
+              </div>
+
+              <div className="settings-action-row">
+                <button type="button" className="download-data-btn" onClick={downloadData}>
+                  <span>⤓</span> Tải xuống dữ liệu của bạn
+                </button>
+                <button type="button" className="danger-data-btn" onClick={deletePersonalData} disabled={saving}>
+                  <span>⚠</span> Xóa dữ liệu tài khoản
+                </button>
+              </div>
+            </article>
+          </div>
+        )}
+        </div>
       </section>
 
       {modal?.kind === "transaction" && <Modal title={modal.item ? "Chỉnh sửa giao dịch" : "Thêm giao dịch mới"} eyebrow="GHI NHẬN DÒNG TIỀN" onClose={() => setModal(null)}><form onSubmit={saveTransaction}>

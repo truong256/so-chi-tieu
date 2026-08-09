@@ -113,19 +113,33 @@ export default function AuthScreen() {
   const subtitle = mode === "login" ? "Đăng nhập để tiếp tục quản lý chi tiêu" : mode === "register" ? "Bắt đầu quản lý tài chính của riêng bạn" : "Nhập email để nhận liên kết đặt lại mật khẩu";
 
   return (
-    <main className="auth-page auth-neumorphic" data-auth-mode={mode}>
-      <section className="auth-hero-panel" aria-label="Giới thiệu Sổ Chi Tiêu">
-        <div className={`auth-hero-image auth-hero-image-${mode}`} aria-hidden="true" />
-        <a className="auth-brand" href="#" aria-label="Sổ Chi Tiêu - trang đăng nhập"><span className="brand-mark"><i /><i /><i /></span><span>SỔ CHI TIÊU</span></a>
+    <main className="auth-page auth-neumorphic-page" data-auth-mode={mode}>
+      <section
+        className="auth-hero-panel"
+        aria-label="Giới thiệu Sổ Chi Tiêu"
+        onMouseMove={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
+          e.currentTarget.style.setProperty("--mouse-x", `${x}%`);
+          e.currentTarget.style.setProperty("--mouse-y", `${y}%`);
+        }}
+      >
+        <a className="auth-brand" href="#" aria-label="Sổ Chi Tiêu - trang đăng nhập">
+          <span className="brand-mark"><i /><i /><i /></span>
+          <span>SỔ CHI TIÊU</span>
+        </a>
+
         <div className="auth-hero-copy">
-          <p className="auth-hero-eyebrow">TÀI CHÍNH RÕ RÀNG · MỖI NGÀY CHỦ ĐỘNG</p>
-          <h2>Mỗi khoản chi đều<br /><em>có một mục đích.</em></h2>
-          <p>Theo dõi dòng tiền, giữ ngân sách đúng hướng và biến mục tiêu tài chính thành kế hoạch có thể thực hiện.</p>
+          <p className="auth-hero-eyebrow">TÀI CHÍNH RÕ RÀNG · TƯƠNG LAI THÀNH THƠI</p>
+          <h2>Để từng đồng tiền<br /><em className="lime-text">đều có mục đích.</em></h2>
+          <p>Theo dõi dòng tiền, kiểm soát ngân sách và tiến gần hơn đến những mục tiêu quan trọng.</p>
         </div>
+
         <div className="auth-hero-proof" aria-label="Lợi ích chính">
-          <div><b>01</b><span>Dữ liệu riêng<br />theo tài khoản</span></div>
-          <div><b>02</b><span>Tổng quan tài chính<br />trên một màn hình</span></div>
-          <div><b>03</b><span>Đồng bộ an toàn<br />trên đám mây</span></div>
+          <div tabIndex={0} role="button"><b>01</b><span>Dữ liệu riêng<br />theo tài khoản</span></div>
+          <div tabIndex={0} role="button"><b>02</b><span>Theo dõi tiền<br />theo thời gian thực</span></div>
+          <div tabIndex={0} role="button"><b>03</b><span>Báo cáo rõ ràng<br />trên mọi thiết bị</span></div>
         </div>
       </section>
 
