@@ -18,8 +18,11 @@ import type {
 } from "./finance-types";
 import { advanceRecurring, formatDate, inRange, localDateTime, periodBounds, toNumber } from "./finance-utils";
 import { parseSmartTransaction } from "./smart-parser";
+import AiChatView, { MessageContent } from "./ai-chat";
+import { AiChatProvider } from "./ai-chat-context";
+import AiFloatingChat from "./ai-floating-chat";
 
-type View = "overview" | "transactions" | "wallets" | "categories" | "planning" | "recurring" | "reports" | "settings";
+type View = "overview" | "transactions" | "wallets" | "categories" | "planning" | "recurring" | "reports" | "settings" | "ai-assistant";
 type UserInfo = { id: string; name: string; email: string };
 
 const defaultCategories = [
@@ -39,6 +42,7 @@ const navItems: { id: View; label: string; en: string; icon: string }[] = [
   { id: "planning", label: "Ngân sách & mục tiêu", en: "Plans & goals", icon: "◎" },
   { id: "recurring", label: "Giao dịch định kỳ", en: "Recurring", icon: "↻" },
   { id: "reports", label: "Báo cáo", en: "Reports", icon: "▥" },
+  { id: "ai-assistant", label: "Trợ lý AI", en: "AI Assistant", icon: "✦" },
   { id: "settings", label: "Cài đặt", en: "Settings", icon: "⚙" },
 ];
 
@@ -160,7 +164,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
       if (runAutomation) {
         let automated = false;
-        for (const schedule of loadedRecurring.filter(item => item.active && item.auto_create && new Date(item.next_run_at) <= new Date())) {
+        for (const schedule of loadedRecurring.filter((item: any) => item.active && item.auto_create && new Date(item.next_run_at) <= new Date())) {
           const category = loadedCategories.find(item => item.id === schedule.category_id);
           const { error } = await supabase.from("transactions").insert({
             user_id: user.id, title: schedule.title, amount: schedule.amount, type: schedule.type,
@@ -704,7 +708,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         if (error) throw error;
         // Load budgets into state first so allocateToBudget sees the new budget
         const { data: freshBudgets } = await supabase.from("budgets").select("id,user_id,category_id,name,amount,allocated_amount,spent_amount,remaining_amount,source_wallet_id,period,period_start,start_date,end_date,alert_percent,status").order("created_at");
-        setBudgets((freshBudgets ?? []).map(r => mapBudget(r as Record<string, unknown>)));
+        setBudgets((freshBudgets ?? []).map((r: any) => mapBudget(r as Record<string, unknown>)));
         await allocateToBudget(walletId, data.id, amount);
       }
       setModal(null); showNotice("Đã lưu ngân sách."); await loadData(false);
@@ -813,7 +817,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         if (error) throw error;
         if (initialDeposit > 0 && walletId) {
           const { data: freshGoals } = await supabase.from("savings_goals").select("id,user_id,title,target_amount,current_amount,reserved_in_wallet,source_wallet_id,deadline,color").order("deadline", { ascending: true });
-          setGoals((freshGoals ?? []).map(r => mapGoal(r as Record<string, unknown>)));
+          setGoals((freshGoals ?? []).map((r: any) => mapGoal(r as Record<string, unknown>)));
           await allocateToGoal(walletId, data.id, initialDeposit);
         }
       }
@@ -958,7 +962,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       // 1. Storage receipts files
       const { data: files } = await supabase.storage.from("receipts").list(user.id, { limit: 1000 });
       if (files?.length) {
-        await supabase.storage.from("receipts").remove(files.map(file => `${user.id}/${file.name}`));
+        await supabase.storage.from("receipts").remove(files.map((file: any) => `${user.id}/${file.name}`));
       }
 
       // 2. Clear parent_id in custom categories first to avoid FK constraint issues
@@ -1079,6 +1083,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const comparison = (current: number, previous: number) => previous ? Math.round((current - previous) / previous * 100) : current ? 100 : 0;
 
   return (
+    <AiChatProvider>
     <main className="dashboard-shell">
       <aside className={`sidebar ${mobileNav ? "open" : ""}`}>
         <div className="brand"><span className="brand-mark"><i /><i /><i /></span><span>SỔ CHI TIÊU</span></div>
@@ -1104,6 +1109,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   {view === "planning" && (language === "vi" ? "Ngân sách & mục tiêu" : "Planning & Goals")}
                   {view === "recurring" && (language === "vi" ? "Giao dịch định kỳ" : "Recurring")}
                   {view === "reports" && (language === "vi" ? "Báo cáo & thống kê" : "Reports")}
+                  {view === "ai-assistant" && (language === "vi" ? "Trợ lý tài chính AI" : "AI Assistant")}
                   {view === "settings" && (language === "vi" ? "Hồ sơ & tùy chọn" : "Settings")}
                 </h1>
 
@@ -1696,6 +1702,20 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           </>
         )}
 
+        {view === "ai-assistant" && (
+          <AiChatView
+            financialContext={{
+              totalBalance,
+              monthlyIncome: monthTotals.income,
+              monthlyExpense: monthTotals.expense,
+              wallets,
+              transactions,
+              budgets,
+              savingsGoals: goals,
+            }}
+          />
+        )}
+
         {view === "settings" && (
           <div className="settings-container">
 
@@ -1980,7 +2000,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
             <div className="insufficient-body">
               <p className="insufficient-main-text">
-                {insufficientBalanceAlert.type === "budget" ? "Ngân sách" : "Ví"} <strong>"{insufficientBalanceAlert.name}"</strong> hiện chỉ có{" "}
+                {insufficientBalanceAlert.type === "budget" ? "Ngân sách" : "Ví"} <strong>&quot;{insufficientBalanceAlert.name}&quot;</strong> hiện chỉ có{" "}
                 <strong className="avail-text">{money(insufficientBalanceAlert.availableBalance)}</strong>, trong khi khoản chi là{" "}
                 <strong className="expense-text">{money(insufficientBalanceAlert.expenseAmount)}</strong>.
               </p>
@@ -2014,7 +2034,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
               <span className="topup-info-icon">💡</span>
               <p>
                 Bạn cần bổ sung ít nhất <strong>{money(quickTopupModal.missingAmount)}</strong> vào ví{" "}
-                <strong>"{quickTopupModal.walletName}"</strong> để thực hiện khoản chi.
+                <strong>&quot;{quickTopupModal.walletName}&quot;</strong> để thực hiện khoản chi.
               </p>
             </div>
 
@@ -2050,7 +2070,21 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           </form>
         </Modal>
       )}
+
+      <AiFloatingChat
+        view={view}
+        financialContext={{
+          totalBalance,
+          monthlyIncome: monthTotals.income,
+          monthlyExpense: monthTotals.expense,
+          wallets,
+          transactions,
+          budgets,
+          savingsGoals: goals,
+        }}
+      />
     </main>
+    </AiChatProvider>
   );
 }
 
@@ -2086,9 +2120,11 @@ function FormattedMoneyInput({
   useEffect(() => {
     if (value !== undefined) {
       if (String(value) === "") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDisplay("");
       } else {
         const parsed = parseInt(String(value).replace(/\D/g, ""), 10);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDisplay(isNaN(parsed) ? "" : new Intl.NumberFormat("vi-VN").format(parsed));
       }
     }

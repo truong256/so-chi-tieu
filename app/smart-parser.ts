@@ -120,7 +120,7 @@ function parseAmount(text: string): { amount: number | null, score: number, matc
 
   // 4. Match plain numbers (e.g. 50000, 50.000, 50,000)
   const regexPlain = /\b(\d{1,3}(?:[.,]\d{3})+)\b|\b(\d{4,})\b/g;
-  let matches = [...text.matchAll(regexPlain)];
+  const matches = [...text.matchAll(regexPlain)];
   if (matches.length > 0) {
     const best = matches[0][0]; // First large number
     const num = Number(best.replace(/[.,]/g, ""));

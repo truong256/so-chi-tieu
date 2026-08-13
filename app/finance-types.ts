@@ -1,8 +1,14 @@
 export type TransactionType = "income" | "expense";
 export type WalletType = "cash" | "bank" | "ewallet";
-export type Frequency = "daily" | "weekly" | "monthly" | "yearly";
+export type Frequency = "daily" | "weekly" | "biweekly" | "monthly" | "bimonthly" | "quarterly" | "semi-annually" | "yearly" | "custom";
 export type PaymentSourceType = "wallet" | "budget";
 export type BudgetStatus = "active" | "paused" | "completed" | "cancelled";
+export type RecurringStatus = "active" | "paused" | "completed" | "cancelled";
+export type ProcessingMode = "remind" | "confirm" | "auto";
+export type AmountType = "fixed" | "estimated";
+export type EndType = "never" | "date" | "occurrences";
+export type MonthEndMode = "last_day" | "next_month";
+export type OccurrenceStatus = "pending" | "confirmed" | "skipped" | "failed" | "postponed";
 
 export type Profile = {
   id: string;
@@ -65,6 +71,14 @@ export type Transfer = {
   note: string;
 };
 
+
+
+export type UserInfo = { 
+  id: string; 
+  name: string; 
+  email: string; 
+};
+
 export type Budget = {
   id: string;
   user_id: string;
@@ -111,11 +125,34 @@ export type RecurringTransaction = {
   title: string;
   amount: number;
   type: TransactionType;
+  amount_type: AmountType;
+  estimated_amount: number | null;
+  processing_mode: ProcessingMode;
+  status: RecurringStatus;
   frequency: Frequency;
+  interval: number;
+  start_date: string;
+  end_type: EndType;
+  end_date: string | null;
+  occurrence_limit: number | null;
+  reminder_days: number;
+  month_end_mode: MonthEndMode;
+  last_processed_at: string | null;
   next_run_at: string;
-  active: boolean;
-  auto_create: boolean;
+  active: boolean; // Keep for legacy fallback if needed during transition
+  auto_create: boolean; // Keep for legacy fallback
   note: string;
+};
+
+export type RecurringOccurrence = {
+  id: string;
+  user_id: string;
+  recurring_transaction_id: string;
+  scheduled_for: string;
+  amount: number;
+  status: OccurrenceStatus;
+  transaction_id: string | null;
+  created_at: string;
 };
 
 export type FundAllocation = {

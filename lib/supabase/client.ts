@@ -9,7 +9,7 @@ let browserClient: ReturnType<typeof createBrowserClient> | undefined;
 let browserConfig: SupabaseBrowserConfig | undefined;
 
 export function configureClient(config: SupabaseBrowserConfig) {
-  let supabaseUrl = config.supabaseUrl.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
+  const supabaseUrl = config.supabaseUrl.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
   const supabasePublishableKey = config.supabasePublishableKey.trim();
 
   if (!supabaseUrl || !supabasePublishableKey) {

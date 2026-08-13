@@ -1,4 +1,5 @@
 import { desc } from "drizzle-orm";
+// @ts-ignore
 import { getDb } from "../../../../../db";
 import { notes } from "../../../db/schema";
 
