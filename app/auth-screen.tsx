@@ -57,6 +57,9 @@ export default function AuthScreen() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+
   // Transition states
   const [transitioning, setTransitioning] = useState(false);
   const [transitionDir, setTransitionDir] = useState<"left" | "right">("left");
@@ -76,6 +79,7 @@ export default function AuthScreen() {
     if (nextMode === mode || transitioning) return;
     formRef.current?.reset();
     setMessage(null);
+    setUnconfirmedEmail(null);
     setShowPassword(false);
     setShowConfirmation(false);
 
@@ -108,6 +112,26 @@ export default function AuthScreen() {
     }, 30);
   }
 
+  async function handleResendConfirmation() {
+    if (!unconfirmedEmail || resending) return;
+    setResending(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: unconfirmedEmail,
+        options: { emailRedirectTo: window.location.origin },
+      });
+      if (error) throw error;
+      setMessage({ type: "success", text: `Đã gửi lại email kích hoạt tới ${unconfirmedEmail}. Hãy kiểm tra hòm thư và mục Thư rác/Spam.` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Không thể gửi lại email xác nhận.";
+      setMessage({ type: "error", text: msg });
+    } finally {
+      setResending(false);
+    }
+  }
+
   // Cleanup timer on unmount
   useEffect(() => {
     return () => {
@@ -119,6 +143,7 @@ export default function AuthScreen() {
     event.preventDefault();
     setLoading(true);
     setMessage(null);
+    setUnconfirmedEmail(null);
 
     const form = new FormData(event.currentTarget);
     const email = String(form.get("email") || "").trim().toLowerCase();
@@ -135,15 +160,27 @@ export default function AuthScreen() {
       }
 
       if (mode === "login") {
-        const identifier = String(form.get("identifier") || "").trim().toLowerCase();
-        if (identifier.includes("@")) {
-          const { error } = await supabase.auth.signInWithPassword({ email: identifier, password });
-          if (error) throw error;
-        } else {
-          const { data, error } = await supabase.functions.invoke("login-by-username", { body: { username: identifier, password } });
-          if (error || !data?.access_token || !data?.refresh_token) throw new Error("INVALID_USERNAME_LOGIN");
-          const { error: sessionError } = await supabase.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
-          if (sessionError) throw sessionError;
+        const identifier = String(form.get("identifier") || "").trim();
+        let targetEmail = identifier.toLowerCase();
+
+        // If identifier is not an email (no @), look up email via RPC get_email_by_username
+        if (!targetEmail.includes("@")) {
+          try {
+            const { data: rpcEmail, error: rpcError } = await supabase.rpc("get_email_by_username", { p_username: targetEmail });
+            if (!rpcError && rpcEmail && typeof rpcEmail === "string") {
+              targetEmail = rpcEmail.trim().toLowerCase();
+            }
+          } catch {
+            // RPC might not exist yet; proceed with direct check
+          }
+        }
+
+        const { error } = await supabase.auth.signInWithPassword({ email: targetEmail, password });
+        if (error) {
+          if (error.message.toLowerCase().includes("email not confirmed") || (error as { code?: string }).code === "email_not_confirmed") {
+            setUnconfirmedEmail(targetEmail);
+          }
+          throw error;
         }
         return;
       }
@@ -166,18 +203,31 @@ export default function AuthScreen() {
       if (error) throw error;
 
       if (!data.session) {
-        setMessage({ type: "success", text: "Tài khoản đã được tạo. Hãy kiểm tra email để xác nhận rồi đăng nhập bằng tên tài khoản." });
+        setUnconfirmedEmail(email);
+        setMessage({
+          type: "success",
+          text: `Tài khoản đã được tạo! Chúng tôi đã gửi email kích hoạt đến "${email}". Vui lòng kiểm tra hộp thư (kể cả mục Thư rác/Spam) để xác thực tài khoản.`,
+        });
       }
     } catch (error) {
       const raw = error instanceof Error ? error.message : "Có lỗi xảy ra. Vui lòng thử lại.";
       const lower = raw.toLowerCase();
-      const text = lower.includes("invalid login credentials") || raw === "INVALID_USERNAME_LOGIN"
-        ? "Tên tài khoản hoặc mật khẩu không chính xác."
-        : lower.includes("user already registered")
-          ? "Email này đã được đăng ký."
-          : lower.includes("duplicate") || lower.includes("database error saving new user")
-            ? "Tên tài khoản đã được sử dụng."
-            : raw;
+      const code = (error as { code?: string })?.code ?? "";
+
+      let text = raw;
+      if (lower.includes("invalid login credentials") || code === "invalid_credentials" || raw === "INVALID_USERNAME_LOGIN") {
+        text = "Tên tài khoản / email hoặc mật khẩu không chính xác.";
+      } else if (lower.includes("email not confirmed") || code === "email_not_confirmed") {
+        text = "Tài khoản chưa được kích hoạt qua email. Vui lòng kiểm tra hộp thư (hoặc bấm Gửi lại email kích hoạt bên dưới).";
+      } else if (lower.includes("user already registered") || code === "user_already_exists") {
+        text = "Email này đã được đăng ký. Bạn có thể chọn 'Đăng nhập' hoặc dùng tính năng 'Quên mật khẩu'.";
+      } else if (lower.includes("duplicate") || lower.includes("database error saving new user")) {
+        text = "Tên tài khoản hoặc email đã được sử dụng bởi người khác.";
+      } else if (lower.includes("rate limit") || code === "over_email_send_rate_limit") {
+        text = "Hệ thống đang bảo vệ chống spam. Vui lòng đợi 1 phút trước khi thử lại.";
+      } else if (lower.includes("email address") && lower.includes("invalid")) {
+        text = "Địa chỉ email không đúng định dạng. Vui lòng kiểm tra lại.";
+      }
       setMessage({ type: "error", text });
     } finally {
       setLoading(false);
@@ -290,21 +340,36 @@ export default function AuthScreen() {
           <div className="auth-form-wrapper">
             <form ref={formRef} className={formClass} onSubmit={submit}>
               {mode === "register" && <>
-                <label className="auth-input-group"><span className="sr-only">Tên tài khoản</span><span className="auth-field-icon"><FieldIcon name="user" /></span><input name="username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_]+" autoCapitalize="none" autoComplete="username" placeholder="Tên tài khoản" /></label>
-                <label className="auth-input-group"><span className="sr-only">Họ và tên</span><span className="auth-field-icon"><FieldIcon name="user" /></span><input name="fullName" required maxLength={100} autoComplete="name" placeholder="Họ và tên" /></label>
+                <label className="auth-input-group"><span className="sr-only">Tên tài khoản</span><span className="auth-field-icon"><FieldIcon name="user" /></span><input name="username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_]+" autoCapitalize="none" autoComplete="username" placeholder="Tên tài khoản (viết liền, vd: nam_nguyen)" /></label>
+                <label className="auth-input-group"><span className="sr-only">Họ và tên</span><span className="auth-field-icon"><FieldIcon name="user" /></span><input name="fullName" required maxLength={100} autoComplete="name" placeholder="Họ và tên của bạn" /></label>
               </>}
 
               {mode === "login" ? (
-                <label className="auth-input-group"><span className="sr-only">Tên tài khoản hoặc email</span><span className="auth-field-icon"><FieldIcon name="user" /></span><input name="identifier" required autoCapitalize="none" autoComplete="username" placeholder="Tên tài khoản hoặc email" /></label>
+                <label className="auth-input-group"><span className="sr-only">Tên tài khoản hoặc email</span><span className="auth-field-icon"><FieldIcon name="user" /></span><input name="identifier" required autoCapitalize="none" autoComplete="username" placeholder="Tên tài khoản hoặc Email" /></label>
               ) : (
-                <label className="auth-input-group"><span className="sr-only">Địa chỉ email</span><span className="auth-field-icon"><FieldIcon name="mail" /></span><input name="email" type="email" required autoCapitalize="none" autoComplete="email" placeholder="Địa chỉ email" /></label>
+                <label className="auth-input-group"><span className="sr-only">Địa chỉ email</span><span className="auth-field-icon"><FieldIcon name="mail" /></span><input name="email" type="email" required autoCapitalize="none" autoComplete="email" placeholder="Địa chỉ email chính xác" /></label>
               )}
 
               {mode !== "forgot" && <PasswordField name="password" placeholder="Mật khẩu" autoComplete={mode === "login" ? "current-password" : "new-password"} visible={showPassword} onToggle={() => setShowPassword(value => !value)} />}
               {mode === "register" && <PasswordField name="confirmPassword" placeholder="Nhập lại mật khẩu" autoComplete="new-password" visible={showConfirmation} onToggle={() => setShowConfirmation(value => !value)} />}
 
               {mode === "login" && <div className="auth-options"><span>Đăng nhập an toàn</span><button type="button" onClick={() => changeMode("forgot")}>Quên mật khẩu?</button></div>}
+              
               {message && <p className={`auth-message ${message.type}`} role="status">{message.text}</p>}
+
+              {unconfirmedEmail && (
+                <div className="resend-box" style={{ marginTop: "10px", textAlign: "center" }}>
+                  <button
+                    type="button"
+                    onClick={handleResendConfirmation}
+                    disabled={resending}
+                    className="ghost-action"
+                    style={{ width: "100%", fontSize: "13px", height: "38px" }}
+                  >
+                    {resending ? "Đang gửi lại…" : "✉️ Gửi lại email kích hoạt"}
+                  </button>
+                </div>
+              )}
 
               <button className={`primary-auth ${loading ? "primary-auth--loading" : ""}`} type="submit" disabled={loading}>
                 {loading ? (
@@ -326,7 +391,7 @@ export default function AuthScreen() {
             : <p className="auth-switch">{mode === "login" ? "Chưa có tài khoản?" : "Đã có tài khoản?"} <button type="button" onClick={() => changeMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "Đăng ký ngay" : "Đăng nhập"}</button></p>
           }
         </section>
-        <p className="auth-footnote">Dữ liệu tài chính được tách riêng theo từng tài khoản.</p>
+        <p className="auth-footnote">Dữ liệu tài chính được tách riêng và bảo mật theo từng tài khoản.</p>
       </section>
     </main>
   );

@@ -120,49 +120,69 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const loadData = useCallback(async (runAutomation = true) => {
     setLoading(true);
     try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-      if (!sessionData.session?.access_token || sessionData.session.user.id !== user.id) {
-        throw new Error("Phiên đăng nhập không còn hợp lệ. Vui lòng đăng nhập lại.");
-      }
-
-      const [profileResult, walletResult, categoryResult, transactionResult, transferResult, budgetResult, goalResult, recurringResult] = await Promise.all([
+      // Fetch core tables with resilient handling
+      const [
+        profileResult,
+        walletResult,
+        categoryResult,
+        transactionResult,
+        transferResult,
+        budgetResult,
+        goalResult,
+        recurringResult
+      ] = await Promise.allSettled([
         supabase.from("profiles").select("id,username,full_name,currency,language").eq("id", user.id).maybeSingle(),
-        supabase.from("wallets").select("id,user_id,name,type,balance,reserved_amount,currency,color,icon").order("created_at"),
-        supabase.from("categories").select("id,user_id,name,kind,parent_id,icon,color,is_default").order("kind").order("name"),
-        supabase.from("transactions").select("id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id,budget_id,payment_source_type").order("occurred_at", { ascending: false }).limit(500),
-        supabase.from("transfers").select("id,user_id,from_wallet_id,to_wallet_id,amount,occurred_at,note").order("occurred_at", { ascending: false }).limit(300),
-        supabase.from("budgets").select("id,user_id,category_id,name,amount,allocated_amount,spent_amount,remaining_amount,source_wallet_id,period,period_start,start_date,end_date,alert_percent,status").order("created_at"),
-        supabase.from("savings_goals").select("id,user_id,title,target_amount,current_amount,reserved_in_wallet,source_wallet_id,deadline,color").order("deadline", { ascending: true }),
-        supabase.from("recurring_transactions").select("id,user_id,wallet_id,category_id,title,amount,type,frequency,next_run_at,active,auto_create,note").order("next_run_at"),
+        supabase.from("wallets").select("id,user_id,name,type,balance,reserved_amount,currency,color,icon").eq("user_id", user.id).order("created_at"),
+        supabase.from("categories").select("id,user_id,name,kind,parent_id,icon,color,is_default").eq("user_id", user.id).order("kind").order("name"),
+        supabase.from("transactions").select("id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id,budget_id,payment_source_type").eq("user_id", user.id).order("occurred_at", { ascending: false }).limit(500),
+        supabase.from("transfers").select("id,user_id,from_wallet_id,to_wallet_id,amount,occurred_at,note").eq("user_id", user.id).order("occurred_at", { ascending: false }).limit(300),
+        supabase.from("budgets").select("id,user_id,category_id,name,amount,allocated_amount,spent_amount,remaining_amount,source_wallet_id,period,period_start,start_date,end_date,alert_percent,status").eq("user_id", user.id).order("created_at"),
+        supabase.from("savings_goals").select("id,user_id,title,target_amount,current_amount,reserved_in_wallet,source_wallet_id,deadline,color").eq("user_id", user.id).order("deadline", { ascending: true }),
+        supabase.from("recurring_transactions").select("id,user_id,wallet_id,category_id,title,amount,type,frequency,next_run_at,active,auto_create,note").eq("user_id", user.id).order("next_run_at"),
       ]);
-      const firstError = [profileResult, walletResult, categoryResult, transactionResult, transferResult, budgetResult, goalResult, recurringResult].find(result => result.error)?.error;
-      if (firstError) throw firstError;
 
-      let loadedProfile = profileResult.data as Profile | null;
-      let loadedWallets = (walletResult.data ?? []).map((row: Record<string, unknown>) => mapWallet(row));
-      let loadedCategories = (categoryResult.data ?? []) as Category[];
-      let loadedTransactions = (transactionResult.data ?? []).map((row: Record<string, unknown>) => mapTransaction(row));
-      let loadedRecurring = (recurringResult.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row));
+      let loadedProfile: Profile | null = profileResult.status === "fulfilled" && !profileResult.value.error ? (profileResult.value.data as Profile | null) : null;
+      let loadedWallets: Wallet[] = walletResult.status === "fulfilled" && !walletResult.value.error ? ((walletResult.value.data ?? []).map((row: Record<string, unknown>) => mapWallet(row))) : [];
+      let loadedCategories: Category[] = categoryResult.status === "fulfilled" && !categoryResult.value.error ? ((categoryResult.value.data ?? []) as Category[]) : [];
+      let loadedTransactions: Transaction[] = transactionResult.status === "fulfilled" && !transactionResult.value.error ? ((transactionResult.value.data ?? []).map((row: Record<string, unknown>) => mapTransaction(row))) : [];
+      let loadedTransfers: Transfer[] = transferResult.status === "fulfilled" && !transferResult.value.error ? ((transferResult.value.data ?? []).map((row: Record<string, unknown>) => mapTransfer(row))) : [];
+      let loadedBudgets: Budget[] = budgetResult.status === "fulfilled" && !budgetResult.value.error ? ((budgetResult.value.data ?? []).map((row: Record<string, unknown>) => mapBudget(row))) : [];
+      let loadedGoals: SavingsGoal[] = goalResult.status === "fulfilled" && !goalResult.value.error ? ((goalResult.value.data ?? []).map((row: Record<string, unknown>) => mapGoal(row))) : [];
+      let loadedRecurring: RecurringTransaction[] = recurringResult.status === "fulfilled" && !recurringResult.value.error ? ((recurringResult.value.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row))) : [];
 
+      // Auto-provision profile if missing
       if (!loadedProfile) {
-        const { data, error } = await supabase.from("profiles").insert({ id: user.id, full_name: user.name, currency: "VND", language: "vi" }).select("id,username,full_name,currency,language").single();
-        if (error) throw error;
-        loadedProfile = data as Profile;
-      }
-      if (!loadedWallets.length) {
-        const { data, error } = await supabase.from("wallets").insert({ user_id: user.id, name: "Tiền mặt", type: "cash", balance: 0, currency: loadedProfile.currency, color: "#D9F45F", icon: "💵" }).select("id,user_id,name,type,balance,currency,color,icon").single();
-        if (error) throw error;
-        loadedWallets = [mapWallet(data as Record<string, unknown>)];
-      }
-      if (!loadedCategories.length) {
-        const payload = defaultCategories.map(([name, kind, icon, color]) => ({ user_id: user.id, name, kind, icon, color, is_default: true }));
-        const { data, error } = await supabase.from("categories").insert(payload).select("id,user_id,name,kind,parent_id,icon,color,is_default");
-        if (error) throw error;
-        loadedCategories = (data ?? []) as Category[];
+        try {
+          const { data, error } = await supabase.from("profiles").upsert({ id: user.id, full_name: user.name, currency: "VND", language: "vi" }, { onConflict: "id" }).select("id,username,full_name,currency,language").single();
+          if (!error && data) loadedProfile = data as Profile;
+          else loadedProfile = { id: user.id, username: null, full_name: user.name, currency: "VND", language: "vi" };
+        } catch {
+          loadedProfile = { id: user.id, username: null, full_name: user.name, currency: "VND", language: "vi" };
+        }
       }
 
-      if (runAutomation) {
+      // Auto-provision initial wallet if missing
+      if (!loadedWallets.length) {
+        try {
+          const { data, error } = await supabase.from("wallets").insert({ user_id: user.id, name: "Tiền mặt", type: "cash", balance: 0, currency: loadedProfile.currency, color: "#D9F45F", icon: "💵" }).select("id,user_id,name,type,balance,currency,color,icon").single();
+          if (!error && data) loadedWallets = [mapWallet(data as Record<string, unknown>)];
+        } catch (e) {
+          console.warn("Could not auto-insert default wallet:", e);
+        }
+      }
+
+      // Auto-provision default categories if missing
+      if (!loadedCategories.length) {
+        try {
+          const payload = defaultCategories.map(([name, kind, icon, color]) => ({ user_id: user.id, name, kind, icon, color, is_default: true }));
+          const { data, error } = await supabase.from("categories").insert(payload).select("id,user_id,name,kind,parent_id,icon,color,is_default");
+          if (!error && data) loadedCategories = (data ?? []) as Category[];
+        } catch (e) {
+          console.warn("Could not auto-insert default categories:", e);
+        }
+      }
+
+      if (runAutomation && loadedRecurring.length) {
         let automated = false;
         for (const schedule of loadedRecurring.filter((item: any) => item.active && item.auto_create && new Date(item.next_run_at) <= new Date())) {
           const category = loadedCategories.find(item => item.id === schedule.category_id);
@@ -177,29 +197,30 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           }
         }
         if (automated) {
-          const [freshTransactions, freshRecurring] = await Promise.all([
-            supabase.from("transactions").select("id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id").order("occurred_at", { ascending: false }).limit(500),
-            supabase.from("recurring_transactions").select("id,user_id,wallet_id,category_id,title,amount,type,frequency,next_run_at,active,auto_create,note").order("next_run_at"),
+          const [freshTransactions, freshRecurring] = await Promise.allSettled([
+            supabase.from("transactions").select("id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id").eq("user_id", user.id).order("occurred_at", { ascending: false }).limit(500),
+            supabase.from("recurring_transactions").select("id,user_id,wallet_id,category_id,title,amount,type,frequency,next_run_at,active,auto_create,note").eq("user_id", user.id).order("next_run_at"),
           ]);
-          loadedTransactions = (freshTransactions.data ?? []).map((row: Record<string, unknown>) => mapTransaction(row));
-          loadedRecurring = (freshRecurring.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row));
+          if (freshTransactions.status === "fulfilled" && !freshTransactions.value.error) {
+            loadedTransactions = (freshTransactions.value.data ?? []).map((row: Record<string, unknown>) => mapTransaction(row));
+          }
+          if (freshRecurring.status === "fulfilled" && !freshRecurring.value.error) {
+            loadedRecurring = (freshRecurring.value.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row));
+          }
           showNotice("Đã tự động ghi nhận giao dịch định kỳ đến hạn.");
         }
       }
-
-      // Seed recurring fresh selects
-      const freshTransactionSelectCols = "id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id,budget_id,payment_source_type";
-      void freshTransactionSelectCols; // suppress lint
 
       setProfile(loadedProfile);
       setWallets(loadedWallets);
       setCategories(loadedCategories);
       setTransactions(loadedTransactions);
-      setTransfers((transferResult.data ?? []).map((row: Record<string, unknown>) => mapTransfer(row)));
-      setBudgets((budgetResult.data ?? []).map((row: Record<string, unknown>) => mapBudget(row)));
-      setGoals((goalResult.data ?? []).map((row: Record<string, unknown>) => mapGoal(row)));
+      setTransfers(loadedTransfers);
+      setBudgets(loadedBudgets);
+      setGoals(loadedGoals);
       setRecurring(loadedRecurring);
     } catch (error) {
+      console.error("loadData error:", error);
       showNotice(error instanceof Error ? error.message : "Không thể tải dữ liệu.");
     } finally {
       setLoading(false);

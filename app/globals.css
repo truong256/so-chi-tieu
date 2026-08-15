@@ -1476,9 +1476,14 @@ a { color: inherit; text-decoration: none; }
 }
 
 @media (max-width: 768px) {
+  /* Prevent Safari auto-zoom on inputs */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
   .sidebar {
     transform: translateX(-100%);
-    transition: transform 0.25s ease;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .sidebar.open {
     transform: translateX(0);
@@ -1492,6 +1497,7 @@ a { color: inherit; text-decoration: none; }
     background: transparent;
     color: #ffffff;
     font-size: 24px;
+    cursor: pointer;
   }
   .nav-backdrop {
     display: block;
@@ -1499,33 +1505,303 @@ a { color: inherit; text-decoration: none; }
     z-index: 25;
     inset: 0;
     border: 0;
-    background: rgba(20, 28, 30, 0.5);
+    background: rgba(20, 28, 30, 0.6);
+    backdrop-filter: blur(2px);
   }
+
+  /* Main Shell & Container */
   .dashboard-main {
     margin-left: 0;
-    padding: 16px;
+    padding: 12px;
+    min-height: 100vh;
   }
   .dashboard-container {
-    padding: 20px;
+    padding: 16px 14px;
     border-radius: 20px;
+    min-height: calc(100vh - 24px);
+  }
+
+  /* Topbar Mobile */
+  .topbar {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
   }
   .menu-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    margin-right: 12px;
+    width: 42px;
+    height: 42px;
+    margin-right: 8px;
     border: 1px solid var(--border-input);
     border-radius: 12px;
     background: #ffffff;
     font-size: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
   }
-  .summary-grid, .wallet-grid, .recurring-grid {
+  .topbar-left-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .top-date {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+  .top-greeting {
+    font-size: 20px;
+    line-height: 1.25;
+  }
+  .header-stat-pill {
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+  .top-actions {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .topbar-search {
+    display: none !important;
+  }
+  .add-button,
+  .ghost-action,
+  .category-create-button,
+  .recurring-create-btn {
+    height: 38px;
+    padding: 0 14px;
+    font-size: 12px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  /* Summary Cards */
+  .summary-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .balance-card {
+    padding: 18px 16px;
+    min-height: 140px;
+    border-radius: 18px;
+  }
+  .balance-card h2 {
+    font-size: 26px;
+    margin: 8px 0 6px;
+  }
+  .sparkline {
+    opacity: 0.4;
+    width: 50%;
+  }
+
+  /* Grid Layouts */
+  .overview-grid,
+  .wallet-grid,
+  .recurring-grid,
+  .planning-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  /* Filter Panel */
+  .filter-panel {
+    padding: 16px 14px;
+    border-radius: 18px;
   }
   .filter-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .date-filter-wrap {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .date-filter-wrap input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Transaction Table to Mobile Card List */
+  .transaction-panel {
+    padding: 16px 12px;
+    border-radius: 18px;
+  }
+  .table-head {
+    display: none !important;
+  }
+  .transaction-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .transaction-row {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas:
+      "title amount"
+      "meta  date"
+      "meta  actions" !important;
+    gap: 4px 10px !important;
+    padding: 12px 14px !important;
+    background: #ffffff;
+    border: 1px solid #e8edea;
+    border-radius: 16px;
+    margin-bottom: 0;
+    min-height: auto !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+    align-items: center;
+  }
+  .transaction-row > .transaction-title {
+    grid-area: title;
+    min-width: 0;
+    gap: 10px;
+  }
+  .transaction-row > .transaction-title i {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+  .transaction-row > .transaction-title span b {
+    font-size: 13.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+  .transaction-row > .transaction-title span small {
+    font-size: 11px;
+  }
+  .transaction-row > span:nth-child(2) {
+    grid-area: meta;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .transaction-row > span:nth-child(2) b {
+    font-size: 11.5px;
+    color: var(--text-dark);
+  }
+  .transaction-row > span:nth-child(3) {
+    grid-area: date;
+    font-size: 11px;
+    text-align: right;
+    color: var(--text-subtle);
+  }
+  .transaction-row > strong {
+    grid-area: amount;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: right;
+  }
+  .transaction-row > .row-actions {
+    grid-area: actions;
+    justify-content: flex-end;
+    gap: 2px;
+  }
+  .row-actions button {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  /* Modals Mobile Bottom Sheet */
+  .modal-wrap {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .transaction-modal,
+  .finance-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 90vh !important;
+    padding: 22px 18px 28px !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: 0;
+  }
+  .modal-head {
+    margin-bottom: 16px;
+  }
+  .modal-head h2 {
+    font-size: 20px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .save-button {
+    height: 48px;
+    font-size: 14px;
+    border-radius: 14px;
+  }
+
+  /* Insufficient Alert & Quick Topup */
+  .insufficient-card {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+  .insufficient-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .insufficient-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Category Screen */
+  .category-main-card {
+    padding: 20px 14px;
+    border-radius: 20px;
+  }
+  .category-section-card {
+    padding: 16px 12px;
+    border-radius: 16px;
+  }
+  .category-item-row {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .category-item-name {
+    font-size: 13.5px;
+  }
+  .category-action-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  /* Reports View */
+  .report-period-pill {
+    width: 100%;
+    display: flex;
+  }
+  .report-period-pill button {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+
+  /* Floating AI */
+  .ai-fab {
+    bottom: 20px !important;
+    right: 16px !important;
+    width: 50px !important;
+    height: 50px !important;
+  }
+  .ai-floating-panel {
+    bottom: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: 85vh !important;
+    max-height: 85vh !important;
+    border-radius: 24px 24px 0 0 !important;
   }
 }
 

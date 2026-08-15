@@ -6,7 +6,14 @@ export type SupabaseBrowserConfig = {
 };
 
 let browserClient: ReturnType<typeof createBrowserClient> | undefined;
-let browserConfig: SupabaseBrowserConfig | undefined;
+let browserConfig: SupabaseBrowserConfig | undefined = (() => {
+  const envUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
+  const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+  if (envUrl && envKey) {
+    return { supabaseUrl: envUrl, supabasePublishableKey: envKey };
+  }
+  return undefined;
+})();
 
 export function configureClient(config: SupabaseBrowserConfig) {
   const supabaseUrl = config.supabaseUrl.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
@@ -29,7 +36,13 @@ export function configureClient(config: SupabaseBrowserConfig) {
 
 export function createClient() {
   if (!browserConfig) {
-    throw new Error("Kết nối Supabase chưa được khởi tạo.");
+    const envUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
+    const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+    if (envUrl && envKey) {
+      browserConfig = { supabaseUrl: envUrl, supabasePublishableKey: envKey };
+    } else {
+      throw new Error("Kết nối Supabase chưa được khởi tạo.");
+    }
   }
 
   if (!browserClient) {
@@ -41,3 +54,4 @@ export function createClient() {
 
   return browserClient;
 }
+

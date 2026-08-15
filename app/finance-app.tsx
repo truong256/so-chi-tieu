@@ -16,23 +16,41 @@ export default function FinanceApp() {
     let recoveryTimer: number | undefined;
     let unsubscribe: (() => void) | undefined;
 
-    async function start() {
+    async function initAuth() {
       try {
-        const response = await fetch("/api/runtime-config", { cache: "no-store" });
-        if (!response.ok) throw new Error("Không thể tải cấu hình kết nối.");
+        // First try to use the client immediately if env is available
+        let supabase = (() => {
+          try {
+            return createClient();
+          } catch {
+            return undefined;
+          }
+        })();
 
-        const config = await response.json() as SupabaseBrowserConfig;
-        if (!active) return;
-        configureClient(config);
-
-        const supabase = createClient();
-        const { data: authListener } = supabase.auth.onAuthStateChange((event: string, session: Session | null) => {
+        if (!supabase) {
+          const response = await fetch("/api/runtime-config", { cache: "no-store" });
+          if (!response.ok) throw new Error("Không thể tải cấu hình kết nối.");
+          const config = (await response.json()) as SupabaseBrowserConfig;
           if (!active) return;
-          if (event === "PASSWORD_RECOVERY") setRecovering(true);
-          if (event === "SIGNED_OUT") setUser(null);
-          else if (session?.user) setUser(session.user);
-          else if (event === "INITIAL_SESSION") setUser(null);
-        });
+          configureClient(config);
+          supabase = createClient();
+        }
+
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+          (event: string, session: Session | null) => {
+            if (!active) return;
+            if (event === "PASSWORD_RECOVERY") {
+              setRecovering(true);
+            }
+            if (event === "SIGNED_OUT") {
+              setUser(null);
+            } else if (session?.user) {
+              setUser(session.user);
+            } else if (event === "INITIAL_SESSION") {
+              setUser(session?.user ?? null);
+            }
+          }
+        );
         unsubscribe = () => authListener.subscription.unsubscribe();
 
         const { data, error } = await supabase.auth.getSession();
@@ -41,17 +59,23 @@ export default function FinanceApp() {
           setUser(null);
           return;
         }
-        setUser(data.session?.user ?? null);
+        if (data.session?.user) {
+          setUser(data.session.user);
+        } else {
+          // Check if listener already set user, otherwise null
+          setUser((curr) => (curr !== undefined ? curr : null));
+        }
 
         recoveryTimer = window.setTimeout(() => {
-          if (active) setUser(current => current === undefined ? null : current);
-        }, 8000);
-      } catch {
+          if (active) setUser((current) => (current === undefined ? null : current));
+        }, 4000);
+      } catch (err) {
+        console.error("FinanceApp init error:", err);
         if (active) setStartupError(true);
       }
     }
 
-    void start();
+    void initAuth();
 
     return () => {
       active = false;
