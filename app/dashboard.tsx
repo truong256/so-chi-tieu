@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { createClient } from "../lib/supabase/client";
 import type {
+  AITransactionParseResult,
   Budget,
   Category,
   FundAllocation,
@@ -21,17 +22,19 @@ import { parseSmartTransaction } from "./smart-parser";
 import AiChatView, { MessageContent } from "./ai-chat";
 import { AiChatProvider } from "./ai-chat-context";
 import AiFloatingChat from "./ai-floating-chat";
+import ReceiptScannerModal, { FormattedMoneyInput } from "./receipt-scanner-modal";
+import { exportFinancialDataToExcel } from "./services/excel-export";
 
 type View = "overview" | "transactions" | "wallets" | "categories" | "planning" | "recurring" | "reports" | "settings" | "ai-assistant";
 type UserInfo = { id: string; name: string; email: string };
 
 const defaultCategories = [
-  ["Ăn uống", "expense", "🍜", "#FF9466"], ["Di chuyển", "expense", "🛵", "#7C8CFF"],
-  ["Nhà ở", "expense", "🏠", "#E5CB54"], ["Mua sắm", "expense", "🛍️", "#FF7898"],
-  ["Giải trí", "expense", "🎬", "#A47BE8"], ["Sức khỏe", "expense", "🩺", "#58B999"],
-  ["Giáo dục", "expense", "📚", "#4B9BE8"], ["Lương", "income", "💼", "#78B732"],
-  ["Thưởng", "income", "🎁", "#8CBF42"], ["Trợ cấp", "income", "🤝", "#56B4D3"],
-  ["Thu khác", "income", "✨", "#69A9D8"],
+  ["Ăn uống", "expense", "", "#FF9466"], ["Di chuyển", "expense", "", "#7C8CFF"],
+  ["Nhà ở", "expense", "", "#E5CB54"], ["Mua sắm", "expense", "", "#FF7898"],
+  ["Giải trí", "expense", "", "#A47BE8"], ["Sức khỏe", "expense", "", "#58B999"],
+  ["Giáo dục", "expense", "", "#4B9BE8"], ["Lương", "income", "", "#78B732"],
+  ["Thưởng", "income", "", "#8CBF42"], ["Trợ cấp", "income", "", "#56B4D3"],
+  ["Thu khác", "income", "", "#69A9D8"],
 ] as const;
 
 const navItems: { id: View; label: string; en: string; icon: string }[] = [
@@ -93,6 +96,8 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const [sort, setSort] = useState("date-desc");
   const [reportPeriod, setReportPeriod] = useState<"day" | "week" | "month" | "year">("month");
   const [smartInput, setSmartInput] = useState("");
+  const [aiParsing, setAiParsing] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<{ type: "success" | "warning" | "error"; message: string } | null>(null);
   const [recurringType, setRecurringType] = useState<TransactionType>("expense");
   const [transactionDraft, setTransactionDraft] = useState({ title: "", amount: "", type: "expense" as TransactionType, categoryId: "", walletId: "", budgetId: "", paymentSourceType: "wallet" as "wallet" | "budget", occurredAt: localDateTime(), note: "" });
   const [showNotifications, setShowNotifications] = useState(false);
@@ -111,11 +116,34 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   } | null>(null);
   const [highlightWalletSelect, setHighlightWalletSelect] = useState(false);
   const [focusAmountInput, setFocusAmountInput] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [appAccentColor, setAppAccentColor] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("app_accent_color") || "#D2F544";
+    }
+    return "#D2F544";
+  });
 
   const showNotice = useCallback((message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 3200);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("app_accent_color") || "#D2F544";
+      applyThemeAccent(saved);
+    }
+  }, []);
+
+  function handleSelectAppAccent(color: string) {
+    setAppAccentColor(color);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("app_accent_color", color);
+    }
+    applyThemeAccent(color);
+    showNotice(`Đã áp dụng màu chủ đạo mới: ${color.toUpperCase()}`);
+  }
 
   const loadData = useCallback(async (runAutomation = true) => {
     setLoading(true);
@@ -184,21 +212,57 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
       if (runAutomation && loadedRecurring.length) {
         let automated = false;
+        let skippedDueToBalance = 0;
+
+        const getDynamicAvail = (wId: string) => {
+          const w = loadedWallets.find(x => x.id === wId);
+          if (!w) return 0;
+          let bal = w.balance;
+          loadedTransactions.forEach(t => {
+            let act = t.wallet_id;
+            if (!act && t.payment_source_type === "budget" && t.budget_id) {
+              act = loadedBudgets.find(b => b.id === t.budget_id)?.source_wallet_id ?? null;
+            }
+            if (act === wId) bal += (t.type === "income" ? t.amount : -t.amount);
+          });
+          loadedTransfers.forEach(t => {
+            if (t.from_wallet_id === wId) bal -= t.amount;
+            if (t.to_wallet_id === wId) bal += t.amount;
+          });
+          let res = 0;
+          loadedBudgets.forEach(b => {
+            if (b.source_wallet_id === wId && b.remaining_amount > 0 && b.status === "active") res += b.remaining_amount;
+          });
+          loadedGoals.forEach(g => {
+            if (g.source_wallet_id === wId && g.reserved_in_wallet > 0) res += g.reserved_in_wallet;
+          });
+          return bal - res;
+        };
+
         for (const schedule of loadedRecurring.filter((item: any) => item.active && item.auto_create && new Date(item.next_run_at) <= new Date())) {
+          if (schedule.type === "expense" && schedule.wallet_id) {
+            const avail = getDynamicAvail(schedule.wallet_id);
+            if (avail < schedule.amount) {
+              skippedDueToBalance++;
+              continue;
+            }
+          }
+
           const category = loadedCategories.find(item => item.id === schedule.category_id);
-          const { error } = await supabase.from("transactions").insert({
+          const { data: newTx, error } = await supabase.from("transactions").insert({
             user_id: user.id, title: schedule.title, amount: schedule.amount, type: schedule.type,
             category: category?.name ?? (schedule.type === "income" ? "Thu khác" : "Khác"), category_id: schedule.category_id,
             wallet_id: schedule.wallet_id, occurred_at: schedule.next_run_at, note: schedule.note, recurrence_id: schedule.id,
-          });
-          if (!error) {
+          }).select().single();
+          if (!error && newTx) {
+            loadedTransactions.unshift(mapTransaction(newTx));
             await supabase.from("recurring_transactions").update({ next_run_at: advanceRecurring(schedule.next_run_at, schedule.frequency) }).eq("id", schedule.id);
             automated = true;
           }
         }
         if (automated) {
           const [freshTransactions, freshRecurring] = await Promise.allSettled([
-            supabase.from("transactions").select("id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id").eq("user_id", user.id).order("occurred_at", { ascending: false }).limit(500),
+            supabase.from("transactions").select("id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id,budget_id,payment_source_type").eq("user_id", user.id).order("occurred_at", { ascending: false }).limit(500),
             supabase.from("recurring_transactions").select("id,user_id,wallet_id,category_id,title,amount,type,frequency,next_run_at,active,auto_create,note").eq("user_id", user.id).order("next_run_at"),
           ]);
           if (freshTransactions.status === "fulfilled" && !freshTransactions.value.error) {
@@ -208,6 +272,9 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
             loadedRecurring = (freshRecurring.value.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row));
           }
           showNotice("Đã tự động ghi nhận giao dịch định kỳ đến hạn.");
+        }
+        if (skippedDueToBalance > 0) {
+          showNotice(`⚠ Có ${skippedDueToBalance} giao dịch định kỳ chưa thể ghi nhận tự động do ví không đủ số dư.`);
         }
       }
 
@@ -373,6 +440,8 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         ? { title: item.title, amount: String(item.amount), type: item.type, categoryId: item.category_id ?? "", walletId: item.wallet_id ?? "", budgetId: item.budget_id ?? "", paymentSourceType: item.payment_source_type ?? "wallet", occurredAt: localDateTime(item.occurred_at), note: item.note }
         : { title: "", amount: "", type: "expense", categoryId: categories.find(v => v.kind === "expense")?.id ?? "", walletId: wallets[0]?.id ?? "", budgetId: "", paymentSourceType: "wallet", occurredAt: localDateTime(), note: "" });
       setSmartInput("");
+      setAiFeedback(null);
+      setAiParsing(false);
     }
     if (next.kind === "recurring") setRecurringType(next.item?.type ?? "expense");
   }
@@ -397,6 +466,164 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       el?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 100);
   }
+
+  const applyParsedTransaction = (parsed: any, mode: "local" | "fallback", customMsg?: string) => {
+    setTransactionDraft((cur) => {
+      const nextType = parsed.type || cur.type;
+      let nextCategoryId = parsed.categoryId;
+      if (!nextCategoryId) {
+        const curCat = categories.find((c) => c.id === cur.categoryId);
+        if (curCat && curCat.kind === nextType) {
+          nextCategoryId = cur.categoryId;
+        } else {
+          nextCategoryId = categories.find((c) => c.kind === nextType)?.id ?? "";
+        }
+      }
+      return {
+        ...cur,
+        title: parsed.name || cur.title,
+        type: nextType,
+        amount: parsed.amount ? String(parsed.amount) : cur.amount,
+        categoryId: nextCategoryId,
+        walletId: parsed.walletId || cur.walletId || wallets[0]?.id || "",
+        occurredAt: parsed.date ? localDateTime(parsed.date) : cur.occurredAt,
+      };
+    });
+
+    if (customMsg) {
+      setAiFeedback({ type: "warning", message: customMsg });
+      showNotice(customMsg);
+    } else if (!parsed.type || !parsed.amount) {
+      setAiFeedback({
+        type: "warning",
+        message: "⚠ Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu.",
+      });
+      showNotice("⚠ Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu.");
+    } else {
+      setAiFeedback({
+        type: "success",
+        message: `✓ Đã nhận diện: ${parsed.summaryText}`,
+      });
+      showNotice(`✓ Đã nhận diện: ${parsed.summaryText}`);
+    }
+  };
+
+  const handleAITextParse = async (inputText?: string) => {
+    const textToParse = (typeof inputText === "string" ? inputText : smartInput).trim();
+    if (!textToParse) {
+      showNotice("Vui lòng nhập nội dung giao dịch.");
+      return;
+    }
+    if (aiParsing) return;
+
+    setAiParsing(true);
+    setAiFeedback(null);
+
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        // Fallback to local parser if not logged in
+        const parsed = parseSmartTransaction(textToParse, categories, wallets);
+        applyParsedTransaction(parsed, "local");
+        return;
+      }
+
+      const res = await fetch("/api/ai/parse-transaction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          text: textToParse,
+          client_date: new Date().toISOString().slice(0, 10),
+        }),
+      });
+
+      const resJson = await res.json();
+
+      if (!res.ok || !resJson.success) {
+        const errMsg = resJson.error || "Không thể phân tích bằng AI. Đang chuyển sang nhận diện ngoại tuyến.";
+        console.warn("AI parse API error, falling back:", errMsg);
+        const parsed = parseSmartTransaction(textToParse, categories, wallets);
+        applyParsedTransaction(parsed, "fallback", errMsg);
+        return;
+      }
+
+      const aiData: AITransactionParseResult = resJson.data;
+
+      // Apply AI structured output to transaction draft
+      setTransactionDraft((cur) => {
+        const nextType = aiData.transaction_type || cur.type;
+
+        let nextCategoryId = cur.categoryId;
+        if (aiData.category_id) {
+          nextCategoryId = aiData.category_id;
+        } else {
+          const curCat = categories.find((c) => c.id === cur.categoryId);
+          if (curCat && curCat.kind === nextType) {
+            nextCategoryId = cur.categoryId;
+          } else {
+            nextCategoryId = categories.find((c) => c.kind === nextType)?.id ?? "";
+          }
+        }
+
+        let nextWalletId = cur.walletId;
+        if (aiData.wallet_id) {
+          nextWalletId = aiData.wallet_id;
+        }
+
+        let nextOccurredAt = cur.occurredAt;
+        if (aiData.date) {
+          const timePart = aiData.time || new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+          nextOccurredAt = `${aiData.date}T${timePart}`;
+        }
+
+        return {
+          ...cur,
+          title: aiData.description || cur.title || textToParse,
+          type: nextType,
+          amount: aiData.amount ? String(aiData.amount) : cur.amount,
+          categoryId: nextCategoryId,
+          walletId: nextWalletId,
+          paymentSourceType: "wallet",
+          budgetId: "",
+          occurredAt: nextOccurredAt,
+        };
+      });
+
+      // Show friendly feedback
+      const missingFields: string[] = [];
+      if (!aiData.amount) missingFields.push("số tiền");
+      if (!aiData.wallet_id) missingFields.push("ví/tài khoản thanh toán");
+      if (!aiData.category_id) missingFields.push("danh mục");
+
+      if (missingFields.length > 0) {
+        setAiFeedback({
+          type: "warning",
+          message: `✓ AI đã điền form. Vui lòng chọn thêm: ${missingFields.join(", ")}.`,
+        });
+        showNotice(`⚠ AI đã điền một phần — vui lòng chọn thêm: ${missingFields.join(", ")}.`);
+      } else {
+        setAiFeedback({
+          type: "success",
+          message: "✓ AI đã nhận diện và điền thông tin vào form. Hãy kiểm tra trước khi lưu.",
+        });
+        showNotice(`✓ AI đã nhận diện: ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
+      }
+    } catch (err: any) {
+      console.error("AI parse exception:", err);
+      const parsed = parseSmartTransaction(textToParse, categories, wallets);
+      applyParsedTransaction(parsed, "fallback", "Lỗi kết nối AI. Đã nhận diện ngoại tuyến.");
+    } finally {
+      setAiParsing(false);
+    }
+  };
 
   function handleReduceAmount() {
     setInsufficientBalanceAlert(null);
@@ -643,6 +870,139 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     } finally { setSaving(false); }
   }
 
+  async function handleConfirmReceiptTransaction(data: {
+    title: string;
+    amount: number;
+    type: TransactionType;
+    categoryId: string;
+    walletId: string;
+    budgetId: string;
+    paymentSourceType: "wallet" | "budget";
+    occurredAt: string;
+    note: string;
+    receiptFile: File | null;
+  }) {
+    const { title, amount, type, categoryId, walletId, budgetId, paymentSourceType, occurredAt, note, receiptFile } = data;
+
+    if (!title.trim()) return showNotice("Hãy nhập tên giao dịch.");
+    if (amount <= 0 || isNaN(amount)) return showNotice("Số tiền phải lớn hơn 0.");
+    if (!categoryId) return showNotice("Hãy chọn danh mục.");
+    if (paymentSourceType === "wallet" && !walletId) return showNotice("Hãy chọn ví thanh toán.");
+    if (paymentSourceType === "budget" && !budgetId) return showNotice("Hãy chọn ngân sách.");
+
+    // Validate available balance for expense transaction
+    if (type === "expense") {
+      if (paymentSourceType === "budget" && budgetId) {
+        const matchedBudget = budgets.find(b => b.id === budgetId);
+        if (!matchedBudget) return showNotice("Hãy chọn ngân sách.");
+        const avail = matchedBudget.remaining_amount;
+        if (amount > avail) {
+          setInsufficientBalanceAlert({
+            type: "budget",
+            id: matchedBudget.id,
+            name: matchedBudget.name,
+            availableBalance: avail,
+            expenseAmount: amount,
+            missingAmount: amount - avail,
+          });
+          return;
+        }
+      } else {
+        const selectedWallet = wallets.find(w => w.id === walletId);
+        if (!selectedWallet) return showNotice("Hãy chọn ví thanh toán.");
+        const avail = availableBalances.get(selectedWallet.id) ?? 0;
+        if (amount > avail) {
+          setInsufficientBalanceAlert({
+            type: "wallet",
+            id: selectedWallet.id,
+            name: selectedWallet.name,
+            availableBalance: avail,
+            expenseAmount: amount,
+            missingAmount: amount - avail,
+          });
+          return;
+        }
+      }
+    }
+
+    setSaving(true);
+    let receiptPath: string | null = null;
+    let uploadedPath: string | null = null;
+
+    try {
+      if (receiptFile instanceof File && receiptFile.size > 0) {
+        if (receiptFile.size > 10 * 1024 * 1024) throw new Error("Hóa đơn cần nhỏ hơn 10 MB.");
+        const safeName = receiptFile.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+        uploadedPath = `${user.id}/${crypto.randomUUID()}-${safeName}`;
+        const { error: uploadErr } = await supabase.storage.from("receipts").upload(uploadedPath, receiptFile, { upsert: false });
+        if (uploadErr) {
+          console.warn("Storage upload notice:", uploadErr);
+        } else {
+          receiptPath = uploadedPath;
+        }
+      }
+
+      const category = categoryById.get(categoryId);
+      const isBudgetSource = type === "expense" && paymentSourceType === "budget" && budgetId;
+      let actualWalletId = walletId || wallets[0]?.id || null;
+      if (isBudgetSource) {
+        actualWalletId = budgets.find(b => b.id === budgetId)?.source_wallet_id ?? actualWalletId;
+      }
+
+      const payload: Record<string, unknown> = {
+        user_id: user.id,
+        title: title.trim(),
+        amount,
+        type,
+        category: category?.name ?? "Khác",
+        category_id: categoryId,
+        wallet_id: isBudgetSource ? null : actualWalletId,
+        occurred_at: new Date(occurredAt).toISOString(),
+        note: note.trim(),
+        receipt_path: receiptPath,
+        budget_id: isBudgetSource ? budgetId : null,
+        payment_source_type: paymentSourceType,
+      };
+
+      const { error: insertErr } = await supabase.from("transactions").insert(payload);
+      if (insertErr) throw insertErr;
+
+      if (isBudgetSource) {
+        const budget = budgets.find(b => b.id === budgetId);
+        if (budget) {
+          const newRemaining = Math.max(0, budget.remaining_amount - amount);
+          const newSpent = budget.spent_amount + amount;
+          const newStatus = newRemaining <= 0 ? "completed" : budget.status;
+          await supabase.from("budgets").update({
+            spent_amount: newSpent,
+            remaining_amount: newRemaining,
+            status: newStatus,
+          }).eq("id", budget.id);
+          if (budget.source_wallet_id) {
+            const sourceWallet = wallets.find(w => w.id === budget.source_wallet_id);
+            if (sourceWallet) {
+              await supabase.from("wallets").update({
+                reserved_amount: Math.max(0, sourceWallet.reserved_amount - amount),
+              }).eq("id", sourceWallet.id);
+            }
+          }
+        }
+      }
+
+      setModal(null);
+      showNotice("✓ Đã tạo giao dịch thành công từ hóa đơn.");
+      await loadData(false);
+    } catch (error) {
+      if (uploadedPath) {
+        await supabase.storage.from("receipts").remove([uploadedPath]).catch(() => {});
+      }
+      const errMsg = error instanceof Error ? error.message : "Không thể lưu giao dịch từ hóa đơn.";
+      showNotice(errMsg);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   // ─── BUDGET: Phân bổ tiền từ ví vào ngân sách ────────────────
   async function allocateToBudget(walletId: string, budgetId: string, amount: number): Promise<void> {
     const wallet = wallets.find(w => w.id === walletId);
@@ -711,8 +1071,13 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
       if (!name) throw new Error("Hãy nhập tên ngân sách.");
       if (!existingBudget) {
-        if (amount <= 0) throw new Error("Số tiền phải lớn hơn 0.");
+        if (amount <= 0 || isNaN(amount)) throw new Error("Số tiền phải lớn hơn 0.");
         if (!walletId) throw new Error("Hãy chọn ví nguồn.");
+        const sourceWallet = wallets.find(w => w.id === walletId);
+        const avail = availableBalances.get(walletId) ?? 0;
+        if (amount > avail) {
+          throw new Error(`Ví “${sourceWallet?.name ?? "Ví"}” không đủ số dư khả dụng (${money(avail)}) để cấp vốn ${money(amount)} cho ngân sách.`);
+        }
       }
       if (existingBudget) {
         // Editing: just update metadata, don't change allocation
@@ -831,6 +1196,13 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         const { error } = await supabase.from("savings_goals").update({ title, target_amount: targetAmount, deadline, color }).eq("id", existingGoal.id);
         if (error) throw error;
       } else {
+        if (initialDeposit > 0 && walletId) {
+          const sourceWallet = wallets.find(w => w.id === walletId);
+          const avail = availableBalances.get(walletId) ?? 0;
+          if (initialDeposit > avail) {
+            throw new Error(`Ví “${sourceWallet?.name ?? "Ví"}” không đủ số dư khả dụng (${money(avail)}) để gửi ${money(initialDeposit)} vào mục tiêu.`);
+          }
+        }
         const { data, error } = await supabase.from("savings_goals").insert({
           user_id: user.id, title, target_amount: targetAmount, current_amount: 0, reserved_in_wallet: 0,
           source_wallet_id: walletId || null, deadline, color,
@@ -892,9 +1264,23 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     event.preventDefault(); setSaving(true);
     const form = new FormData(event.currentTarget);
     const from = String(form.get("fromWalletId")); const to = String(form.get("toWalletId"));
+    const amount = Number(form.get("amount"));
     try {
       if (from === to) throw new Error("Ví nhận phải khác ví chuyển.");
-      const { error } = await supabase.from("transfers").insert({ user_id: user.id, from_wallet_id: from, to_wallet_id: to, amount: Number(form.get("amount")), occurred_at: new Date(String(form.get("occurredAt"))).toISOString(), note: String(form.get("note") || "").trim() });
+      if (amount <= 0 || isNaN(amount)) throw new Error("Số tiền chuyển phải lớn hơn 0.");
+      const fromWallet = wallets.find(w => w.id === from);
+      const avail = availableBalances.get(from) ?? 0;
+      if (amount > avail) {
+        throw new Error(`Ví chuyển “${fromWallet?.name ?? "Ví"}” không đủ số dư khả dụng (${money(avail)}). Vui lòng nạp thêm tiền hoặc chuyển số tiền nhỏ hơn.`);
+      }
+      const { error } = await supabase.from("transfers").insert({
+        user_id: user.id,
+        from_wallet_id: from,
+        to_wallet_id: to,
+        amount,
+        occurred_at: new Date(String(form.get("occurredAt"))).toISOString(),
+        note: String(form.get("note") || "").trim()
+      });
       if (error) throw error;
       setModal(null); showNotice("Đã chuyển tiền giữa hai ví."); await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể chuyển tiền."); }
@@ -902,7 +1288,30 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   }
 
   async function remove(table: string, id: string, label: string, receiptPath?: string | null) {
-    if (!window.confirm(`Xóa ${label}? Thao tác này không thể hoàn tác.`)) return;
+    if (table === "wallets") {
+      const walletTxs = transactions.filter(t => t.wallet_id === id);
+      const walletTransfers = transfers.filter(t => t.from_wallet_id === id || t.to_wallet_id === id);
+      const walletBudgets = budgets.filter(b => b.source_wallet_id === id);
+      const walletGoals = goals.filter(g => g.source_wallet_id === id);
+      const currentBal = walletBalances.get(id) ?? 0;
+
+      let confirmMsg = `Bạn có chắc muốn xóa ví "${label}"?\n\nVí này hiện có:\n• ${walletTxs.length} giao dịch ghi nhận\n• ${walletTransfers.length} lịch sử chuyển tiền\n• Số dư hiện tại: ${money(currentBal)}`;
+
+      if (walletBudgets.length > 0 || walletGoals.length > 0) {
+        confirmMsg += `\n• Đang liên kết với ${walletBudgets.length} ngân sách và ${walletGoals.length} mục tiêu tiết kiệm`;
+      }
+
+      confirmMsg += `\n\nHành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa?`;
+      if (!window.confirm(confirmMsg)) return;
+
+      // An toàn: Gỡ liên kết wallet_id trên các giao dịch thay vì làm mất lịch sử
+      if (walletTxs.length > 0) {
+        await supabase.from("transactions").update({ wallet_id: null }).eq("wallet_id", id);
+      }
+    } else {
+      if (!window.confirm(`Xóa ${label}? Thao tác này không thể hoàn tác.`)) return;
+    }
+
     if (table === "categories") await supabase.from("categories").update({ parent_id: null }).eq("parent_id", id);
 
     if (table === "transactions") {
@@ -951,11 +1360,38 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   }
 
   async function createDueTransaction(item: RecurringTransaction) {
+    if (item.type === "expense" && item.wallet_id) {
+      const avail = availableBalances.get(item.wallet_id) ?? 0;
+      if (item.amount > avail) {
+        const targetWallet = wallets.find(w => w.id === item.wallet_id);
+        setInsufficientBalanceAlert({
+          type: "wallet",
+          id: item.wallet_id,
+          name: targetWallet?.name ?? "Ví",
+          availableBalance: avail,
+          expenseAmount: item.amount,
+          missingAmount: item.amount - avail,
+        });
+        return;
+      }
+    }
     const category = categoryById.get(item.category_id ?? "");
-    const { error } = await supabase.from("transactions").insert({ user_id: user.id, title: item.title, amount: item.amount, type: item.type, category: category?.name ?? "Khác", category_id: item.category_id, wallet_id: item.wallet_id, occurred_at: item.next_run_at, note: item.note, recurrence_id: item.id });
+    const { error } = await supabase.from("transactions").insert({
+      user_id: user.id,
+      title: item.title,
+      amount: item.amount,
+      type: item.type,
+      category: category?.name ?? (item.type === "income" ? "Thu khác" : "Khác"),
+      category_id: item.category_id,
+      wallet_id: item.wallet_id,
+      occurred_at: new Date().toISOString(),
+      note: item.note,
+      recurrence_id: item.id
+    });
     if (error) return showNotice(error.message);
     await supabase.from("recurring_transactions").update({ next_run_at: advanceRecurring(item.next_run_at, item.frequency) }).eq("id", item.id);
-    showNotice("Đã ghi nhận giao dịch đến hạn."); await loadData(false);
+    showNotice(`✓ Đã ghi nhận giao dịch "${item.title}" (${money(item.amount)}).`);
+    await loadData(false);
   }
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
@@ -1025,73 +1461,34 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     }
   }
 
-  function downloadData() {
+  async function downloadData() {
+    if (isExporting) return;
+    setIsExporting(true);
     try {
-      const wb = XLSX.utils.book_new();
-
-      // Sheet 1: Giao dịch
-      const txRows = transactions.map((t, idx) => ({
-        "STT": idx + 1,
-        "Ngày thực hiện": t.occurred_at ? new Date(t.occurred_at).toLocaleString(locale) : "",
-        "Tên giao dịch": t.title,
-        "Loại": t.type === "expense" ? "Khoản chi" : "Khoản thu",
-        "Số tiền": t.amount,
-        "Danh mục": categoryById.get(t.category_id ?? "")?.name ?? t.category ?? "",
-        "Nguồn thanh toán": t.payment_source_type === "budget"
-          ? `Ngân sách: ${budgets.find(b => b.id === t.budget_id)?.name ?? "N/A"}`
-          : `Ví: ${walletById.get(t.wallet_id ?? "")?.name ?? "N/A"}`,
-        "Ghi chú": t.note || "",
-      }));
-      const wsTx = XLSX.utils.json_to_sheet(txRows.length ? txRows : [{ "Thông báo": "Chưa có giao dịch" }]);
-      XLSX.utils.book_append_sheet(wb, wsTx, "Giao dịch");
-
-      // Sheet 2: Ví & Tài khoản
-      const walletRows = wallets.map((w, idx) => ({
-        "STT": idx + 1,
-        "Tên ví": w.name,
-        "Loại ví": w.type === "cash" ? "Tiền mặt" : w.type === "bank" ? "Ngân hàng" : "Ví điện tử",
-        "Số dư ban đầu": w.balance,
-        "Khả dụng": availableBalances.get(w.id) ?? 0,
-        "Đã phân bổ": walletReservedMap.get(w.id) ?? 0,
-        "Đơn vị tiền": w.currency,
-      }));
-      const wsWallets = XLSX.utils.json_to_sheet(walletRows.length ? walletRows : [{ "Thông báo": "Chưa có ví" }]);
-      XLSX.utils.book_append_sheet(wb, wsWallets, "Ví & Tài khoản");
-
-      // Sheet 3: Ngân sách
-      const budgetRows = budgets.map((b, idx) => {
-        const totalCapacity = Math.max(b.amount, b.allocated_amount + b.spent_amount);
-        return {
-          "STT": idx + 1,
-          "Tên ngân sách": b.name,
-          "Danh mục": categoryById.get(b.category_id ?? "")?.name ?? "Tổng chi tiêu",
-          "Tổng phân bổ": totalCapacity,
-          "Đã chi": b.spent_amount,
-          "Còn lại": b.remaining_amount,
-          "Trạng thái": b.remaining_amount <= 0 || b.status === "completed" ? "Đã kết thúc" : "Đang hoạt động",
-        };
+      showNotice("Đang thu thập và chuẩn bị dữ liệu xuất Excel…");
+      const fileName = await exportFinancialDataToExcel({
+        user,
+        profile,
+        wallets,
+        categories,
+        transactions,
+        transfers,
+        budgets,
+        goals,
+        walletBalances,
+        availableBalances,
+        walletReservedMap,
+        totalBalance,
+        totalAvailable,
+        totalReserved,
+        monthTotals,
       });
-      const wsBudgets = XLSX.utils.json_to_sheet(budgetRows.length ? budgetRows : [{ "Thông báo": "Chưa có ngân sách" }]);
-      XLSX.utils.book_append_sheet(wb, wsBudgets, "Ngân sách");
-
-      // Sheet 4: Mục tiêu tiết kiệm
-      const goalRows = goals.map((g, idx) => ({
-        "STT": idx + 1,
-        "Tên mục tiêu": g.title,
-        "Mục tiêu cần tích lũy": g.target_amount,
-        "Đã tiết kiệm": g.current_amount,
-        "Ví nguồn giữ tiền": walletById.get(g.source_wallet_id ?? "")?.name ?? "N/A",
-        "Hạn chót": g.deadline || "Không có",
-      }));
-      const wsGoals = XLSX.utils.json_to_sheet(goalRows.length ? goalRows : [{ "Thông báo": "Chưa có mục tiêu" }]);
-      XLSX.utils.book_append_sheet(wb, wsGoals, "Mục tiêu tiết kiệm");
-
-      // File name
-      const fileName = `so-chi-tieu-du-lieu-${new Date().toISOString().slice(0, 10)}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-      showNotice("✓ Đã tải xuống tệp dữ liệu Excel (.xlsx) đầy đủ.");
+      showNotice(`✓ Dữ liệu của bạn đã được xuất thành công sang tệp "${fileName}".`);
     } catch (err) {
+      console.error("Export Excel error:", err);
       showNotice("Không thể xuất file Excel: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setIsExporting(false);
     }
   }
 
@@ -1198,9 +1595,19 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 </button>
               )}
               {(view === "overview" || view === "transactions") && (
-                <button className="add-button" onClick={() => openModal({ kind: "transaction" })}>
-                  <b>＋</b> {language === "vi" ? "Thêm giao dịch" : "Add transaction"}
-                </button>
+                <div className="tx-action-btn-group">
+                  <button
+                    type="button"
+                    className="ghost-action ai-scan-quick-btn"
+                    onClick={() => setModal({ kind: "receipt-scan" })}
+                    title="Quét hóa đơn bằng AI"
+                  >
+                    <span>📷</span> {language === "vi" ? "Quét hóa đơn AI" : "Scan receipt"}
+                  </button>
+                  <button className="add-button" onClick={() => openModal({ kind: "transaction" })}>
+                    <b>＋</b> {language === "vi" ? "Thêm giao dịch" : "Add transaction"}
+                  </button>
+                </div>
               )}
               {view === "wallets" && (
                 <button className="add-button" onClick={() => openModal({ kind: "wallet" })}>
@@ -1277,6 +1684,20 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 <h3>{money(monthTotals.expense)}</h3>
                 <small>{monthTransactions.filter(item => item.type === "expense").length} khoản chi đã ghi nhận</small>
               </article>
+              <article className="stat-card">
+                <div className={`stat-icon-wrapper ${monthTotals.income >= monthTotals.expense ? "income" : "expense"}`}>
+                  {monthTotals.income >= monthTotals.expense ? "✦" : "−"}
+                </div>
+                <p>TIẾT KIỆM THÁNG</p>
+                <h3 style={{ color: monthTotals.income >= monthTotals.expense ? "var(--income-green-text)" : "var(--expense-red-text)" }}>
+                  {money(monthTotals.income - monthTotals.expense)}
+                </h3>
+                <small>
+                  {monthTotals.income > 0
+                    ? `Tích lũy ${Math.round(((monthTotals.income - monthTotals.expense) / monthTotals.income) * 100)}% thu nhập`
+                    : monthTotals.expense > 0 ? "Thâm hụt chi tiêu" : "Chưa có biến động"}
+                </small>
+              </article>
             </section>
             <section className="overview-grid">
               <article className="panel">
@@ -1288,19 +1709,27 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   <button className="pill-button" onClick={() => setView("wallets")}>Quản lý →</button>
                 </div>
                 <div className="wallet-mini-list">
-                  {wallets.slice(0, 4).map(wallet => (
-                    <div key={wallet.id} className="wallet-mini-item">
-                      <span className="wallet-dot-box" style={{ background: `${wallet.color}25`, color: wallet.color }}>{wallet.icon}</span>
-                      <span className="wallet-info">
-                        <b>{wallet.name}</b>
-                        <small>{wallet.type === "cash" ? "Tiền mặt" : wallet.type === "bank" ? "Ngân hàng" : "Ví điện tử"}</small>
-                      </span>
-                      <div className="wallet-mini-balances">
-                        <strong>{money(walletBalances.get(wallet.id) ?? 0)}</strong>
-                        <small>Khả dụng {money(availableBalances.get(wallet.id) ?? 0)}</small>
+                  {wallets.slice(0, 4).map(wallet => {
+                    const wBal = walletBalances.get(wallet.id) ?? 0;
+                    const wAvail = availableBalances.get(wallet.id) ?? 0;
+                    const isNegAvail = wAvail < 0;
+                    const isNegBal = wBal < 0;
+                    return (
+                      <div key={wallet.id} className="wallet-mini-item">
+                        <span className="wallet-dot-box" style={{ background: `${wallet.color}25`, color: wallet.color }}>{wallet.icon}</span>
+                        <span className="wallet-info">
+                          <b>{wallet.name}</b>
+                          <small>{wallet.type === "cash" ? "Tiền mặt" : wallet.type === "bank" ? "Ngân hàng" : "Ví điện tử"}</small>
+                        </span>
+                        <div className="wallet-mini-balances">
+                          <strong style={isNegBal ? { color: "#dc2626" } : undefined}>{money(wBal)}</strong>
+                          <small style={isNegAvail ? { color: "#dc2626", fontWeight: 700 } : undefined}>
+                            {isNegAvail ? `Khả dụng ${money(wAvail)} (Âm tiền)` : `Khả dụng ${money(wAvail)}`}
+                          </small>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </article>
               <article className="panel">
@@ -1355,7 +1784,33 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         </>}
 
         {view === "wallets" && <>
-          <section className="wallet-grid">{wallets.map(wallet => <article className="wallet-card" key={wallet.id} style={{ "--wallet-color": wallet.color } as React.CSSProperties}><div><span>{wallet.icon}</span><small>{wallet.type === "cash" ? "TIỀN MẶT" : wallet.type === "bank" ? "NGÂN HÀNG" : "VÍ ĐIỆN TỬ"}</small></div><h3>{wallet.name}</h3><strong>{money(walletBalances.get(wallet.id) ?? 0)}</strong><p>Khả dụng: {money(availableBalances.get(wallet.id) ?? 0)}</p><p>Đã phân bổ: {money(walletReservedMap.get(wallet.id) ?? 0)}</p><footer><button onClick={() => openModal({ kind: "wallet", item: wallet })}>Chỉnh sửa</button><button onClick={() => remove("wallets", wallet.id, wallet.name)}>Xóa</button></footer></article>)}</section>
+          <section className="wallet-grid">
+            {wallets.map(wallet => {
+              const wBal = walletBalances.get(wallet.id) ?? 0;
+              const wAvail = availableBalances.get(wallet.id) ?? 0;
+              const wRes = walletReservedMap.get(wallet.id) ?? 0;
+              const isNegAvail = wAvail < 0;
+              const isNegBal = wBal < 0;
+              return (
+                <article className="wallet-card" key={wallet.id} style={{ "--wallet-color": wallet.color } as React.CSSProperties}>
+                  <div>
+                    <span>{wallet.icon}</span>
+                    <small>{wallet.type === "cash" ? "TIỀN MẶT" : wallet.type === "bank" ? "NGÂN HÀNG" : "VÍ ĐIỆN TỬ"}</small>
+                  </div>
+                  <h3>{wallet.name}</h3>
+                  <strong style={isNegBal ? { color: "#dc2626" } : undefined}>{money(wBal)}</strong>
+                  <p style={isNegAvail ? { color: "#dc2626", fontWeight: 700 } : undefined}>
+                    Khả dụng: {money(wAvail)} {isNegAvail ? "⚠ Đã phân bổ vượt số dư" : ""}
+                  </p>
+                  <p>Đã phân bổ: {money(wRes)}</p>
+                  <footer>
+                    <button onClick={() => openModal({ kind: "wallet", item: wallet })}>Chỉnh sửa</button>
+                    <button onClick={() => remove("wallets", wallet.id, wallet.name)}>Xóa</button>
+                  </footer>
+                </article>
+              );
+            })}
+          </section>
           <article className="panel"><div className="panel-head"><div><p>LỊCH SỬ CHUYỂN TIỀN</p><h3>Điều chuyển giữa các ví</h3></div></div><div className="compact-list">{transfers.map(item => <div key={item.id}><span className="round-icon">⇄</span><span><b>{walletById.get(item.from_wallet_id)?.name} → {walletById.get(item.to_wallet_id)?.name}</b><small>{formatDate(item.occurred_at, language)} · {item.note || "Không có ghi chú"}</small></span><strong>{money(item.amount)}</strong><button onClick={() => remove("transfers", item.id, "lệnh chuyển tiền")}>×</button></div>)}{!transfers.length && <Empty text="Chưa có giao dịch chuyển tiền." />}</div></article>
         </>}
 
@@ -1378,10 +1833,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                     {items.map(item => (
                       <div className="category-item-row" key={item.id}>
                         <div className="category-item-left">
-                          <span className="drag-dots-handle" title="Kéo để sắp xếp">
-                            <i>::</i>
-                          </span>
-                          <span className="category-item-icon">{item.icon}</span>
+                          <span className="category-item-dot" style={{ backgroundColor: item.color || "#84cc16" }} />
                           <span className="category-item-name">{item.name}</span>
                         </div>
 
@@ -1501,11 +1953,41 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         {view === "recurring" && (
           <section className="recurring-main-card">
 
-            <div className="automation-note">
-              <div className="automation-note-icon">🪄</div>
-              <div className="automation-note-content">
-                <b>Tự động khi bạn mở ứng dụng</b>
-                <p>Các lịch bật "Tự động ghi nhận" sẽ được tạo thành giao dịch ngay khi đến hạn; lịch còn lại sẽ hiển thị nút nhắc.</p>
+            <div className="automation-banner">
+              <div className="automation-banner-glow" aria-hidden="true" />
+              <div className="automation-banner-icon-wrap">
+                <span className="automation-banner-sparkle">✨</span>
+                <div className="automation-banner-icon">
+                  <span>🪄</span>
+                </div>
+              </div>
+              <div className="automation-banner-body">
+                <div className="automation-banner-header">
+                  <h3 className="automation-banner-title">
+                    Tự động hóa dòng tiền định kỳ
+                    <span className="automation-live-badge">
+                      <span className="automation-live-dot" />
+                      Đang hoạt động
+                    </span>
+                  </h3>
+                </div>
+                <p className="automation-banner-desc">
+                  Hệ thống sẽ <b>tự động ghi nhận giao dịch</b> khi đến hạn mỗi lần bạn mở ứng dụng, đồng thời <b>kiểm tra an toàn số dư ví</b> trước khi thực hiện.
+                </p>
+                <div className="automation-banner-features">
+                  <span className="automation-feature-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7"/></svg>
+                    Tự động ghi nhận
+                  </span>
+                  <span className="automation-feature-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    Nhắc nhở đến hạn
+                  </span>
+                  <span className="automation-feature-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Bảo vệ chống số dư âm
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -1515,12 +1997,14 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   const due = item.active && new Date(item.next_run_at) <= new Date();
                   const category = categoryById.get(item.category_id ?? "");
                   const wallet = walletById.get(item.wallet_id ?? "");
+                  const walletAvail = availableBalances.get(item.wallet_id ?? "") ?? 0;
+                  const isInsufficient = item.type === "expense" && item.amount > walletAvail;
                   return (
-                    <article className={`recurring-card ${due ? "due" : ""}`} key={item.id}>
+                    <article className={`recurring-card ${due ? "due" : ""} ${isInsufficient ? "insufficient" : ""}`} key={item.id}>
                       <div>
                         <div className="recurring-card-header">
                           <span className={`recurring-card-type-icon ${item.type}`}>
-                            {category?.icon ?? (item.type === "income" ? "↙" : "↗")}
+                            {item.type === "income" ? "↙" : "↗"}
                           </span>
                           <div className="recurring-card-info">
                             <b>{item.title}</b>
@@ -1547,20 +2031,33 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                             {item.auto_create ? "Tự động ghi nhận" : "Chỉ nhắc nhở"}
                           </span>
                         </div>
+
+                        {isInsufficient && (
+                          <div className="insufficient-warning" title={`Khả dụng: ${money(walletAvail)}`}>
+                            <span>⚠️</span>
+                            <span>Số dư ví không đủ (Khả dụng: {money(walletAvail)})</span>
+                          </div>
+                        )}
                       </div>
 
                       <footer className="recurring-card-footer">
                         {due && !item.auto_create && (
-                          <button type="button" className="recurring-due-btn" onClick={() => createDueTransaction(item)}>
-                            Ghi nhận ngay
+                          <button
+                            type="button"
+                            className={`recurring-due-btn ${isInsufficient ? "danger" : ""}`}
+                            onClick={() => createDueTransaction(item)}
+                          >
+                            {isInsufficient ? "⚠️ Thiếu số dư — Bổ sung ví" : "Ghi nhận ngay"}
                           </button>
                         )}
-                        <button type="button" className="recurring-action-btn" onClick={() => openModal({ kind: "recurring", item })}>
-                          ✎ Sửa
-                        </button>
-                        <button type="button" className="recurring-action-btn" onClick={() => remove("recurring_transactions", item.id, item.title)}>
-                          🗑 Xóa
-                        </button>
+                        <div className="recurring-actions">
+                          <button type="button" onClick={() => openModal({ kind: "recurring", item })}>
+                            ✎ Sửa
+                          </button>
+                          <button type="button" onClick={() => remove("recurring_transactions", item.id, item.title)}>
+                            🗑 Xóa
+                          </button>
+                        </div>
                       </footer>
                     </article>
                   );
@@ -1808,7 +2305,76 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
               </button>
             </form>
 
-            {/* Card 2: Quyền riêng tư */}
+            {/* Card 2: Giao diện & Bảng màu chủ đạo */}
+            <article className="settings-card theme-settings-card">
+              <div className="settings-card-head">
+                <p>CÁ NHÂN HÓA GIAO DIỆN</p>
+                <h3>Màu sắc chủ đạo (Accent Theme)</h3>
+              </div>
+
+              <p className="theme-card-intro">
+                Chọn gam màu nhận diện cho toàn bộ hệ thống (nút bấm, thanh điều hướng, huy hiệu phân loại và điểm nhấn nổi bật).
+              </p>
+
+              <div className="theme-presets-grid">
+                {APP_THEME_PRESETS.map((preset) => {
+                  const isSelected = appAccentColor.toLowerCase() === preset.hex.toLowerCase();
+                  return (
+                    <button
+                      key={preset.hex}
+                      type="button"
+                      className={`theme-preset-card ${isSelected ? "active" : ""}`}
+                      onClick={() => handleSelectAppAccent(preset.hex)}
+                    >
+                      <div className="theme-preset-color-badge" style={{ backgroundColor: preset.hex }}>
+                        {isSelected && <span className="theme-check-icon" style={{ color: getContrastColor(preset.hex) }}>✓</span>}
+                      </div>
+                      <div className="theme-preset-info">
+                        <strong>{preset.name}</strong>
+                        <small>{preset.desc}</small>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="theme-custom-row">
+                <div className="theme-custom-left">
+                  <label className="theme-custom-picker-label">
+                    <span>Màu tùy chọn tự do:</span>
+                    <div className="theme-custom-picker-btn">
+                      <span className="theme-custom-preview-dot" style={{ backgroundColor: appAccentColor }} />
+                      <span className="theme-custom-hex-code">{appAccentColor.toUpperCase()}</span>
+                      <input
+                        type="color"
+                        value={appAccentColor}
+                        onChange={(e) => handleSelectAppAccent(e.target.value)}
+                        className="modern-native-color-hidden"
+                      />
+                    </div>
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  className="theme-reset-btn"
+                  onClick={() => handleSelectAppAccent("#D2F544")}
+                  title="Đặt lại màu mặc định Neon Lime"
+                >
+                  ↺ Mặc định (#D2F544)
+                </button>
+              </div>
+
+              <div className="theme-live-preview-box">
+                <span className="preview-heading">XEM TRƯỚC HIỆU ỨNG GIAO DIỆN</span>
+                <div className="preview-elements-row">
+                  <span className="preview-pill preview-pill--active">Tab đang chọn</span>
+                  <button type="button" className="preview-action-btn">Nút thao tác chính →</button>
+                  <span className="preview-badge-accent">+15.8% Tăng trưởng</span>
+                </div>
+              </div>
+            </article>
+
+            {/* Card 3: Quyền riêng tư */}
             <article className="settings-card">
               <div className="settings-card-head">
                 <p>QUYỀN RIÊNG TƯ</p>
@@ -1851,8 +2417,8 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
               </div>
 
               <div className="settings-action-row">
-                <button type="button" className="download-data-btn" onClick={downloadData}>
-                  <span>⤓</span> Tải xuống dữ liệu của bạn
+                <button type="button" className="download-data-btn" onClick={downloadData} disabled={isExporting}>
+                  <span>⤓</span> {isExporting ? "Đang chuẩn bị dữ liệu…" : "Tải xuống dữ liệu của bạn"}
                 </button>
                 <button type="button" className="danger-data-btn" onClick={deletePersonalData} disabled={saving}>
                   <span>⚠</span> Xóa dữ liệu tài khoản
@@ -1864,12 +2430,120 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         </div>
       </section>
 
-      {modal?.kind === "transaction" && <Modal title={modal.item ? "Chỉnh sửa giao dịch" : "Thêm giao dịch mới"} eyebrow="GHI NHẬN DÒNG TIỀN" onClose={() => setModal(null)}><form onSubmit={saveTransaction}>
-        {!modal.item && <div className="smart-entry"><label>✦ NHẬP NHANH THÔNG MINH</label><div><input value={smartInput} onChange={event => setSmartInput(event.target.value)} placeholder="Ví dụ: Ăn trưa 50k tiền mặt hôm nay" onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); const parsed = parseSmartTransaction(smartInput, categories, wallets); setTransactionDraft(cur => ({ ...cur, title: parsed.name || cur.title, type: parsed.type || cur.type, amount: parsed.amount ? String(parsed.amount) : cur.amount, categoryId: parsed.categoryId || "", walletId: parsed.walletId || cur.walletId, occurredAt: parsed.date ? localDateTime(parsed.date) : cur.occurredAt })); if (!parsed.categoryId || !parsed.type || !parsed.amount) { showNotice("⚠ Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu (đặc biệt là danh mục)."); } else { showNotice(`✓ Đã nhận diện: ${parsed.summaryText}`); } } }} /><button type="button" onClick={() => { const parsed = parseSmartTransaction(smartInput, categories, wallets); setTransactionDraft(cur => ({ ...cur, title: parsed.name || cur.title, type: parsed.type || cur.type, amount: parsed.amount ? String(parsed.amount) : cur.amount, categoryId: parsed.categoryId || "", walletId: parsed.walletId || cur.walletId, occurredAt: parsed.date ? localDateTime(parsed.date) : cur.occurredAt })); if (!parsed.categoryId || !parsed.type || !parsed.amount) { showNotice("⚠ Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu (đặc biệt là danh mục)."); } else { showNotice(`✓ Đã nhận diện: ${parsed.summaryText}`); } }}>Nhận diện</button></div><small>Xử lý trực tiếp trên thiết bị: nhận diện số tiền, khoản thu/chi, danh mục, ví và ngày.</small></div>}
+      {modal?.kind === "transaction" && (
+        <Modal title={modal.item ? "Chỉnh sửa giao dịch" : "Thêm giao dịch mới"} eyebrow="GHI NHẬN DÒNG TIỀN" onClose={() => setModal(null)}>
+          <form onSubmit={saveTransaction}>
+            {!modal.item && (
+              <div className="transaction-mode-switch">
+                <button type="button" className="mode-btn active">
+                  Nhập thủ công
+                </button>
+                <button
+                  type="button"
+                  className="mode-btn ai-scan-tab"
+                  onClick={() => setModal({ kind: "receipt-scan" })}
+                >
+                  Quét hóa đơn bằng AI
+                  <span className="mode-ai-tag">MỚI</span>
+                </button>
+              </div>
+            )}
+            {!modal.item && (
+              <div className="smart-entry ai-quick-entry">
+                <div className="ai-entry-header">
+                  <label className="ai-entry-label">NHẬP NHANH BẰNG AI</label>
+                  <span className="ai-live-tag">GEMINI AI</span>
+                </div>
+                <p className="ai-entry-desc">
+                  Nhập giao dịch bằng ngôn ngữ tự nhiên. AI sẽ nhận diện số tiền, khoản thu/chi, danh mục, ví và thời gian.
+                </p>
+                <div className="ai-entry-input-group">
+                  <input
+                    value={smartInput}
+                    onChange={(event) => setSmartInput(event.target.value)}
+                    placeholder="Ví dụ: Ăn trưa 50k tiền mặt hôm nay"
+                    disabled={aiParsing}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        handleAITextParse();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="ai-recognize-btn"
+                    disabled={aiParsing || !smartInput.trim()}
+                    onClick={() => handleAITextParse()}
+                  >
+                    {aiParsing ? (
+                      <>
+                        <span className="ai-btn-spinner" />
+                        Đang nhận diện...
+                      </>
+                    ) : (
+                      "Nhận diện"
+                    )}
+                  </button>
+                </div>
+
+                {/* Example chips */}
+                <div className="ai-example-chips">
+                  <span className="chips-label">Gợi ý:</span>
+                  <button
+                    type="button"
+                    className="ai-chip"
+                    onClick={() => {
+                      setSmartInput("Ăn trưa 50k tiền mặt hôm nay");
+                      setAiFeedback(null);
+                    }}
+                  >
+                    Ăn trưa 50k tiền mặt
+                  </button>
+                  <button
+                    type="button"
+                    className="ai-chip"
+                    onClick={() => {
+                      setSmartInput("Đổ xăng 100k Momo");
+                      setAiFeedback(null);
+                    }}
+                  >
+                    Đổ xăng 100k Momo
+                  </button>
+                  <button
+                    type="button"
+                    className="ai-chip"
+                    onClick={() => {
+                      setSmartInput("Lương tháng này 12 triệu Techcombank");
+                      setAiFeedback(null);
+                    }}
+                  >
+                    Lương 12 triệu Techcombank
+                  </button>
+                  <button
+                    type="button"
+                    className="ai-chip"
+                    onClick={() => {
+                      setSmartInput("Mua áo 350k");
+                      setAiFeedback(null);
+                    }}
+                  >
+                    Mua áo 350k
+                  </button>
+                </div>
+
+                {/* Feedback alert */}
+                {aiFeedback && (
+                  <div className={`ai-parse-feedback ${aiFeedback.type}`}>
+                    {aiFeedback.message}
+                  </div>
+                )}
+              </div>
+            )}
         <div className="type-toggle"><button type="button" className={transactionDraft.type === "expense" ? "active" : ""} onClick={() => setTransactionDraft(current => ({ ...current, type: "expense", categoryId: categories.find(item => item.kind === "expense")?.id ?? "", paymentSourceType: "wallet", budgetId: "" }))}>Khoản chi</button><button type="button" className={transactionDraft.type === "income" ? "active" : ""} onClick={() => setTransactionDraft(current => ({ ...current, type: "income", categoryId: categories.find(item => item.kind === "income")?.id ?? "", paymentSourceType: "wallet", budgetId: "" }))}>Khoản thu</button></div>
         <label>Tên giao dịch<input required autoFocus value={transactionDraft.title} onChange={event => setTransactionDraft(current => ({ ...current, title: event.target.value }))} placeholder="Ví dụ: Ăn trưa" /></label>
         <label>Số tiền<FormattedMoneyInput required autoFocus={focusAmountInput} value={transactionDraft.amount} onChangeValue={val => setTransactionDraft(current => ({ ...current, amount: val }))} /></label>
-        <label>Danh mục<select required value={transactionDraft.categoryId} onChange={event => setTransactionDraft(current => ({ ...current, categoryId: event.target.value, budgetId: "", paymentSourceType: "wallet" }))}>{categories.filter(item => item.kind === transactionDraft.type).map(item => <option key={item.id} value={item.id}>{item.icon} {item.name}</option>)}</select></label>
+        <label>Danh mục<select required value={transactionDraft.categoryId} onChange={event => setTransactionDraft(current => ({ ...current, categoryId: event.target.value, budgetId: "", paymentSourceType: "wallet" }))}>{categories.filter(item => item.kind === transactionDraft.type).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
         {transactionDraft.type === "expense" && (() => {
           const matchingBudgets = budgets.filter(b => b.status === "active" && b.remaining_amount > 0 && (!b.category_id || b.category_id === transactionDraft.categoryId));
           return (
@@ -1892,11 +2566,18 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                               setHighlightWalletSelect(false);
                               setTransactionDraft(c => ({ ...c, paymentSourceType: "budget", budgetId: b.id, walletId: "" }));
                             }} />
-                          <div className="ps-info">
-                            <span className="ps-badge budget">◉ {b.name}</span>
-                            {isInsufficient && <span className="insufficient-badge">Không đủ số dư</span>}
+                          <div className="ps-left">
+                            <div className="ps-radio-indicator">
+                              <span className="ps-radio-dot" />
+                            </div>
+                            <div className="ps-info">
+                              <span className="ps-badge budget">◉ {b.name}</span>
+                              {isInsufficient && <span className="insufficient-badge">Không đủ số dư</span>}
+                            </div>
                           </div>
-                          <span className={`ps-balance ${isInsufficient ? "insufficient-text" : ""}`}>{money(avail)} còn lại</span>
+                          <div className="ps-right">
+                            <span className={`ps-balance ${isInsufficient ? "insufficient-text" : ""}`}>{money(avail)} còn lại</span>
+                          </div>
                         </label>
                       );
                     })}
@@ -1921,11 +2602,18 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                             setHighlightWalletSelect(false);
                             setTransactionDraft(c => ({ ...c, paymentSourceType: "wallet", walletId: w.id, budgetId: "" }));
                           }} />
-                        <div className="ps-info">
-                          <span className="ps-badge wallet">{w.icon} {w.name}</span>
-                          {isInsufficient && <span className="insufficient-badge">Không đủ số dư</span>}
+                        <div className="ps-left">
+                          <div className="ps-radio-indicator">
+                            <span className="ps-radio-dot" />
+                          </div>
+                          <div className="ps-info">
+                            <span className="ps-badge wallet">{w.icon} {w.name}</span>
+                            {isInsufficient && <span className="insufficient-badge">Không đủ số dư</span>}
+                          </div>
                         </div>
-                        <span className={`ps-balance ${isInsufficient ? "insufficient-text" : ""}`}>{money(avail)} khả dụng</span>
+                        <div className="ps-right">
+                          <span className={`ps-balance ${isInsufficient ? "insufficient-text" : ""}`}>{money(avail)} khả dụng</span>
+                        </div>
                       </label>
                     );
                   })}
@@ -1940,7 +2628,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         <label>Hóa đơn <span>(JPG, PNG, WebP hoặc PDF · tối đa 8 MB)</span><input name="receipt" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" /></label>
         {modal.item?.receipt_path && <p className="existing-file">✓ Giao dịch đang có hóa đơn. Chọn tệp mới để thay thế.</p>}
         <button className="save-button" disabled={saving}>{saving ? "Đang lưu…" : "Lưu giao dịch →"}</button>
-      </form></Modal>}
+      </form></Modal>)}
 
       {modal?.kind === "wallet" && (
         <Modal title={modal.item ? "Chỉnh sửa ví" : "Tạo ví mới"} eyebrow="VÍ & TÀI KHOẢN" onClose={() => setModal(null)}>
@@ -1950,7 +2638,20 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
       {modal?.kind === "transfer" && <Modal title="Chuyển tiền giữa các ví" eyebrow="ĐIỀU CHUYỂN NỘI BỘ" onClose={() => setModal(null)}><form onSubmit={saveTransfer}><div className="form-grid"><label>Từ ví<select name="fromWalletId">{wallets.map(item => <option key={item.id} value={item.id}>{item.name} · {money(walletBalances.get(item.id) ?? 0)}</option>)}</select></label><label>Đến ví<select name="toWalletId" defaultValue={wallets[1]?.id}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><label>Số tiền<FormattedMoneyInput name="amount" required /></label><label>Ngày & giờ<input name="occurredAt" type="datetime-local" defaultValue={localDateTime()} required /></label><label>Ghi chú<textarea name="note" /></label><button className="save-button" disabled={saving}>Xác nhận chuyển tiền →</button></form></Modal>}
 
-      {modal?.kind === "category" && <Modal title={modal.item ? "Chỉnh sửa danh mục" : "Tạo danh mục"} eyebrow="PHÂN LOẠI DÒNG TIỀN" onClose={() => setModal(null)}><form onSubmit={event => saveSimple(event, "category")}><label>Tên danh mục<input name="name" defaultValue={modal.item?.name} required /></label><div className="form-grid"><label>Loại<select name="type" defaultValue={modal.item?.kind ?? "expense"}><option value="expense">Khoản chi</option><option value="income">Khoản thu</option></select></label><label>Danh mục cha<select name="parentId" defaultValue={modal.item?.parent_id ?? ""}><option value="">Không có</option>{categories.filter(item => item.id !== modal.item?.id).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><div className="form-grid"><label>Biểu tượng<select name="icon" defaultValue={modal.item?.icon ?? "✨"}><option>✨</option><option>🍜</option><option>🛵</option><option>🏠</option><option>🛍️</option><option>🎬</option><option>🩺</option><option>📚</option><option>💼</option><option>🎁</option></select></label><label>Màu sắc<input name="color" type="color" defaultValue={modal.item?.color ?? "#7C8CFF"} /></label></div><button className="save-button" disabled={saving}>Lưu danh mục →</button></form></Modal>}
+      {modal?.kind === "category" && (
+        <Modal title={modal.item ? "Chỉnh sửa danh mục" : "Tạo danh mục"} eyebrow="PHÂN LOẠI DÒNG TIỀN" onClose={() => setModal(null)}>
+          <form onSubmit={event => saveSimple(event, "category")}>
+            <label>Tên danh mục<input name="name" defaultValue={modal.item?.name} required placeholder="Ví dụ: Ăn uống, Tiền điện…" /></label>
+            <div className="form-grid">
+              <label>Loại<select name="type" defaultValue={modal.item?.kind ?? "expense"}><option value="expense">Khoản chi</option><option value="income">Khoản thu</option></select></label>
+              <label>Danh mục cha<select name="parentId" defaultValue={modal.item?.parent_id ?? ""}><option value="">Không có</option>{categories.filter(item => item.id !== modal.item?.id).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+            </div>
+            <input name="icon" type="hidden" value="" />
+            <ModernColorPicker name="color" defaultValue={modal.item?.color ?? "#7C8CFF"} label="Màu sắc đại diện danh mục" />
+            <button className="save-button" disabled={saving}>{saving ? "Đang lưu…" : (modal.item ? "Cập nhật danh mục →" : "Lưu danh mục →")}</button>
+          </form>
+        </Modal>
+      )}
 
       {modal?.kind === "budget" && <Modal title={modal.item ? "Chỉnh sửa ngân sách" : "Tạo ngân sách mới"} eyebrow="KIỂM SOÁT HẠN MỨC" onClose={() => setModal(null)}><form onSubmit={saveBudget}>
         <label>Tên ngân sách<input name="name" defaultValue={modal.item?.name} required placeholder="Ví dụ: Tiền đổ xăng" /></label>
@@ -1981,16 +2682,25 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         <button className="save-button" disabled={saving}>{saving ? "Đang xử lý…" : "⊖ Rút về ví →"}</button>
       </form></Modal>}
 
-      {modal?.kind === "goal" && <Modal title={modal.item ? "Cập nhật mục tiêu" : "Tạo mục tiêu tiết kiệm"} eyebrow="TÍCH LŨY TƯƠNG LAI" onClose={() => setModal(null)}><form onSubmit={saveGoal}>
-        <label>Tên mục tiêu<input name="title" defaultValue={modal.item?.title} required placeholder="Ví dụ: Quỹ du lịch" /></label>
-        <label>Số tiền mục tiêu<FormattedMoneyInput name="targetAmount" defaultValue={modal.item?.target_amount} required /></label>
-        {!modal.item && <><label>Gửi vào ngay bây giờ (tùy chọn)<FormattedMoneyInput name="initialDeposit" defaultValue={0} placeholder="0 = chưa gửi" /></label><label>Ví nguồn<select name="sourceWalletId"><option value="">Chọn ví (nếu gửi ngay)</option>{wallets.map(w => <option key={w.id} value={w.id}>{w.icon} {w.name} · khả dụng {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label></> }
-        <div className="form-grid">
-          <label>Thời hạn<input name="deadline" type="date" defaultValue={modal.item?.deadline ?? ""} /></label>
-          <label>Màu sắc<input name="color" type="color" defaultValue={modal.item?.color ?? "#D9F45F"} /></label>
-        </div>
-        <button className="save-button" disabled={saving}>{saving ? "Đang lưu…" : (modal.item ? "Cập nhật mục tiêu →" : "Tạo mục tiêu →")}</button>
-      </form></Modal>}
+      {modal?.kind === "goal" && (
+        <Modal title={modal.item ? "Cập nhật mục tiêu" : "Tạo mục tiêu tiết kiệm"} eyebrow="TÍCH LŨY TƯƠNG LAI" onClose={() => setModal(null)}>
+          <form onSubmit={saveGoal}>
+            <label>Tên mục tiêu<input name="title" defaultValue={modal.item?.title} required placeholder="Ví dụ: Mua laptop, Quỹ du lịch…" /></label>
+            <label>Số tiền mục tiêu<FormattedMoneyInput name="targetAmount" defaultValue={modal.item?.target_amount} required /></label>
+            {!modal.item && (
+              <>
+                <label>Gửi vào ngay bây giờ (tùy chọn)<FormattedMoneyInput name="initialDeposit" defaultValue={0} placeholder="0 = chưa gửi" /></label>
+                <label>Ví nguồn<select name="sourceWalletId"><option value="">Chọn ví (nếu gửi ngay)</option>{wallets.map(w => <option key={w.id} value={w.id}>{w.icon} {w.name} · khả dụng {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>
+              </>
+            )}
+            <div className="form-grid" style={{ marginTop: 14 }}>
+              <label>Thời hạn<input name="deadline" type="date" defaultValue={modal.item?.deadline ?? ""} /></label>
+            </div>
+            <ModernColorPicker name="color" defaultValue={modal.item?.color ?? "#D9F45F"} label="Màu đại diện mục tiêu" />
+            <button className="save-button" disabled={saving}>{saving ? "Đang lưu…" : (modal.item ? "Cập nhật mục tiêu →" : "Tạo mục tiêu →")}</button>
+          </form>
+        </Modal>
+      )}
 
       {modal?.kind === "goal-topup" && <Modal title={`Gửi tiền vào: ${modal.goal.title}`} eyebrow="NẠP TIỀT KIỆM" onClose={() => setModal(null)}><form onSubmit={e => handleGoalTopup(e, modal.goal)}>
         <p className="allocation-info-box">Mục tiêu hiện có <b>{money(modal.goal.current_amount)}</b> / {money(modal.goal.target_amount)}.</p>
@@ -2006,6 +2716,20 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       </form></Modal>}
 
       {modal?.kind === "recurring" && <Modal title={modal.item ? "Chỉnh sửa lịch định kỳ" : "Tạo giao dịch định kỳ"} eyebrow="DÒNG TIỀN LẶP LẠI" onClose={() => setModal(null)}><form onSubmit={event => saveSimple(event, "recurring")}><div className="type-toggle"><button type="button" className={recurringType === "expense" ? "active" : ""} onClick={() => setRecurringType("expense")}>Khoản chi</button><button type="button" className={recurringType === "income" ? "active" : ""} onClick={() => setRecurringType("income")}>Khoản thu</button></div><label>Tên giao dịch<input name="title" defaultValue={modal.item?.title} required /></label><label>Số tiền<FormattedMoneyInput name="amount" defaultValue={modal.item?.amount} required /></label><div className="form-grid"><label>Danh mục<select name="categoryId" defaultValue={modal.item?.category_id ?? categories.find(item => item.kind === recurringType)?.id}>{categories.filter(item => item.kind === recurringType).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>Ví<select name="walletId" defaultValue={modal.item?.wallet_id ?? wallets[0]?.id}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><div className="form-grid"><label>Tần suất<select name="frequency" defaultValue={modal.item?.frequency ?? "monthly"}><option value="daily">Hàng ngày</option><option value="weekly">Hàng tuần</option><option value="monthly">Hàng tháng</option><option value="yearly">Hàng năm</option></select></label><label>Kỳ tiếp theo<input name="nextRun" type="datetime-local" defaultValue={localDateTime(modal.item?.next_run_at ?? new Date())} required /></label></div><label>Ghi chú<textarea name="note" defaultValue={modal.item?.note} /></label><div className="check-grid"><label><input name="active" type="checkbox" defaultChecked={modal.item?.active ?? true} /> Kích hoạt lịch</label><label><input name="autoCreate" type="checkbox" defaultChecked={modal.item?.auto_create ?? false} /> Tự động ghi nhận khi mở ứng dụng</label></div><button className="save-button" disabled={saving}>Lưu lịch định kỳ →</button></form></Modal>}
+
+      {modal?.kind === "receipt-scan" && (
+        <ReceiptScannerModal
+          categories={categories}
+          wallets={wallets}
+          budgets={budgets}
+          availableBalances={availableBalances}
+          onClose={() => setModal(null)}
+          onSwitchToManual={() => openModal({ kind: "transaction" })}
+          onConfirmTransaction={handleConfirmReceiptTransaction}
+          saving={saving}
+          money={money}
+        />
+      )}
 
       {insufficientBalanceAlert && (
         <div className="modal-wrap insufficient-alert-wrap" role="dialog" aria-modal="true" aria-labelledby="insufficient-modal-title">
@@ -2074,7 +2798,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
               <select name="categoryId" defaultValue={categories.find(c => c.kind === "income")?.id ?? ""}>
                 {categories.filter(c => c.kind === "income").map(c => (
                   <option key={c.id} value={c.id}>
-                    {c.icon} {c.name}
+                    {c.name}
                   </option>
                 ))}
               </select>
@@ -2114,95 +2838,181 @@ const WALLET_PRESET_COLORS = [
   "#6366F1", "#8B5CF6", "#EC4899", "#F97316", "#EF4444", "#64748B"
 ];
 
-function FormattedMoneyInput({
-  name,
+
+
+const CURATED_PRESET_COLORS = [
+  "#D9F45F", // Neon Lime (Mặc định)
+  "#10B981", // Emerald Mint
+  "#22C55E", // Vibrant Green
+  "#06B6D4", // Ocean Cyan
+  "#3B82F6", // Electric Blue
+  "#6366F1", // Royal Indigo
+  "#8B5CF6", // Cyber Violet
+  "#A855F7", // Lavender Purple
+  "#EC4899", // Sakura Pink
+  "#F43F5E", // Coral Rose
+  "#EF4444", // Ruby Red
+  "#F97316", // Sunset Orange
+  "#F59E0B", // Amber Gold
+  "#EAB308", // Sun Yellow
+  "#14B8A6", // Teal Aqua
+  "#64748B", // Slate Neutral
+];
+
+const APP_THEME_PRESETS = [
+  { name: "Neon Lime", hex: "#D2F544", desc: "Năng động & Trực quan (Mặc định)" },
+  { name: "Ocean Cyan", hex: "#06B6D4", desc: "Tươi mát & Hiện đại" },
+  { name: "Emerald Wealth", hex: "#10B981", desc: "Tài lộc & Thịnh vượng" },
+  { name: "Vibrant Green", hex: "#22C55E", desc: "Tươi sáng & Tích cực" },
+  { name: "Cyber Violet", hex: "#8B5CF6", desc: "Sáng tạo & Độc đáo" },
+  { name: "Electric Blue", hex: "#3B82F6", desc: "Công nghệ & Đẳng cấp" },
+  { name: "Sunset Amber", hex: "#F59E0B", desc: "Ấm áp & Nổi bật" },
+  { name: "Coral Rose", hex: "#F43F5E", desc: "Thanh lịch & Tinh tế" },
+  { name: "Sakura Pink", hex: "#EC4899", desc: "Ngọt ngào & Năng lượng" },
+  { name: "Deep Indigo", hex: "#6366F1", desc: "Chuyên nghiệp & Điềm tĩnh" },
+];
+
+function getContrastColor(hexColor: string): string {
+  const clean = hexColor.replace("#", "");
+  if (clean.length === 6) {
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 140 ? "#141c1e" : "#ffffff";
+  }
+  return "#141c1e";
+}
+
+function adjustColorBrightness(hex: string, percent: number): string {
+  const clean = hex.replace("#", "");
+  if (clean.length !== 6) return hex;
+  const num = parseInt(clean, 16);
+  if (isNaN(num)) return hex;
+  let r = (num >> 16) + percent;
+  let g = ((num >> 8) & 0x00ff) + percent;
+  let b = (num & 0x0000ff) + percent;
+  r = Math.min(255, Math.max(0, r));
+  g = Math.min(255, Math.max(0, g));
+  b = Math.min(255, Math.max(0, b));
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+}
+
+function applyThemeAccent(hexColor: string) {
+  if (typeof document === "undefined") return;
+  document.documentElement.style.setProperty("--lime-accent", hexColor);
+  document.documentElement.style.setProperty("--lime-hover", adjustColorBrightness(hexColor, -16));
+}
+
+function ModernColorPicker({
+  name = "color",
+  defaultValue = "#D9F45F",
   value,
-  defaultValue,
-  onChangeValue,
-  placeholder,
-  required,
-  autoFocus
+  onChange,
+  label = "Màu sắc đại diện",
+  presets = CURATED_PRESET_COLORS,
 }: {
   name?: string;
-  value?: string | number;
-  defaultValue?: string | number;
-  onChangeValue?: (val: string) => void;
-  placeholder?: string;
-  required?: boolean;
-  autoFocus?: boolean;
+  defaultValue?: string;
+  value?: string;
+  onChange?: (color: string) => void;
+  label?: string;
+  presets?: string[];
 }) {
-  const [display, setDisplay] = useState<string>(() => {
-    const init = value !== undefined ? value : defaultValue;
-    if (init === undefined || init === null || String(init) === "") return "";
-    const parsed = parseInt(String(init).replace(/\D/g, ""), 10);
-    return isNaN(parsed) ? "" : new Intl.NumberFormat("vi-VN").format(parsed);
-  });
+  const [selectedColor, setSelectedColor] = useState<string>(() => value || defaultValue || "#D9F45F");
+  const [hexInput, setHexInput] = useState(() => (value || defaultValue || "#D9F45F").toUpperCase());
 
   useEffect(() => {
-    if (value !== undefined) {
-      if (String(value) === "") {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDisplay("");
-      } else {
-        const parsed = parseInt(String(value).replace(/\D/g, ""), 10);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDisplay(isNaN(parsed) ? "" : new Intl.NumberFormat("vi-VN").format(parsed));
-      }
+    if (value && value !== selectedColor) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedColor(value);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setHexInput(value.toUpperCase());
     }
-  }, [value]);
+  }, [value, selectedColor]);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const inputVal = e.target.value;
-    const digitsOnly = inputVal.replace(/\D/g, "");
-    if (!digitsOnly) {
-      setDisplay("");
-      onChangeValue?.("");
-      return;
-    }
-    const parsed = parseInt(digitsOnly, 10);
-    if (isNaN(parsed)) return;
-    setDisplay(new Intl.NumberFormat("vi-VN").format(parsed));
-    onChangeValue?.(String(parsed));
+  function handleColorChange(newColor: string) {
+    setSelectedColor(newColor);
+    setHexInput(newColor.toUpperCase());
+    onChange?.(newColor);
   }
 
-  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
-    e.preventDefault();
-    const pastedText = e.clipboardData.getData("text");
-    const digitsOnly = pastedText.replace(/\D/g, "");
-    if (!digitsOnly) {
-      setDisplay("");
-      onChangeValue?.("");
-      return;
+  function handleHexInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    let val = e.target.value.toUpperCase();
+    if (!val.startsWith("#")) val = "#" + val;
+    setHexInput(val);
+    if (/^#[0-9A-F]{6}$/i.test(val)) {
+      setSelectedColor(val);
+      onChange?.(val);
     }
-    const parsed = parseInt(digitsOnly, 10);
-    if (isNaN(parsed)) return;
-    setDisplay(new Intl.NumberFormat("vi-VN").format(parsed));
-    onChangeValue?.(String(parsed));
   }
-
-  const rawValue = display ? display.replace(/\D/g, "") : "";
 
   return (
-    <div className="amount-input-wrapper">
-      <input
-        type="text"
-        inputMode="numeric"
-        value={display}
-        onChange={handleChange}
-        onPaste={handlePaste}
-        placeholder={placeholder ?? "0"}
-        required={required}
-        autoFocus={autoFocus}
-      />
-      <span className="amount-currency-badge">₫</span>
-      <input name={name} type="hidden" value={rawValue} />
+    <div className="modern-color-picker-wrapper">
+      <div className="modern-color-picker-header">
+        <span className="modern-color-picker-label">{label}</span>
+        <div className="modern-color-preview-badge">
+          <span className="modern-color-preview-dot" style={{ backgroundColor: selectedColor }} />
+          <span className="modern-color-hex-tag">{selectedColor.toUpperCase()}</span>
+        </div>
+      </div>
+
+      <div className="modern-color-swatches-grid">
+        {presets.map((hex) => {
+          const isSelected = selectedColor.toLowerCase() === hex.toLowerCase();
+          return (
+            <button
+              key={hex}
+              type="button"
+              className={`modern-color-swatch-btn ${isSelected ? "active" : ""}`}
+              style={{ backgroundColor: hex }}
+              onClick={() => handleColorChange(hex)}
+              title={hex}
+              aria-label={`Chọn màu ${hex}`}
+            >
+              {isSelected && (
+                <span className="modern-swatch-check" style={{ color: getContrastColor(hex) }}>✓</span>
+              )}
+            </button>
+          );
+        })}
+
+        {/* Nút mở Color Wheel picker tự do */}
+        <label className="modern-color-custom-btn" title="Chọn màu tự do qua bảng màu">
+          <span className="modern-color-custom-icon">🎨</span>
+          <input
+            type="color"
+            value={selectedColor}
+            onChange={(e) => handleColorChange(e.target.value)}
+            className="modern-native-color-hidden"
+          />
+        </label>
+      </div>
+
+      <div className="modern-color-hex-row">
+        <label className="modern-color-hex-label">
+          <span>Mã màu HEX:</span>
+          <div className="modern-color-hex-input-box">
+            <span className="hex-prefix">#</span>
+            <input
+              type="text"
+              value={hexInput.replace(/^#/, "")}
+              onChange={handleHexInputChange}
+              maxLength={6}
+              placeholder="D9F45F"
+              className="modern-color-hex-input"
+            />
+          </div>
+        </label>
+      </div>
+
+      <input name={name} type="hidden" value={selectedColor} />
     </div>
   );
 }
 
 function WalletModalForm({ modalItem, saving, onSubmit }: { modalItem?: Wallet | null; saving: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) {
   const initialBalance = modalItem?.balance ?? 0;
-  const [selectedColor, setSelectedColor] = useState<string>(modalItem?.color ?? "#D9F45F");
 
   return (
     <form onSubmit={onSubmit}>
@@ -2238,43 +3048,9 @@ function WalletModalForm({ modalItem, saving, onSubmit }: { modalItem?: Wallet |
             <option value="💰">💰 Tiết kiệm / Quỹ</option>
           </select>
         </label>
-
-        <label>
-          Màu đại diện
-          <div className="color-preview-badge">
-            <span className="color-dot-preview" style={{ background: selectedColor }} />
-            <span className="color-hex-code">{selectedColor.toUpperCase()}</span>
-          </div>
-        </label>
       </div>
 
-      <div className="color-picker-section">
-        <span className="color-picker-label">Bảng màu gợi ý</span>
-        <div className="color-swatches-grid">
-          {WALLET_PRESET_COLORS.map(colorHex => (
-            <button
-              key={colorHex}
-              type="button"
-              className={`color-swatch-btn ${selectedColor.toLowerCase() === colorHex.toLowerCase() ? "active" : ""}`}
-              style={{ background: colorHex }}
-              onClick={() => setSelectedColor(colorHex)}
-              title={colorHex}
-            >
-              {selectedColor.toLowerCase() === colorHex.toLowerCase() && <span className="swatch-check">✓</span>}
-            </button>
-          ))}
-          <label className="color-custom-picker-btn" title="Tùy chọn màu khác">
-            <span>🎨</span>
-            <input
-              type="color"
-              value={selectedColor}
-              onChange={e => setSelectedColor(e.target.value)}
-              className="native-color-input-hidden"
-            />
-          </label>
-        </div>
-        <input name="color" type="hidden" value={selectedColor} />
-      </div>
+      <ModernColorPicker name="color" defaultValue={modalItem?.color ?? "#D9F45F"} label="Màu sắc đại diện ví" />
 
       <button className="save-button" disabled={saving}>
         {saving ? "Đang lưu…" : (modalItem ? "Cập nhật ví →" : "Tạo ví mới →")}
@@ -2287,5 +3063,5 @@ function Empty({ text }: { text: string }) { return <div className="empty-state"
 
 function TransactionTable({ items, money, language, categoryById, walletById, onEdit, onDelete, onReceipt }: { items: Transaction[]; money: (value: number) => string; language: "vi" | "en"; categoryById: Map<string, Category>; walletById: Map<string, Wallet>; onEdit: (item: Transaction) => void; onDelete: (item: Transaction) => void; onReceipt: (path: string) => void }) {
   if (!items.length) return <Empty text="Chưa có giao dịch phù hợp." />;
-  return <div className="transaction-table"><div className="table-head"><span>GIAO DỊCH</span><span>DANH MỤC / VÍ</span><span>NGÀY & GIỜ</span><span>SỐ TIỀN</span><span /></div>{items.map(item => { const category = categoryById.get(item.category_id ?? ""); const wallet = walletById.get(item.wallet_id ?? ""); return <div className="transaction-row" key={item.id}><span className="transaction-title"><i style={{ background: `${category?.color ?? "#98A1A5"}22`, color: category?.color ?? "#687273" }}>{category?.icon ?? (item.type === "income" ? "↙" : "↗")}</i><span><b>{item.title}</b><small>{item.note || "Không có ghi chú"}</small></span></span><span><b>{category?.name ?? item.category}</b><small>{wallet?.name ?? "Không gắn ví"}</small></span><span>{formatDate(item.occurred_at, language)}</span><strong className={item.type}>{item.type === "expense" ? "−" : "+"}{money(item.amount)}</strong><span className="row-actions">{item.receipt_path && <button onClick={() => onReceipt(item.receipt_path!)} title="Mở hóa đơn">▱</button>}<button onClick={() => onEdit(item)} title="Chỉnh sửa">✎</button><button onClick={() => onDelete(item)} title="Xóa">×</button></span></div>; })}</div>;
+  return <div className="transaction-table"><div className="table-head"><span>GIAO DỊCH</span><span>DANH MỤC / VÍ</span><span>NGÀY & GIỜ</span><span>SỐ TIỀN</span><span /></div>{items.map(item => { const category = categoryById.get(item.category_id ?? ""); const wallet = walletById.get(item.wallet_id ?? ""); return <div className="transaction-row" key={item.id}><span className="transaction-title"><i style={{ background: `${category?.color ?? "#98A1A5"}22`, color: category?.color ?? "#687273" }}>{item.type === "income" ? "↙" : "↗"}</i><span><b>{item.title}</b><small>{item.note || "Không có ghi chú"}</small></span></span><span><b>{category?.name ?? item.category}</b><small>{wallet?.name ?? "Không gắn ví"}</small></span><span>{formatDate(item.occurred_at, language)}</span><strong className={item.type}>{item.type === "expense" ? "−" : "+"}{money(item.amount)}</strong><span className="row-actions">{item.receipt_path && <button onClick={() => onReceipt(item.receipt_path!)} title="Mở hóa đơn">▱</button>}<button onClick={() => onEdit(item)} title="Chỉnh sửa">✎</button><button onClick={() => onDelete(item)} title="Xóa">×</button></span></div>; })}</div>;
 }

@@ -158,9 +158,43 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- 5. TRIGGER TỰ ĐỘNG XÁC THỰC EMAIL (AUTO-CONFIRM) CHO MỌI USER MỚI
+-- Giúp người dùng đăng ký là dùng được ngay lập tức, không bị nghẽn bởi rate limit gửi email của Supabase Cloud
+CREATE OR REPLACE FUNCTION public.auto_confirm_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = auth, public
+AS $$
+BEGIN
+  IF NEW.email_confirmed_at IS NULL THEN
+    NEW.email_confirmed_at := now();
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS tr_auto_confirm_new_user ON auth.users;
+CREATE TRIGGER tr_auto_confirm_new_user
+  BEFORE INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.auto_confirm_new_user();
+
+-- Kích hoạt xác thực cho toàn bộ các user hiện có trong DB đang bị unconfirmed
+UPDATE auth.users
+SET email_confirmed_at = COALESCE(email_confirmed_at, now())
+WHERE email_confirmed_at IS NULL;
+
 -- ============================================================================
--- HƯỚNG DẪN BẬT / TẮT XÁC NHẬN EMAIL (NẾU MUỐN ĐĂNG KÝ XONG DÙNG ĐƯỢC NGAY):
+-- HƯỚNG DẪN XỬ LÝ LỖI "CHỐNG SPAM / RATE LIMIT" KHI ĐĂNG KÝ TRÊN PRODUCTION:
+-- ============================================================================
+-- Nguyên nhân: Supabase Cloud giới hạn gửi tối đa 3-4 email/giờ trên gói Free.
+-- Cách khắc phục triệt để:
 -- 1. Vào Supabase Dashboard > Authentication > Providers > Email
--- 2. Bỏ chọn "Confirm email" (nếu không muốn người dùng phải vào mail xác thực)
--- 3. Bấm "Save"
+-- 2. BỎ CHỌN (TẮT) mục "Confirm email" (Xác thực email).
+-- 3. BỎ CHỌN mục "Secure email change".
+-- 4. Bấm nút "Save" ở cuối trang.
+--
+-- Sau khi tắt "Confirm email", bất kỳ ai cũng có thể tạo tài khoản và đăng nhập
+-- ngay lập tức mà không bao giờ bị giới hạn spam rate limit nữa!
 -- ============================================================================

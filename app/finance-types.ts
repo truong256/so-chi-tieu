@@ -168,7 +168,8 @@ export type FundAllocation = {
 };
 
 export type ModalState =
-  | { kind: "transaction"; item?: Transaction }
+  | { kind: "transaction"; item?: Transaction; initialMode?: "manual" | "scan" }
+  | { kind: "receipt-scan" }
   | { kind: "wallet"; item?: Wallet }
   | { kind: "transfer" }
   | { kind: "category"; item?: Category }
@@ -180,3 +181,47 @@ export type ModalState =
   | { kind: "goal-return"; goal: SavingsGoal }
   | { kind: "recurring"; item?: RecurringTransaction }
   | null;
+
+export type ReceiptItem = {
+  name: string;
+  quantity: number | null;
+  unit_price: number | null;
+  total_price: number | null;
+};
+
+export type ParsedReceiptResult = {
+  document_type: "receipt" | "invoice" | "other" | "unknown";
+  is_receipt: boolean;
+  merchant: string | null;
+  merchant_address: string | null;
+  transaction_type: TransactionType;
+  date: string | null; // YYYY-MM-DD
+  time: string | null; // HH:mm
+  currency: string;
+  subtotal: number | null;
+  discount: number | null;
+  tax: number | null;
+  total: number | null;
+  payment_method: string | null;
+  category: string | null;
+  description: string | null;
+  items: ReceiptItem[];
+  warnings?: string[];
+};
+
+export type ReceiptScanStep = "select" | "preview" | "loading" | "result" | "error";
+
+export type AITransactionParseResult = {
+  transaction_type: TransactionType | null;
+  amount: number | null;
+  currency: "VND";
+  category_id: string | null;
+  category_name: string | null;
+  wallet_id: string | null;
+  wallet_name: string | null;
+  description: string | null;
+  date: string | null; // YYYY-MM-DD
+  time: string | null; // HH:mm
+  confidence_notes?: string[];
+};
+
