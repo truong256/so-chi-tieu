@@ -2,8 +2,19 @@
 
 import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
 import { createClient } from "../lib/supabase/client";
+import type { Budget, SavingsGoal, Transaction, Wallet } from "./finance-types";
 
 // --- Types ---
+
+export interface FinancialContext {
+  totalBalance: number;
+  monthlyIncome: number;
+  monthlyExpense: number;
+  wallets: Wallet[];
+  transactions: Transaction[];
+  budgets: Budget[];
+  savingsGoals: SavingsGoal[];
+}
 
 export interface ChatMessage {
   id: string;

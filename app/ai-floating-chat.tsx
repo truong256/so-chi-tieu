@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useAiChat } from "./ai-chat-context";
-import type { FinancialContext } from "./ai-chat-context-types";
+import type { FinancialContext } from "./ai-chat-context";
 import { MessageContent } from "./ai-chat";
 
 interface Props {

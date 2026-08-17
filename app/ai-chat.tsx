@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useAiChat, ChatMessage } from "./ai-chat-context";
-import type { FinancialContext } from "./ai-chat-context-types";
+import type { FinancialContext } from "./ai-chat-context";
 
 // ─── Suggested questions ─────────────────────────────────────────────────────
 const SUGGESTED_QUESTIONS = [
