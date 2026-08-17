@@ -35,8 +35,11 @@ yarn-error.log*
 
 # typescript
 next-env.d.ts
+tsconfig.tsbuildinfo
 /dist/
 /.wrangler/
 /.sites-runtime/
 /outputs/
 /work/
+
+# Note: /build/ is NOT ignored — it contains sites-vite-plugin.ts (source code)
