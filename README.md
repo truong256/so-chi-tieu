@@ -1,232 +1,190 @@
-# 📒 Sổ Chi Tiêu
+# 📒 Sổ Chi Tiêu (Personal Finance Manager)
 
-**Ứng dụng quản lý tài chính cá nhân** — theo dõi thu chi, ngân sách, mục tiêu tiết kiệm và giao dịch định kỳ, tích hợp AI assistant.
-
----
-
-## Tính năng
-
-- 💰 **Ví & Tài khoản** — quản lý tiền mặt, ngân hàng, ví điện tử
-- 🔄 **Giao dịch** — ghi nhận thu/chi với danh mục, lọc và tìm kiếm nâng cao
-- 📤 **Chuyển khoản** — chuyển tiền giữa các ví
-- 📊 **Ngân sách** — phân bổ ngân sách theo danh mục/kỳ
-- 🎯 **Mục tiêu tiết kiệm** — đặt và theo dõi mục tiêu tài chính
-- 🔁 **Giao dịch định kỳ** — tự động nhắc nhở/xử lý các khoản định kỳ
-- 📈 **Báo cáo** — biểu đồ tổng quan thu chi theo ngày/tuần/tháng/năm
-- 🤖 **AI Assistant** — trợ lý tài chính AI (Gemini), phân tích dữ liệu, chat tư vấn
-- 📷 **Scan hóa đơn** — chụp ảnh hóa đơn, AI tự động nhận diện và tạo giao dịch
-- 📝 **Nhập bằng ngôn ngữ tự nhiên** — gõ "ăn trưa 50k" → tự động điền thông tin
-- 📁 **Xuất Excel** — xuất toàn bộ dữ liệu tài chính sang file Excel
+**Sổ Chi Tiêu** là ứng dụng quản lý tài chính cá nhân toàn diện, tích hợp Trợ lý AI (Google Gemini), hỗ trợ theo dõi thu chi, quản lý ví, ngân sách, mục tiêu tiết kiệm, giao dịch định kỳ, quét hóa đơn bằng camera và xuất báo cáo Excel.
 
 ---
 
-## Công nghệ sử dụng
+## 1. Tính năng Nổi bật
+
+- 💰 **Quản lý Ví đa dạng**: Tiền mặt, Ngân hàng, Thẻ tín dụng, Ví điện tử (MoMo, ZaloPay, VNPay...).
+- 🔄 **Theo dõi Thu & Chi**: Ghi nhận, phân loại danh mục, tìm kiếm và lọc nâng cao.
+- 📤 **Chuyển tiền liên ví**: Luân chuyển nguồn tiền giữa các tài khoản linh hoạt.
+- 📊 **Ngân sách thông minh**: Đặt giới hạn chi tiêu theo danh mục, cảnh báo vượt hạn mức.
+- 🎯 **Mục tiêu Tiết kiệm**: Theo dõi tiến độ tích lũy tài chính cho các dự định tương lai.
+- 🔁 **Giao dịch Định kỳ**: Tự động nhắc nhở và xử lý các khoản tiền lặp lại (tiền nhà, điện, nước...).
+- 🤖 **Financial Copilot (AI Chatbot)**: Tư vấn tài chính, phân tích What-if ("nếu mua X thì sao?").
+- 📷 **AI Scan Hóa đơn**: Nhận diện ảnh hóa đơn/biên lai và tự động điền giao dịch.
+- 📝 **Nhập liệu Ngôn ngữ Tự nhiên**: Gõ "Ăn sáng 35k tiền mặt" → AI tự động phân tích và điền form.
+- 📁 **Báo cáo & Xuất Excel**: Thống kê trực quan, biểu đồ và xuất toàn bộ sổ sách ra file Excel.
+
+---
+
+## 2. Công nghệ Sử dụng (Technology Stack)
 
 | Thành phần | Công nghệ |
-|------------|-----------|
-| Framework | Next.js 16 (App Router) + Vinext |
-| Runtime | Cloudflare Workers |
-| Database | Supabase (PostgreSQL) |
-| Auth | Supabase Auth (Email/Password) |
-| AI | Google Gemini API |
-| Styling | TailwindCSS v4 |
-| Language | TypeScript, React 19 |
-| Build Tool | Vite 8 |
-| ORM | Drizzle ORM (Cloudflare D1 — optional) |
+|---|---|
+| **Frontend** | Next.js 16 (App Router), React 19, TailwindCSS v4 |
+| **Backend / Services** | TypeScript Services, Next.js Route Handlers |
+| **Runtime & Edge Deployment** | Cloudflare Workers, Vinext (Vite 8) |
+| **Database & Authentication** | Supabase (PostgreSQL, Row-Level Security, Supabase Auth) |
+| **AI / NLP / Vision** | Google Gemini API (`gemini-2.5-flash`, `gemini-2.5-pro`...) |
+| **Data Export** | SheetJS (`xlsx`) |
+| **Testing** | Node.js Test Runner (`node --test`) |
 
 ---
 
-## Cấu trúc thư mục
+## 3. Cấu trúc Dự án (Project Structure)
 
-```
+Dự án được phân chia thành 5 nhóm nền tảng chính:
+
+```text
 so-chi-tieu/
-├── app/                          # Next.js App Router
-│   ├── api/                      # API Routes (server-side)
-│   │   ├── ai/parse-transaction/ # AI: phân tích văn bản → giao dịch
-│   │   ├── chat/                 # AI: chatbot tài chính (Gemini)
-│   │   ├── receipt/parse/        # AI: phân tích ảnh hóa đơn
-│   │   ├── runtime-config/       # Expose cấu hình Supabase cho client
-│   │   └── client-error/         # Log lỗi client-side
-│   ├── services/
-│   │   └── excel-export.ts       # Xuất dữ liệu ra Excel
-│   ├── ai-chat-context.tsx       # React Context: AI chat state + FinancialContext types
-│   ├── ai-chat.tsx               # Component: AI chat full-page
-│   ├── ai-floating-chat.tsx      # Component: AI chat bubble nổi
-│   ├── auth-screen.tsx           # Component: Login / Register / Forgot password
-│   ├── dashboard.tsx             # Component: Dashboard chính
-│   ├── error.tsx                 # Next.js error boundary
-│   ├── finance-app.tsx           # Root: Auth wrapper + loading states
-│   ├── finance-types.ts          # TypeScript types toàn cục
-│   ├── finance-utils.ts          # Utility functions (format, tính toán)
-│   ├── globals.css               # Styles toàn cục
-│   ├── layout.tsx                # Next.js root layout
-│   ├── page.tsx                  # Next.js root page
-│   ├── receipt-scanner-modal.tsx # Component: Modal scan hóa đơn
-│   └── smart-parser.ts           # Parser offline: nhận diện giao dịch từ text
 │
-├── database/                     # SQL migrations và scripts
-│   ├── migrations/               # Migrations theo thứ tự
+├── frontend/                         # [UI & Presentation Layer]
+│   ├── components/                   # React components (Dashboard, AuthScreen, FinanceApp, ReceiptScanner)
+│   ├── features/                     # Module tính năng (AI Chatbot, Floating Chat, Chat Context)
+│   ├── services/                     # Frontend data services (Excel export)
+│   ├── styles/                       # CSS & Tailwind styling (globals.css)
+│   ├── types/                        # TypeScript types cho UI & DTO (finance.types.ts)
+│   └── utils/                        # Frontend utilities & parsers (finance.utils.ts, smart-parser.ts)
+│
+├── backend/                          # [Server-side Business Logic Layer]
+│   └── src/
+│       ├── services/                 # Core business services (ai-chat, ai-parser, receipt-parser)
+│       └── types/                    # Server-side & shared AI types (ai.types.ts)
+│
+├── database/                         # [Database & Migrations Layer]
+│   ├── migrations/                   # SQL migrations theo thứ tự đánh số
 │   │   ├── 001_initial_schema.sql
 │   │   ├── 002_insufficient_balance_check.sql
 │   │   ├── 003_recurring_transactions_v2.sql
 │   │   ├── 004_reserved_money.sql
 │   │   └── 005_true_balances_rpc.sql
-│   ├── fixes/                    # Fixes áp dụng trên production
+│   ├── fixes/                        # SQL fixes cho môi trường production
 │   │   └── production_fix.sql
-│   └── README.md                 # Hướng dẫn migrations
+│   └── README.md                     # Hướng dẫn chi tiết migration
 │
-├── lib/
-│   └── supabase/
-│       └── client.ts             # Supabase browser client
+├── config/                           # [Application Configuration Layer]
+│   ├── supabase.ts                   # Supabase browser client & connection config
+│   └── constants.ts                  # App-wide constants & system limits
 │
-├── worker/
-│   └── index.ts                  # Cloudflare Worker entry point
+├── docs/                             # [Documentation Layer]
+│   ├── architecture.md               # Sơ đồ và nguyên tắc kiến trúc hệ thống
+│   ├── setup.md                      # Hướng dẫn cài đặt và thiết lập môi trường
+│   ├── database.md                   # Mô tả cấu trúc bảng, quan hệ & RLS
+│   ├── api.md                        # Chi tiết REST API endpoints & payloads
+│   ├── frontend.md                   # Hướng dẫn phát triển module Frontend
+│   └── backend.md                    # Hướng dẫn phát triển module Backend
 │
-├── scripts/                      # CI/CD và build scripts
+├── app/                              # [Next.js App Router Thin Adapter Layer]
+│   ├── api/                          # HTTP Route Handlers gọi vào backend services
+│   │   ├── ai/parse-transaction/
+│   │   ├── chat/
+│   │   ├── receipt/parse/
+│   │   ├── runtime-config/
+│   │   └── client-error/
+│   ├── layout.tsx                    # Root Layout
+│   ├── page.tsx                      # Root Page
+│   └── error.tsx                     # Global Error Boundary
+│
+├── worker/                           # Cloudflare Worker entrypoint cho Edge runtime
+│   └── index.ts
+│
+├── scripts/                          # CI/CD, build & archived patch scripts
 │   ├── install-ci.sh
 │   ├── build-verified.sh
 │   ├── sites-env.sh
 │   ├── validate-artifact.sh
-│   └── patches/                  # Archived patch scripts (đã apply)
+│   └── patches/                      # Lịch sử các bản vá trước đó
 │
-├── public/                       # Static assets
-├── tests/                        # Integration tests
-├── drizzle/                      # Drizzle migration metadata
-├── examples/d1/                  # D1 examples (Cloudflare D1 optional)
+├── public/                           # Static assets (images, icons)
+├── tests/                            # Automated integration tests
+├── drizzle/                          # Drizzle migration metadata (optional D1)
+├── examples/                         # Cloudflare D1 example references
 │
-├── .env.example                  # Template biến môi trường
-├── .gitignore
-├── README.md
-├── package.json
-├── next.config.ts
-├── vite.config.ts
-├── tsconfig.json
-├── drizzle.config.ts
-└── postcss.config.mjs
+├── .env.example                      # Biến môi trường mẫu
+├── .gitignore                        # Cấu hình Git ignore
+├── package.json                      # Danh sách dependencies & scripts
+├── tsconfig.json                     # Cấu hình TypeScript & Path Aliases
+├── vite.config.ts                    # Cấu hình Vite & Cloudflare plugin
+└── next.config.ts                    # Cấu hình Next.js
 ```
 
 ---
 
-## Yêu cầu môi trường
+## 4. Yêu cầu Hệ thống (Prerequisites)
 
-- **Node.js** `>=22.13.0`
-- **Linux** (với `flock`, `curl`, GNU `timeout`) — cho CI/CD scripts
-- Tài khoản **Supabase** (database + auth)
-- **Google Gemini API key** (cho AI features)
+- **Node.js**: `>=22.13.0`
+- **Tài khoản Supabase**: Đã khởi tạo database và kích hoạt Email Auth
+- **Google Gemini API Key**: Đăng ký miễn phí tại [Google AI Studio](https://aistudio.google.com/apikey)
 
 ---
 
-## Hướng dẫn cài đặt
+## 5. Cài đặt (Installation)
 
-### 1. Clone repository
-
+### 1. Clone mã nguồn
 ```bash
 git clone <repository-url>
 cd so-chi-tieu
 ```
 
-### 2. Cài đặt dependencies
-
+### 2. Cài đặt thư viện phụ thuộc
 ```bash
 npm install
 ```
 
-### 3. Cấu hình biến môi trường
-
+### 3. Thiết lập biến môi trường
+Tạo file `.env.local` từ mẫu `.env.example`:
 ```bash
 cp .env.example .env.local
 ```
-
-Mở `.env.local` và điền các giá trị:
-
+Điền các giá trị thực tế:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-key
 GEMINI_API_KEY=your-gemini-api-key
 ```
 
-### 4. Thiết lập Database (Supabase)
-
-Chạy migrations theo thứ tự trong Supabase Dashboard → SQL Editor:
-
-```
-database/migrations/001_initial_schema.sql
-database/migrations/002_insufficient_balance_check.sql
-database/migrations/003_recurring_transactions_v2.sql
-database/migrations/004_reserved_money.sql
-database/migrations/005_true_balances_rpc.sql
-```
-
-Chi tiết xem: [`database/README.md`](./database/README.md)
+### 4. Thiết lập Cơ sở dữ liệu
+Chạy các tệp SQL trong `database/migrations/` theo thứ tự từ `001` đến `005` trên **Supabase SQL Editor**. Chi tiết xem tại [`docs/database.md`](./docs/database.md).
 
 ---
 
-## Hướng dẫn chạy Development
+## 6. Khởi chạy Ứng dụng (Running the App)
 
+### Chạy Development Server
 ```bash
 npm run dev
 ```
+Truy cập tại `http://localhost:5173`.
 
-Ứng dụng sẽ chạy tại `http://localhost:5173` (Vite dev server).
+### Chạy Kiểm tra Kiểu dữ liệu
+```bash
+npx tsc --noEmit
+```
 
----
-
-## Hướng dẫn Build
-
+### Build cho Production
 ```bash
 npm run build
 ```
 
-Build sẽ tạo artifact cho Cloudflare Workers deployment.
-
----
-
-## Hướng dẫn Test
-
+### Chạy Automated Tests
 ```bash
 npm test
 ```
 
-Lệnh này sẽ build project trước, sau đó chạy integration test kiểm tra HTML output.
-
----
-
-## Database
-
-Xem chi tiết tại [`database/README.md`](./database/README.md).
-
----
-
-## Deployment
-
-Dự án được deploy lên **Cloudflare Workers** thông qua platform **Vinext** / OpenAI Sites.
-
-Workflow:
-1. Push code lên repository
-2. Platform tự động chạy `npm run build`
-3. Artifact được deploy lên Cloudflare edge network
-
-### Biến môi trường trên server
-
-Cần cấu hình các biến sau trong Cloudflare Workers / deployment platform:
-
-```
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-GEMINI_API_KEY
+### Chạy Linter
+```bash
+npm run lint
 ```
 
 ---
 
-## Scripts
+## 7. Tài liệu Chi tiết (Detailed Docs)
 
-| Script | Mô tả |
-|--------|-------|
-| `npm run dev` | Chạy Vite dev server |
-| `npm run build` | Build production artifact |
-| `npm run start` | Chạy built application |
-| `npm test` | Build + chạy integration tests |
-| `npm run lint` | Chạy ESLint |
-| `npm run db:generate` | Generate Drizzle migrations |
-| `npm run install:ci` | CI-friendly install |
-| `npm run validate:artifact` | Kiểm tra build artifact |
+- 📐 [Kiến trúc Hệ thống (`docs/architecture.md`)](./docs/architecture.md)
+- 🚀 [Hướng dẫn Cài đặt (`docs/setup.md`)](./docs/setup.md)
+- 🗄️ [Cơ sở Dữ liệu & Schema (`docs/database.md`)](./docs/database.md)
+- 🔌 [Tài liệu API (`docs/api.md`)](./docs/api.md)
+- 💻 [Cấu trúc Frontend (`docs/frontend.md`)](./docs/frontend.md)
+- ⚙️ [Cấu trúc Backend (`docs/backend.md`)](./docs/backend.md)

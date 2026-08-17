@@ -9,8 +9,8 @@ import type {
   ReceiptScanStep,
   TransactionType,
   Wallet,
-} from "./finance-types";
-import { localDateTime } from "./finance-utils";
+} from "@/frontend/types/finance.types";
+import { localDateTime } from "@/frontend/utils/finance.utils";
 
 interface ReceiptScannerModalProps {
   categories: Category[];
@@ -232,7 +232,7 @@ export default function ReceiptScannerModal({
 
     try {
       // Get auth token from supabase browser client session
-      const { createClient } = await import("../lib/supabase/client");
+      const { createClient } = await import("@/config/supabase");
       const supabase = createClient();
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;

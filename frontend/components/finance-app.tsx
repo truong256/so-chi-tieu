@@ -2,7 +2,7 @@
 
 import type { Session, User } from "@supabase/supabase-js";
 import { FormEvent, useEffect, useState } from "react";
-import { configureClient, createClient, type SupabaseBrowserConfig } from "../lib/supabase/client";
+import { configureClient, createClient, type SupabaseBrowserConfig } from "@/config/supabase";
 import AuthScreen from "./auth-screen";
 import Dashboard from "./dashboard";
 

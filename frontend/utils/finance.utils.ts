@@ -1,4 +1,4 @@
-import type { Frequency, Transaction } from "./finance-types";
+import type { Frequency, Transaction } from "../types/finance.types";
 
 export function toNumber(value: unknown) {
   const number = Number(value ?? 0);

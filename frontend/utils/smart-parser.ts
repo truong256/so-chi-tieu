@@ -1,4 +1,4 @@
-import type { Category, TransactionType, Wallet } from "./finance-types";
+import type { Category, TransactionType, Wallet } from "../types/finance.types";
 
 export type SmartTransactionResult = {
   type: TransactionType | null;

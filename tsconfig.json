@@ -19,7 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@frontend/*": ["./frontend/*"],
+      "@backend/*": ["./backend/*"],
+      "@config/*": ["./config/*"],
+      "@database/*": ["./database/*"]
     }
   },
   "include": [

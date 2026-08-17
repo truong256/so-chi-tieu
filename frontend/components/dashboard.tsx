@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
-import { createClient } from "../lib/supabase/client";
+import { createClient } from "@/config/supabase";
 import type {
   AITransactionParseResult,
   Budget,
@@ -16,14 +16,14 @@ import type {
   TransactionType,
   Transfer,
   Wallet,
-} from "./finance-types";
-import { advanceRecurring, formatDate, inRange, localDateTime, periodBounds, toNumber } from "./finance-utils";
-import { parseSmartTransaction } from "./smart-parser";
-import AiChatView, { MessageContent } from "./ai-chat";
-import { AiChatProvider } from "./ai-chat-context";
-import AiFloatingChat from "./ai-floating-chat";
-import ReceiptScannerModal, { FormattedMoneyInput } from "./receipt-scanner-modal";
-import { exportFinancialDataToExcel } from "./services/excel-export";
+} from "@/frontend/types/finance.types";
+import { advanceRecurring, formatDate, inRange, localDateTime, periodBounds, toNumber } from "@/frontend/utils/finance.utils";
+import { parseSmartTransaction } from "@/frontend/utils/smart-parser";
+import AiChatView, { MessageContent } from "@/frontend/features/ai/ai-chat";
+import { AiChatProvider } from "@/frontend/features/ai/ai-chat-context";
+import AiFloatingChat from "@/frontend/features/ai/ai-floating-chat";
+import ReceiptScannerModal, { FormattedMoneyInput } from "@/frontend/components/receipt-scanner-modal";
+import { exportFinancialDataToExcel } from "@/frontend/services/excel-export";
 
 type View = "overview" | "transactions" | "wallets" | "categories" | "planning" | "recurring" | "reports" | "settings" | "ai-assistant";
 type UserInfo = { id: string; name: string; email: string };
@@ -189,8 +189,9 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         }
       }
 
-      // Auto-provision initial wallet if missing
-      if (!loadedWallets.length) {
+      // Auto-provision initial wallet if explicitly empty (and query succeeded)
+      const walletsQuerySucceeded = walletResult.status === "fulfilled" && !walletResult.value.error;
+      if (walletsQuerySucceeded && !loadedWallets.length) {
         try {
           const { data, error } = await supabase.from("wallets").insert({ user_id: user.id, name: "Tiền mặt", type: "cash", balance: 0, currency: loadedProfile.currency, color: "#D9F45F", icon: "💵" }).select("id,user_id,name,type,balance,currency,color,icon").single();
           if (!error && data) loadedWallets = [mapWallet(data as Record<string, unknown>)];
@@ -199,8 +200,9 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         }
       }
 
-      // Auto-provision default categories if missing
-      if (!loadedCategories.length) {
+      // Auto-provision default categories if explicitly empty (and query succeeded)
+      const categoriesQuerySucceeded = categoryResult.status === "fulfilled" && !categoryResult.value.error;
+      if (categoriesQuerySucceeded && !loadedCategories.length) {
         try {
           const payload = defaultCategories.map(([name, kind, icon, color]) => ({ user_id: user.id, name, kind, icon, color, is_default: true }));
           const { data, error } = await supabase.from("categories").insert(payload).select("id,user_id,name,kind,parent_id,icon,color,is_default");

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { createClient } from "../lib/supabase/client";
+import { createClient } from "@/config/supabase";
 
 type Mode = "login" | "register" | "forgot";
 

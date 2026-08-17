@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
-import { createClient } from "../lib/supabase/client";
-import type { Budget, SavingsGoal, Transaction, Wallet } from "./finance-types";
+import { createClient } from "@/config/supabase";
+import type { Budget, SavingsGoal, Transaction, Wallet } from "@/frontend/types/finance.types";
 
 // --- Types ---
 

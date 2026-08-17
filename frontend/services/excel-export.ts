@@ -8,7 +8,7 @@ import type {
   Transfer,
   UserInfo,
   Wallet,
-} from "../finance-types";
+} from "../types/finance.types";
 
 export interface ExportDataPayload {
   user: UserInfo;
