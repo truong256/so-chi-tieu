@@ -4,6 +4,8 @@ import handler from "vinext/server/app-router-entry";
 import { processChat } from "../backend/src/services/ai-chat.service";
 import type { AiChatRequest } from "../backend/src/types/ai.types";
 
+import { getExchangeRates } from "../backend/src/services/exchange-rate.service";
+
 // Bổ sung type nội bộ do project không cài @cloudflare/workers-types
 type Fetcher = { fetch: typeof fetch };
 type D1Database = any;
@@ -60,6 +62,20 @@ const worker = {
         { supabaseUrl, supabasePublishableKey },
         { headers: { "Cache-Control": "no-store" } },
       );
+    }
+
+    if (url.pathname === "/api/exchange-rates" && request.method === "GET") {
+      try {
+        const ratesData = await getExchangeRates();
+        return Response.json(ratesData, {
+          headers: {
+            "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+          },
+        });
+      } catch (err) {
+        console.error("Worker exchange rates error:", err);
+        return Response.json({ error: "Failed to fetch exchange rates" }, { status: 500 });
+      }
     }
 
     // --- AI CHAT ENDPOINT ---

@@ -2,15 +2,9 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { createClient } from "@/config/supabase";
+import { t, getAppLanguage, setAppLanguage, type Language } from "@/frontend/services/i18n.service";
 
 type Mode = "login" | "register" | "forgot";
-
-function FieldIcon({ name }: { name: "user" | "user-plus" | "mail" | "lock" }) {
-  if (name === "mail") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16v11H4z" /><path d="m5 8 7 5 7-5" /></svg>;
-  if (name === "lock") return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>;
-  if (name === "user-plus") return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="8" r="3.5" /><path d="M3.5 20v-2.2A5.8 5.8 0 0 1 9.3 12h1.4a5.8 5.8 0 0 1 4.3 1.8" /><path d="M17 14v6M14 17h6" /></svg>;
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M5.5 20v-2.2A5.8 5.8 0 0 1 11.3 12h1.4a5.8 5.8 0 0 1 5.8 5.8V20" /></svg>;
-}
 
 function PasswordField({
   name,
@@ -37,7 +31,6 @@ function PasswordField({
   return (
     <label className="auth-input-group">
       <span className="sr-only">{placeholder}</span>
-      <span className="auth-field-icon"><FieldIcon name="lock" /></span>
       <input
         name={name}
         type={visible ? "text" : "password"}
@@ -55,21 +48,9 @@ function PasswordField({
         onClick={handleToggleClick}
         aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
         aria-pressed={visible}
+        style={{ fontSize: "12px", fontWeight: 600, color: "#546366" }}
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true" className={visible ? "eye-open" : "eye-closed"}>
-          {visible ? (
-            <>
-              <path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6Z" />
-              <circle cx="12" cy="12" r="2.7" />
-              <line x1="3" y1="3" x2="21" y2="21" strokeWidth="2" />
-            </>
-          ) : (
-            <>
-              <path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6Z" />
-              <circle cx="12" cy="12" r="2.7" />
-            </>
-          )}
-        </svg>
+        {visible ? "Ẩn" : "Hiện"}
       </button>
     </label>
   );
@@ -77,6 +58,7 @@ function PasswordField({
 
 export default function AuthScreen() {
   const formRef = useRef<HTMLFormElement>(null);
+  const [authLang, setAuthLang] = useState<Language>(() => getAppLanguage());
   const [mode, setMode] = useState<Mode>("login");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -91,8 +73,6 @@ export default function AuthScreen() {
   const [transitionDir, setTransitionDir] = useState<"left" | "right">("left");
   const [displayMode, setDisplayMode] = useState<Mode>("login");
 
-  // Avatar click state
-  const [avatarPulse, setAvatarPulse] = useState(false);
 
   // Slogan popover
   const [showSlogan, setShowSlogan] = useState(false);
@@ -128,10 +108,6 @@ export default function AuthScreen() {
     }, 380);
   }
 
-  function handleAvatarClick() {
-    setAvatarPulse(true);
-    setTimeout(() => setAvatarPulse(false), 400);
-  }
 
   function handleLogoClick() {
     if (sloganTimerRef.current) clearTimeout(sloganTimerRef.current);
@@ -239,33 +215,18 @@ export default function AuthScreen() {
         throw error;
       }
 
-      // Check if session was returned immediately
-      if (data.session) {
-        setMessage({
-          type: "success",
-          text: "Đăng ký thành công! Đang chuyển hướng vào bảng điều khiển…",
-        });
-        return;
-      }
-
-      // If no session returned directly, immediately sign in with the new credentials
+      // Registration successful: do NOT auto-login to Dashboard.
+      // Explicitly sign out any session auto-created by Supabase during signUp
       try {
-        const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
-        if (!loginErr && loginData?.session) {
-          setMessage({
-            type: "success",
-            text: "Đăng ký thành công! Đang chuyển hướng vào bảng điều khiển…",
-          });
-          return;
-        }
+        await supabase.auth.signOut();
       } catch {
-        // fallthrough to manual login transition
+        // ignore sign out error
       }
 
-      // Switch to Login mode with credentials ready
+      // Transition to Login mode and inform user to sign in
       setMessage({
         type: "success",
-        text: "Tạo tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.",
+        text: "Tạo tài khoản thành công! Vui lòng đăng nhập để bắt đầu sử dụng.",
       });
       changeMode("login", username || email);
     } catch (error) {
@@ -296,8 +257,8 @@ export default function AuthScreen() {
     }
   }
 
-  const title = displayMode === "login" ? "Chào mừng trở lại" : displayMode === "register" ? "Tạo tài khoản mới" : "Quên mật khẩu?";
-  const subtitle = displayMode === "login" ? "Đăng nhập để tiếp tục quản lý chi tiêu" : displayMode === "register" ? "Bắt đầu quản lý tài chính của bạn" : "Nhập email để nhận liên kết đặt lại mật khẩu";
+  const title = displayMode === "login" ? t("auth.welcomeBack", undefined, authLang) : displayMode === "register" ? t("auth.createAccount", undefined, authLang) : t("auth.forgotPassword", undefined, authLang);
+  const subtitle = displayMode === "login" ? t("auth.loginSubtitle", undefined, authLang) : displayMode === "register" ? t("auth.registerSubtitle", undefined, authLang) : t("auth.forgotSubtitle", undefined, authLang);
 
   const formClass = [
     "auth-form",
@@ -327,42 +288,50 @@ export default function AuthScreen() {
             onClick={(e) => { e.preventDefault(); handleLogoClick(); }}
           >
             <span className="brand-mark"><i /><i /><i /></span>
-            <span>SỔ CHI TIÊU</span>
+            <span>{authLang === "vi" ? "SỔ CHI TIÊU" : "EXPENSE BOOK"}</span>
           </a>
 
           {/* Slogan popover */}
           <div className={`auth-slogan-popover ${showSlogan ? "auth-slogan-popover--visible" : ""}`} aria-live="polite">
-            <span>Mỗi đồng tiền đều có <em>mục đích.</em></span>
+            <span>{authLang === "vi" ? "Mỗi đồng tiền đều có mục đích." : "Every single penny with purpose."}</span>
           </div>
         </div>
 
         <div className="auth-hero-copy">
-          <p className="auth-hero-eyebrow">TÀI CHÍNH RÕ RÀNG · TƯƠNG LAI THÀNH THƠI</p>
-          <h2>Để từng đồng tiền<br /><em className="lime-text">đều có mục đích.</em></h2>
-          <p>Theo dõi dòng tiền, kiểm soát ngân sách và tiến gần hơn đến những mục tiêu quan trọng.</p>
+          <p className="auth-hero-eyebrow">{authLang === "vi" ? "TÀI CHÍNH RÕ RÀNG · TƯƠNG LAI THÀNH THƠI" : "CLEAR CASHFLOW · PEACE OF MIND"}</p>
+          <h2>{authLang === "vi" ? <>Để từng đồng tiền<br /><em className="lime-text">đều có mục đích.</em></> : <>Every single penny<br /><em className="lime-text">with a purpose.</em></>}</h2>
+          <p>{authLang === "vi" ? "Theo dõi dòng tiền, kiểm soát ngân sách và tiến gần hơn đến những mục tiêu quan trọng." : "Track cashflow, manage budgets and achieve your financial goals effortlessly."}</p>
         </div>
 
         <div className="auth-hero-proof" aria-label="Lợi ích chính">
-          <div tabIndex={0} role="button"><b>01</b><span>Dữ liệu riêng<br />theo tài khoản</span></div>
-          <div tabIndex={0} role="button"><b>02</b><span>Theo dõi tiền<br />theo thời gian thực</span></div>
-          <div tabIndex={0} role="button"><b>03</b><span>Báo cáo rõ ràng<br />trên mọi thiết bị</span></div>
+          <div tabIndex={0} role="button"><b>01</b><span>{authLang === "vi" ? <>Dữ liệu riêng<br />theo tài khoản</> : <>Private data<br />isolation</>}</span></div>
+          <div tabIndex={0} role="button"><b>02</b><span>{authLang === "vi" ? <>Theo dõi tiền<br />thời gian thực</> : <>Real-time<br />cash tracking</>}</span></div>
+          <div tabIndex={0} role="button"><b>03</b><span>{authLang === "vi" ? <>Báo cáo rõ ràng<br />mọi thiết bị</> : <>Visual reports<br />on all devices</>}</span></div>
         </div>
       </section>
 
       <section className="auth-form-panel">
         <section className="auth-card" aria-labelledby="auth-title">
 
-          {/* Avatar */}
-          <button
-            type="button"
-            className={`auth-avatar ${avatarPulse ? "auth-avatar--pulse" : ""}`}
-            aria-label="Avatar tài khoản"
-            onClick={handleAvatarClick}
-          >
-            <span className={`auth-avatar-icon ${mode === "register" ? "auth-avatar-icon--register" : "auth-avatar-icon--login"}`}>
-              <FieldIcon name={mode === "register" ? "user-plus" : "user"} />
-            </span>
-          </button>
+          {/* Language Switch */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "8px" }}>
+            <div style={{ display: "inline-flex", background: "rgba(0,0,0,0.05)", borderRadius: "20px", padding: "2px", border: "1px solid rgba(0,0,0,0.06)" }}>
+              <button
+                type="button"
+                style={{ border: "none", background: authLang === "vi" ? "#D2F544" : "transparent", color: "#161E1F", borderRadius: "16px", padding: "4px 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s ease" }}
+                onClick={() => { setAuthLang("vi"); setAppLanguage("vi"); }}
+              >
+                VI
+              </button>
+              <button
+                type="button"
+                style={{ border: "none", background: authLang === "en" ? "#D2F544" : "transparent", color: "#161E1F", borderRadius: "16px", padding: "4px 10px", fontSize: "11px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s ease" }}
+                onClick={() => { setAuthLang("en"); setAppLanguage("en"); }}
+              >
+                EN
+              </button>
+            </div>
+          </div>
 
           {/* Title with fade transition */}
           <div className={`auth-heading auth-heading-${mode} ${titleVisible ? "auth-heading--visible" : "auth-heading--hidden"}`}>
@@ -384,7 +353,7 @@ export default function AuthScreen() {
                 role="tab"
                 aria-selected={mode === "login"}
               >
-                Đăng nhập
+                {t("auth.login", undefined, authLang)}
               </button>
               <button
                 type="button"
@@ -393,7 +362,7 @@ export default function AuthScreen() {
                 role="tab"
                 aria-selected={mode === "register"}
               >
-                Đăng ký
+                {t("auth.register", undefined, authLang)}
               </button>
             </div>
           )}
@@ -403,8 +372,7 @@ export default function AuthScreen() {
             <form ref={formRef} className={formClass} onSubmit={submit}>
               {mode === "register" && <>
                 <label className="auth-input-group">
-                  <span className="sr-only">Tên tài khoản</span>
-                  <span className="auth-field-icon"><FieldIcon name="user" /></span>
+                  <span className="sr-only">{t("auth.username", undefined, authLang)}</span>
                   <input
                     name="username"
                     required
@@ -414,27 +382,25 @@ export default function AuthScreen() {
                     disabled={loading}
                     autoCapitalize="none"
                     autoComplete="username"
-                    placeholder="Tên tài khoản (viết liền, vd: nam_nguyen)"
+                    placeholder={t("auth.username", undefined, authLang)}
                   />
                 </label>
                 <label className="auth-input-group">
-                  <span className="sr-only">Họ và tên</span>
-                  <span className="auth-field-icon"><FieldIcon name="user" /></span>
+                  <span className="sr-only">{t("auth.fullName", undefined, authLang)}</span>
                   <input
                     name="fullName"
                     required
                     maxLength={100}
                     disabled={loading}
                     autoComplete="name"
-                    placeholder="Họ và tên của bạn"
+                    placeholder={t("auth.fullName", undefined, authLang)}
                   />
                 </label>
               </>}
 
               {mode === "login" ? (
                 <label className="auth-input-group">
-                  <span className="sr-only">Tên tài khoản hoặc email</span>
-                  <span className="auth-field-icon"><FieldIcon name="user" /></span>
+                  <span className="sr-only">{t("auth.usernameOrEmail", undefined, authLang)}</span>
                   <input
                     name="identifier"
                     key={`id-${lastIdentifier}`}
@@ -443,13 +409,12 @@ export default function AuthScreen() {
                     disabled={loading}
                     autoCapitalize="none"
                     autoComplete="username"
-                    placeholder="Tên tài khoản hoặc Email"
+                    placeholder={t("auth.usernameOrEmail", undefined, authLang)}
                   />
                 </label>
               ) : (
                 <label className="auth-input-group">
-                  <span className="sr-only">Địa chỉ email</span>
-                  <span className="auth-field-icon"><FieldIcon name="mail" /></span>
+                  <span className="sr-only">{t("auth.email", undefined, authLang)}</span>
                   <input
                     name="email"
                     type="email"
@@ -459,7 +424,7 @@ export default function AuthScreen() {
                     disabled={loading}
                     autoCapitalize="none"
                     autoComplete="email"
-                    placeholder="Địa chỉ email chính xác"
+                    placeholder={t("auth.email", undefined, authLang)}
                   />
                 </label>
               )}
@@ -467,7 +432,7 @@ export default function AuthScreen() {
               {mode !== "forgot" && (
                 <PasswordField
                   name="password"
-                  placeholder="Mật khẩu"
+                  placeholder={t("auth.password", undefined, authLang)}
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
                   visible={showPassword}
                   disabled={loading}
@@ -477,7 +442,7 @@ export default function AuthScreen() {
               {mode === "register" && (
                 <PasswordField
                   name="confirmPassword"
-                  placeholder="Nhập lại mật khẩu"
+                  placeholder={t("auth.confirmPassword", undefined, authLang)}
                   autoComplete="new-password"
                   visible={showConfirmation}
                   disabled={loading}
@@ -487,8 +452,8 @@ export default function AuthScreen() {
 
               {mode === "login" && (
                 <div className="auth-options">
-                  <span>Đăng nhập an toàn</span>
-                  <button type="button" onClick={() => changeMode("forgot")}>Quên mật khẩu?</button>
+                  <span>{authLang === "vi" ? "Đăng nhập an toàn" : "Secure authentication"}</span>
+                  <button type="button" onClick={() => changeMode("forgot")}>{t("auth.forgotPassword", undefined, authLang)}</button>
                 </div>
               )}
               
@@ -502,7 +467,7 @@ export default function AuthScreen() {
                     className="ghost-action"
                     style={{ width: "100%", fontSize: "13px", height: "38px", fontWeight: 700, borderColor: "var(--lime-accent)" }}
                   >
-                    👉 Đăng nhập ngay với tài khoản này
+                    {authLang === "vi" ? "Đăng nhập ngay với tài khoản này" : "Log in now with this account"}
                   </button>
                 </div>
               )}
@@ -511,11 +476,11 @@ export default function AuthScreen() {
                 {loading ? (
                   <span className="auth-btn-content">
                     <span className="auth-spinner" aria-hidden="true" />
-                    Đang xử lý…
+                    {t("common.loading", undefined, authLang)}
                   </span>
                 ) : (
                   <span className="auth-btn-content">
-                    {mode === "login" ? "Đăng nhập" : mode === "register" ? "Tạo tài khoản" : "Gửi liên kết đặt lại"}
+                    {mode === "login" ? t("auth.login", undefined, authLang) : mode === "register" ? t("auth.register", undefined, authLang) : t("auth.sendResetLink", undefined, authLang)}
                   </span>
                 )}
               </button>
@@ -523,11 +488,11 @@ export default function AuthScreen() {
           </div>
 
           {mode === "forgot"
-            ? <button className="back-login" type="button" onClick={() => changeMode("login")}>← Quay lại đăng nhập</button>
-            : <p className="auth-switch">{mode === "login" ? "Chưa có tài khoản?" : "Đã có tài khoản?"} <button type="button" onClick={() => changeMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "Đăng ký ngay" : "Đăng nhập"}</button></p>
+            ? <button className="back-login" type="button" onClick={() => changeMode("login")}>{t("auth.backToLogin", undefined, authLang)}</button>
+            : <p className="auth-switch">{mode === "login" ? (authLang === "vi" ? "Chưa có tài khoản?" : "Don't have an account?") : (authLang === "vi" ? "Đã có tài khoản?" : "Already have an account?")} <button type="button" onClick={() => changeMode(mode === "login" ? "register" : "login")}>{mode === "login" ? t("auth.register", undefined, authLang) : t("auth.login", undefined, authLang)}</button></p>
           }
         </section>
-        <p className="auth-footnote">Dữ liệu tài chính được tách riêng và bảo mật theo từng tài khoản.</p>
+        <p className="auth-footnote">{authLang === "vi" ? "Dữ liệu tài chính được tách riêng và bảo mật theo từng tài khoản." : "Financial data is privately isolated and secured per account."}</p>
       </section>
     </main>
   );

@@ -106,10 +106,11 @@ export const OFF_TOPIC_REPLY =
   "Tôi là trợ lý AI chuyên hỗ trợ quản lý chi tiêu cá nhân. Tôi chỉ có thể hỗ trợ các câu hỏi liên quan đến tài chính cá nhân và các chức năng trong hệ thống Sổ Chi Tiêu.";
 
 const CANDIDATE_MODELS = [
-  "gemini-2.5-flash",
+  "gemini-3.7-flash",
   "gemini-3.6-flash",
-  "gemini-2.5-pro",
-  "gemini-3.1-flash-lite-preview",
+  "gemini-3.5-flash",
+  "gemini-flash-latest",
+  "gemini-3.1-flash-lite",
 ];
 
 /**

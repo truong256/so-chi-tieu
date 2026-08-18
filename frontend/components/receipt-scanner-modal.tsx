@@ -273,8 +273,8 @@ export default function ReceiptScannerModal({
       const parsedTitle = result.description
         ? result.description
         : result.merchant
-        ? `Mua tại ${result.merchant}`
-        : "Chi tiêu theo hóa đơn";
+          ? `Mua tại ${result.merchant}`
+          : "Chi tiêu theo hóa đơn";
       setTitle(parsedTitle);
 
       if (result.total && result.total > 0) {
@@ -412,7 +412,7 @@ export default function ReceiptScannerModal({
         <div className="receipt-modal-head">
           <div className="receipt-head-info">
             <div className="receipt-badge-row">
-              <span className="receipt-ai-pill">✦ AI MULTIMODAL</span>
+              <span className="receipt-ai-pill">AI MULTIMODAL</span>
               <span className="receipt-eyebrow">QUÉT HÓA ĐƠN THÔNG MINH</span>
             </div>
             <h2 id="receipt-modal-title">Quét hóa đơn bằng AI</h2>
@@ -432,13 +432,13 @@ export default function ReceiptScannerModal({
             className="receipt-tab-btn"
             onClick={onSwitchToManual}
           >
-            <span>✏️</span> Nhập thủ công
+            Nhập thủ công
           </button>
           <button
             type="button"
             className="receipt-tab-btn active"
           >
-            <span>📷</span> Quét hóa đơn bằng AI
+            Quét hóa đơn bằng AI
           </button>
         </div>
 
@@ -454,11 +454,6 @@ export default function ReceiptScannerModal({
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
             >
-              <div className="receipt-dropzone-icon-wrap">
-                <span className="receipt-scan-beam" />
-                <span className="receipt-camera-emoji">📷</span>
-              </div>
-
               <h3 className="receipt-dropzone-title">Kéo thả ảnh hóa đơn vào đây</h3>
               <p className="receipt-dropzone-desc">Hỗ trợ JPG, JPEG, PNG, WebP · Tối đa 10 MB</p>
 
@@ -468,7 +463,7 @@ export default function ReceiptScannerModal({
                   className="receipt-browse-btn"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <span>📁</span> Chọn ảnh từ máy
+                  Chọn ảnh từ máy
                 </button>
 
                 <button
@@ -476,7 +471,7 @@ export default function ReceiptScannerModal({
                   className="receipt-camera-btn"
                   onClick={() => cameraInputRef.current?.click()}
                 >
-                  <span>📸</span> Chụp ảnh hóa đơn
+                  Chụp ảnh hóa đơn
                 </button>
               </div>
 
@@ -508,13 +503,12 @@ export default function ReceiptScannerModal({
 
             {errorMessage && (
               <div className="receipt-error-banner">
-                <span>⚠️</span>
                 <p>{errorMessage}</p>
               </div>
             )}
 
             <div className="receipt-guide-box">
-              <h4>💡 Mẹo để AI nhận diện hóa đơn chính xác nhất:</h4>
+              <h4>Mẹo để AI nhận diện hóa đơn chính xác nhất:</h4>
               <ul>
                 <li>Chụp ảnh đủ sáng, căn thẳng hóa đơn trong khung hình.</li>
                 <li>Đảm bảo thấy rõ tên cửa hàng, ngày tháng và dòng Tổng tiền.</li>
@@ -547,7 +541,6 @@ export default function ReceiptScannerModal({
 
             {errorMessage && (
               <div className="receipt-error-banner">
-                <span>⚠️</span>
                 <p>{errorMessage}</p>
               </div>
             )}
@@ -558,7 +551,7 @@ export default function ReceiptScannerModal({
                 className="receipt-secondary-btn"
                 onClick={handleResetImage}
               >
-                <span>🔄</span> Chọn ảnh khác
+                Chọn ảnh khác
               </button>
 
               <button
@@ -566,7 +559,7 @@ export default function ReceiptScannerModal({
                 className="receipt-primary-btn"
                 onClick={handleAnalyzeReceipt}
               >
-                <span>✨ Phân tích hóa đơn →</span>
+                Phân tích hóa đơn
               </button>
             </div>
           </div>
@@ -578,9 +571,6 @@ export default function ReceiptScannerModal({
             <div className="receipt-loading-card">
               <div className="receipt-spinner-wrap">
                 <div className="receipt-pulse-ring" />
-                <div className="receipt-scanner-icon">
-                  <span>📄</span>
-                </div>
               </div>
 
               <h3 className="receipt-loading-title">Đang phân tích hóa đơn...</h3>
@@ -594,9 +584,6 @@ export default function ReceiptScannerModal({
                     key={idx}
                     className={`receipt-checklist-row ${item.done ? "done" : "pending"}`}
                   >
-                    <span className="receipt-check-badge">
-                      {item.done ? "✓" : "○"}
-                    </span>
                     <span>{item.label}</span>
                   </div>
                 ))}
@@ -610,7 +597,6 @@ export default function ReceiptScannerModal({
           <form className="receipt-step-content result-step" onSubmit={handleFinalSubmit}>
             <div className="receipt-result-top-banner">
               <div className="receipt-banner-left">
-                <span className="receipt-success-icon">✨</span>
                 <div>
                   <strong>AI đã nhận diện thành công hóa đơn</strong>
                   <p>Hãy kiểm tra lại thông tin và chỉnh sửa nếu cần trước khi tạo giao dịch.</p>
@@ -622,14 +608,13 @@ export default function ReceiptScannerModal({
                 onClick={handleResetImage}
                 title="Quét ảnh khác"
               >
-                <span>🔄</span> Đổi ảnh khác
+                Đổi ảnh khác
               </button>
             </div>
 
             {/* Warnings list if any critical field is missing */}
             {parsedData?.warnings && parsedData.warnings.length > 0 && (
               <div className="receipt-warning-card">
-                <span className="warning-card-icon">⚠️</span>
                 <div className="warning-card-content">
                   <b>Cần lưu ý:</b>
                   <ul>
@@ -652,7 +637,7 @@ export default function ReceiptScannerModal({
                       className="receipt-zoom-btn"
                       onClick={() => setShowFullReceiptPreview((v) => !v)}
                     >
-                      {showFullReceiptPreview ? "Thu nhỏ ⤓" : "Phóng to 🔍"}
+                      {showFullReceiptPreview ? "Thu nhỏ" : "Phóng to"}
                     </button>
                   </div>
                   <div
@@ -752,7 +737,7 @@ export default function ReceiptScannerModal({
                 {/* Payment Source Selection (Wallet or Budget) */}
                 {transactionType === "expense" ? (
                   <div className="payment-source-group">
-                    <label className="payment-source-label">⎨ Nguồn thanh toán</label>
+                    <label className="payment-source-label">Nguồn thanh toán</label>
                     <div className="payment-source-options">
                       {/* Matching Budgets */}
                       {budgets.filter((b) => b.status === "active" && b.remaining_amount > 0 && (!b.category_id || b.category_id === categoryId)).length > 0 && (
@@ -787,7 +772,7 @@ export default function ReceiptScannerModal({
                                       <span className="ps-radio-dot" />
                                     </div>
                                     <div className="ps-info">
-                                      <span className="ps-badge budget">◉ {b.name}</span>
+                                      <span className="ps-badge budget">{b.name}</span>
                                       {isInsufficient && <span className="insufficient-badge">Không đủ số dư</span>}
                                     </div>
                                   </div>
@@ -833,7 +818,7 @@ export default function ReceiptScannerModal({
                                 </div>
                                 <div className="ps-info">
                                   <span className="ps-badge wallet">
-                                    {w.icon} {w.name}
+                                    {w.name}
                                   </span>
                                   {isInsufficient && <span className="insufficient-badge">Không đủ số dư</span>}
                                 </div>
@@ -859,7 +844,7 @@ export default function ReceiptScannerModal({
                     >
                       {wallets.map((w) => (
                         <option key={w.id} value={w.id}>
-                          {w.icon} {w.name}
+                          {w.name}
                         </option>
                       ))}
                     </select>
@@ -908,7 +893,7 @@ export default function ReceiptScannerModal({
                     onClick={handleResetImage}
                     disabled={saving}
                   >
-                    <span>🔄</span> Quét lại
+                    Quét lại
                   </button>
 
                   <button
@@ -916,7 +901,7 @@ export default function ReceiptScannerModal({
                     className="receipt-submit-btn"
                     disabled={saving}
                   >
-                    {saving ? "Đang tạo giao dịch…" : "✓ Xác nhận tạo giao dịch →"}
+                    {saving ? "Đang tạo giao dịch…" : "Xác nhận tạo giao dịch"}
                   </button>
                 </div>
               </div>
@@ -928,9 +913,6 @@ export default function ReceiptScannerModal({
         {step === "error" && (
           <div className="receipt-step-content error-step">
             <div className="receipt-error-card">
-              <div className="receipt-error-icon-box">
-                <span>⚠️</span>
-              </div>
               <h3>Không thể nhận diện hóa đơn</h3>
               <p>
                 {errorMessage ||
@@ -943,14 +925,14 @@ export default function ReceiptScannerModal({
                   className="receipt-primary-btn"
                   onClick={handleResetImage}
                 >
-                  <span>📷 Chọn / Chụp ảnh khác</span>
+                  Chọn / Chụp ảnh khác
                 </button>
                 <button
                   type="button"
                   className="receipt-secondary-btn"
                   onClick={onSwitchToManual}
                 >
-                  <span>✏️ Chuyển sang nhập thủ công</span>
+                  Chuyển sang nhập thủ công
                 </button>
               </div>
             </div>

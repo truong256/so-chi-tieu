@@ -123,9 +123,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
         aria-label="Mở trợ lý tài chính AI"
         title="Trợ lý tài chính AI"
       >
-        <span className="ai-fab-icon">✦</span>
-        {/* Optional Badge */}
-        {/* <span className="ai-fab-badge">1</span> */}
+        <span className="ai-fab-icon" style={{ fontWeight: 700, fontSize: "14px" }}>AI</span>
       </button>
 
       {/* Floating Chat Panel */}
@@ -134,22 +132,16 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
         {/* Panel Header */}
         <div className="ai-floating-header">
           <div className="ai-floating-header-info" onClick={isMinimized ? toggleMinimize : undefined} style={{ cursor: isMinimized ? "pointer" : "default" }}>
-            <span className="ai-floating-header-icon">✦</span>
             <div className="ai-floating-header-text">
               <h3>Trợ lý tài chính AI</h3>
             </div>
           </div>
           <div className="ai-floating-header-actions">
-            <button type="button" onClick={toggleMinimize} aria-label="Thu nhỏ" title="Thu nhỏ">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
+            <button type="button" onClick={toggleMinimize} aria-label="Thu nhỏ" title="Thu nhỏ" style={{ fontSize: "16px", fontWeight: 700 }}>
+              −
             </button>
-            <button type="button" onClick={toggleOpen} aria-label="Đóng" title="Đóng">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+            <button type="button" onClick={toggleOpen} aria-label="Đóng" title="Đóng" style={{ fontSize: "16px", fontWeight: 700 }}>
+              ×
             </button>
           </div>
         </div>
@@ -160,7 +152,6 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
             <div className="ai-floating-body">
               {isEmpty && (
                 <div className="ai-welcome compact">
-                  <div className="ai-welcome-icon compact">✦</div>
                   <p className="ai-welcome-title compact">
                     Xin chào! Tôi là Trợ lý tài chính AI.
                   </p>
@@ -185,7 +176,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
 
               {messages.map(msg => (
                 <div key={msg.id} className={`ai-message-row ${msg.role}`}>
-                  {msg.role === "ai" && <div className="ai-avatar">✦</div>}
+                  {msg.role === "ai" && <div className="ai-avatar">AI</div>}
                   <div className={`ai-bubble ${msg.role} ${msg.isError ? "error" : ""}`}>
                     <MessageContent text={msg.text} />
                   </div>
@@ -194,7 +185,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
 
               {loading && (
                 <div className="ai-message-row ai">
-                  <div className="ai-avatar ai-avatar-pulse">✦</div>
+                  <div className="ai-avatar ai-avatar-pulse">AI</div>
                   <div className="ai-bubble ai">
                     <div className="ai-loading-dots">
                       <span /><span /><span />
@@ -212,9 +203,6 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
               {loading && (
                 <div className="ai-stop-container">
                   <button type="button" className="ai-stop-btn" onClick={stopGeneration}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <rect x="6" y="6" width="12" height="12" rx="2" />
-                    </svg>
                     Dừng
                   </button>
                 </div>
@@ -236,17 +224,9 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
                   className="ai-send-btn"
                   disabled={loading || !input.trim()}
                   aria-label="Gửi"
+                  style={{ fontWeight: 700, fontSize: "12px" }}
                 >
-                  {loading ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ai-spin">
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
-                  )}
+                  {loading ? "..." : "Gửi"}
                 </button>
               </form>
             </div>

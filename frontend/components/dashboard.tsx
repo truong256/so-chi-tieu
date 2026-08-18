@@ -24,6 +24,8 @@ import { AiChatProvider } from "@/frontend/features/ai/ai-chat-context";
 import AiFloatingChat from "@/frontend/features/ai/ai-floating-chat";
 import ReceiptScannerModal, { FormattedMoneyInput } from "@/frontend/components/receipt-scanner-modal";
 import { exportFinancialDataToExcel } from "@/frontend/services/excel-export";
+import { t, setAppLanguage, type Language } from "@/frontend/services/i18n.service";
+import { getExchangeRates, formatMoney, convertVndToTarget, DEFAULT_FALLBACK_RATES } from "@/frontend/services/currency.service";
 
 type View = "overview" | "transactions" | "wallets" | "categories" | "planning" | "recurring" | "reports" | "settings" | "ai-assistant";
 type UserInfo = { id: string; name: string; email: string };
@@ -38,15 +40,15 @@ const defaultCategories = [
 ] as const;
 
 const navItems: { id: View; label: string; en: string; icon: string }[] = [
-  { id: "overview", label: "Tổng quan", en: "Overview", icon: "⌂" },
-  { id: "transactions", label: "Giao dịch", en: "Transactions", icon: "⇄" },
-  { id: "wallets", label: "Ví & tài khoản", en: "Wallets", icon: "▣" },
-  { id: "categories", label: "Danh mục", en: "Categories", icon: "◫" },
-  { id: "planning", label: "Ngân sách & mục tiêu", en: "Plans & goals", icon: "◎" },
-  { id: "recurring", label: "Giao dịch định kỳ", en: "Recurring", icon: "↻" },
-  { id: "reports", label: "Báo cáo", en: "Reports", icon: "▥" },
-  { id: "ai-assistant", label: "Trợ lý AI", en: "AI Assistant", icon: "✦" },
-  { id: "settings", label: "Cài đặt", en: "Settings", icon: "⚙" },
+  { id: "overview", label: "Tổng quan", en: "Overview", icon: "" },
+  { id: "transactions", label: "Giao dịch", en: "Transactions", icon: "" },
+  { id: "wallets", label: "Ví & tài khoản", en: "Wallets", icon: "" },
+  { id: "categories", label: "Danh mục", en: "Categories", icon: "" },
+  { id: "planning", label: "Ngân sách & mục tiêu", en: "Plans & goals", icon: "" },
+  { id: "recurring", label: "Giao dịch định kỳ", en: "Recurring", icon: "" },
+  { id: "reports", label: "Báo cáo", en: "Reports", icon: "" },
+  { id: "ai-assistant", label: "Trợ lý AI", en: "AI Assistant", icon: "" },
+  { id: "settings", label: "Cài đặt", en: "Settings", icon: "" },
 ];
 
 function mapWallet(row: Record<string, unknown>): Wallet { return { ...row, balance: toNumber(row.balance), reserved_amount: toNumber(row.reserved_amount) } as Wallet; }
@@ -193,7 +195,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       const walletsQuerySucceeded = walletResult.status === "fulfilled" && !walletResult.value.error;
       if (walletsQuerySucceeded && !loadedWallets.length) {
         try {
-          const { data, error } = await supabase.from("wallets").insert({ user_id: user.id, name: "Tiền mặt", type: "cash", balance: 0, currency: loadedProfile.currency, color: "#D9F45F", icon: "💵" }).select("id,user_id,name,type,balance,currency,color,icon").single();
+          const { data, error } = await supabase.from("wallets").insert({ user_id: user.id, name: "Tiền mặt", type: "cash", balance: 0, currency: loadedProfile.currency, color: "#D9F45F", icon: "" }).select("id,user_id,name,type,balance,currency,color,icon").single();
           if (!error && data) loadedWallets = [mapWallet(data as Record<string, unknown>)];
         } catch (e) {
           console.warn("Could not auto-insert default wallet:", e);
@@ -276,7 +278,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           showNotice("Đã tự động ghi nhận giao dịch định kỳ đến hạn.");
         }
         if (skippedDueToBalance > 0) {
-          showNotice(`⚠ Có ${skippedDueToBalance} giao dịch định kỳ chưa thể ghi nhận tự động do ví không đủ số dư.`);
+          showNotice(`Có ${skippedDueToBalance} giao dịch định kỳ chưa thể ghi nhận tự động do ví không đủ số dư.`);
         }
       }
 
@@ -301,8 +303,21 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     return () => window.clearTimeout(timer);
   }, [loadData]);
 
-  const locale = profile.language === "vi" ? "vi-VN" : "en-SG";
-  const money = useCallback((amount: number) => new Intl.NumberFormat(locale, { style: "currency", currency: profile.currency, maximumFractionDigits: profile.currency === "VND" ? 0 : 2 }).format(amount), [locale, profile.currency]);
+  const [exchangeRates, setExchangeRates] = useState<Record<string, number>>(DEFAULT_FALLBACK_RATES);
+
+  useEffect(() => {
+    void getExchangeRates().then(data => {
+      if (data?.rates) setExchangeRates(data.rates);
+    });
+  }, []);
+
+  const language = profile.language;
+  const currency = profile.currency;
+  const locale = language === "vi" ? "vi-VN" : "en-US";
+  const money = useCallback(
+    (amount: number) => formatMoney(amount, currency, language, exchangeRates),
+    [currency, language, exchangeRates]
+  );
   const categoryById = useMemo(() => new Map(categories.map(item => [item.id, item])), [categories]);
   const walletById = useMemo(() => new Map(wallets.map(item => [item.id, item])), [wallets]);
 
@@ -428,7 +443,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     });
     goals.forEach(goal => {
       if (goal.target_amount > 0 && goal.current_amount >= goal.target_amount) {
-        alerts.push({ id: goal.id, kind: "done", title: `Mục tiêu hoàn thành: ${goal.title}`, body: `Đã tích lũy đủ ${money(goal.target_amount)} 🎉` });
+        alerts.push({ id: goal.id, kind: "done", title: `Mục tiêu hoàn thành: ${goal.title}`, body: `Đã tích lũy đủ ${money(goal.target_amount)}` });
       }
     });
     return alerts;
@@ -438,9 +453,13 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     setModal(next);
     if (next.kind === "transaction") {
       const item = next.item;
+      // Default wallet: pick first wallet with positive available balance
+      const defaultWallet = !item
+        ? (wallets.find(w => (availableBalances.get(w.id) ?? 0) > 0) ?? wallets[0])
+        : null;
       setTransactionDraft(item
         ? { title: item.title, amount: String(item.amount), type: item.type, categoryId: item.category_id ?? "", walletId: item.wallet_id ?? "", budgetId: item.budget_id ?? "", paymentSourceType: item.payment_source_type ?? "wallet", occurredAt: localDateTime(item.occurred_at), note: item.note }
-        : { title: "", amount: "", type: "expense", categoryId: categories.find(v => v.kind === "expense")?.id ?? "", walletId: wallets[0]?.id ?? "", budgetId: "", paymentSourceType: "wallet", occurredAt: localDateTime(), note: "" });
+        : { title: "", amount: "", type: "expense", categoryId: categories.find(v => v.kind === "expense")?.id ?? "", walletId: defaultWallet?.id ?? "", budgetId: "", paymentSourceType: "wallet", occurredAt: localDateTime(), note: "" });
       setSmartInput("");
       setAiFeedback(null);
       setAiParsing(false);
@@ -498,15 +517,15 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     } else if (!parsed.type || !parsed.amount) {
       setAiFeedback({
         type: "warning",
-        message: "⚠ Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu.",
+        message: "Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu.",
       });
-      showNotice("⚠ Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu.");
+      showNotice("Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu.");
     } else {
       setAiFeedback({
         type: "success",
-        message: `✓ Đã nhận diện: ${parsed.summaryText}`,
+        message: `Đã nhận diện: ${parsed.summaryText}`,
       });
-      showNotice(`✓ Đã nhận diện: ${parsed.summaryText}`);
+      showNotice(`Đã nhận diện: ${parsed.summaryText}`);
     }
   };
 
@@ -608,15 +627,15 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (missingFields.length > 0) {
         setAiFeedback({
           type: "warning",
-          message: `✓ AI đã điền form. Vui lòng chọn thêm: ${missingFields.join(", ")}.`,
+          message: `AI đã điền form. Vui lòng chọn thêm: ${missingFields.join(", ")}.`,
         });
-        showNotice(`⚠ AI đã điền một phần — vui lòng chọn thêm: ${missingFields.join(", ")}.`);
+        showNotice(`AI đã điền một phần — vui lòng chọn thêm: ${missingFields.join(", ")}.`);
       } else {
         setAiFeedback({
           type: "success",
-          message: "✓ AI đã nhận diện và điền thông tin vào form. Hãy kiểm tra trước khi lưu.",
+          message: "AI đã nhận diện và điền thông tin vào form. Hãy kiểm tra trước khi lưu.",
         });
-        showNotice(`✓ AI đã nhận diện: ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
+        showNotice(`AI đã nhận diện: ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
       }
     } catch (err: any) {
       console.error("AI parse exception:", err);
@@ -685,7 +704,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
       if (error) throw error;
 
-      showNotice(`✓ Đã bổ sung ${money(topupAmount)} vào ví "${targetWallet?.name ?? "Ví"}".`);
+      showNotice(`Đã bổ sung ${money(topupAmount)} vào ví "${targetWallet?.name ?? "Ví"}".`);
       setQuickTopupModal(null);
       await loadData(false);
     } catch (err) {
@@ -703,6 +722,11 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     // If paying from budget, walletId is not required
     if (transactionDraft.paymentSourceType === "wallet" && !transactionDraft.walletId) return showNotice("Hãy chọn ví thanh toán.");
     if (transactionDraft.paymentSourceType === "budget" && !transactionDraft.budgetId) return showNotice("Hãy chọn ngân sách.");
+    // Block payment from wallet with zero or negative available balance (expense only)
+    if (transactionDraft.type === "expense" && transactionDraft.paymentSourceType === "wallet" && transactionDraft.walletId) {
+      const walletAvail = availableBalances.get(transactionDraft.walletId) ?? 0;
+      if (walletAvail <= 0) return showNotice(language === "vi" ? "Ví không có tiền khả dụng, hãy chọn ví khác hoặc bổ sung số dư." : "This wallet has no available balance. Please choose another wallet.");
+    }
 
     const isEditing = modal?.kind === "transaction" && modal.item;
     const amount = Number(transactionDraft.amount);
@@ -730,7 +754,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       } else {
         const selectedWallet = wallets.find(w => w.id === transactionDraft.walletId);
         if (!selectedWallet) return showNotice("Hãy chọn ví thanh toán.");
-        
+
         let avail = availableBalances.get(selectedWallet.id) ?? 0;
         if (isEditing && modal.item?.type === "expense" && modal.item?.wallet_id === selectedWallet.id) {
           avail += modal.item.amount;
@@ -992,11 +1016,11 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       }
 
       setModal(null);
-      showNotice("✓ Đã tạo giao dịch thành công từ hóa đơn.");
+      showNotice("Đã tạo giao dịch thành công từ hóa đơn.");
       await loadData(false);
     } catch (error) {
       if (uploadedPath) {
-        await supabase.storage.from("receipts").remove([uploadedPath]).catch(() => {});
+        await supabase.storage.from("receipts").remove([uploadedPath]).catch(() => { });
       }
       const errMsg = error instanceof Error ? error.message : "Không thể lưu giao dịch từ hóa đơn.";
       showNotice(errMsg);
@@ -1041,7 +1065,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     if (amount > budget.remaining_amount) throw new Error(`Chỉ có thể rút tối đa ${money(budget.remaining_amount)}.`);
     const wallet = wallets.find(w => w.id === budget.source_wallet_id);
     if (!wallet) throw new Error("Không tìm thấy ví nguồn.");
-    
+
     const newRemaining = Math.max(0, budget.remaining_amount - amount);
     const newAllocated = Math.max(0, budget.allocated_amount - amount);
     const newStatus = newRemaining <= 0 ? "completed" : budget.status;
@@ -1392,7 +1416,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     });
     if (error) return showNotice(error.message);
     await supabase.from("recurring_transactions").update({ next_run_at: advanceRecurring(item.next_run_at, item.frequency) }).eq("id", item.id);
-    showNotice(`✓ Đã ghi nhận giao dịch "${item.title}" (${money(item.amount)}).`);
+    showNotice(`Đã ghi nhận giao dịch "${item.title}" (${money(item.amount)}).`);
     await loadData(false);
   }
 
@@ -1403,18 +1427,24 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       const fullName = String(form.get("fullName") || "").trim();
       const username = String(form.get("username") || "").trim().toLowerCase();
       if (!/^[a-z0-9_]{3,24}$/.test(username)) throw new Error("Tên tài khoản phải có 3–24 ký tự, chỉ gồm chữ cái, số hoặc dấu gạch dưới.");
-      const payload = { id: user.id, username, full_name: fullName, currency: String(form.get("currency")), language: String(form.get("language")) };
+      const nextLang = (String(form.get("language")) || "vi") as Language;
+      const nextCurr = String(form.get("currency")) || "VND";
+      const payload = { id: user.id, username, full_name: fullName, currency: nextCurr, language: nextLang };
       const { error } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
       if (error) throw error;
       const authResult = await supabase.auth.updateUser({ data: { full_name: fullName, username } });
       if (authResult.error) throw authResult.error;
-      setProfile(payload as Profile); showNotice("Hồ sơ và tùy chọn đã được cập nhật.");
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể cập nhật hồ sơ."); }
+      setAppLanguage(nextLang);
+      setProfile(payload as Profile);
+      showNotice(t("notifications.profileUpdated", undefined, nextLang));
+    } catch (error) {
+      showNotice(error instanceof Error ? error.message : t("notifications.errorOccurred", undefined, profile.language));
+    }
     finally { setSaving(false); }
   }
 
   async function deletePersonalData() {
-    const confirmation = window.prompt("⚠️ CẢNH BÁO: Nhập 'XÓA' để xác nhận XÓA VĨNH VIỄN toàn bộ ví, giao dịch, ngân sách, mục tiêu và hóa đơn khỏi Database.\n\nTài khoản đăng nhập vẫn được giữ. Thao tác này không thể hoàn tác!");
+    const confirmation = window.prompt("CẢNH BÁO: Nhập 'XÓA' để xác nhận XÓA VĨNH VIỄN toàn bộ ví, giao dịch, ngân sách, mục tiêu và hóa đơn khỏi Database.\n\nTài khoản đăng nhập vẫn được giữ. Thao tác này không thể hoàn tác!");
     if (confirmation !== "XÓA") return;
     setSaving(true);
     try {
@@ -1454,7 +1484,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       setTransfers([]);
       setRecurring([]);
 
-      showNotice("✓ Đã xóa vĩnh viễn toàn bộ dữ liệu tài chính trong Database.");
+      showNotice("Đã xóa vĩnh viễn toàn bộ dữ liệu tài chính trong Database.");
       await loadData(false);
     } catch (error) {
       showNotice(error instanceof Error ? error.message : "Không thể xóa dữ liệu.");
@@ -1485,7 +1515,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         totalReserved,
         monthTotals,
       });
-      showNotice(`✓ Dữ liệu của bạn đã được xuất thành công sang tệp "${fileName}".`);
+      showNotice(`Dữ liệu của bạn đã được xuất thành công sang tệp "${fileName}".`);
     } catch (err) {
       console.error("Export Excel error:", err);
       showNotice("Không thể xuất file Excel: " + (err instanceof Error ? err.message : String(err)));
@@ -1495,7 +1525,6 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   }
 
   const firstName = profile.full_name.trim().split(" ").pop() || user.name;
-  const language = profile.language;
   const maxReportBar = Math.max(1, ...report.buckets.flatMap(item => [item.income, item.expense]));
   const reportExpense = report.current.expense || 1;
   let pieCursor = 0;
@@ -1504,1333 +1533,1368 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
   return (
     <AiChatProvider>
-    <main className="dashboard-shell">
-      <aside className={`sidebar ${mobileNav ? "open" : ""}`}>
-        <div className="brand"><span className="brand-mark"><i /><i /><i /></span><span>SỔ CHI TIÊU</span></div>
-        <button className="close-nav" onClick={() => setMobileNav(false)} aria-label="Đóng menu">×</button>
-        <nav aria-label="Điều hướng chính"><p className="nav-section-title">{language === "vi" ? "KHÔNG GIAN CỦA BẠN" : "YOUR WORKSPACE"}</p>{navItems.map(item => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => { setView(item.id); setMobileNav(false); }}><span className="nav-glyph">{item.icon}</span>{language === "vi" ? item.label : item.en}{item.id === "transactions" && <span className="count">{transactions.length}</span>}</button>)}</nav>
-        <div className="sidebar-total-card"><small>{language === "vi" ? "TỔNG TÀI SẢN" : "TOTAL ASSETS"}</small><strong>{money(totalAssets)}</strong><span className="sidebar-total-sub">{language === "vi" ? "Khả dụng:" : "Available:"} {money(totalBalance)}</span><span>{wallets.length} {language === "vi" ? "ví đang hoạt động" : "active wallets"}</span></div>
-        <button type="button" onClick={onSignOut} className="user-profile-card" title="Đăng xuất"><span className="avatar-circle">{profile.full_name.charAt(0).toUpperCase()}</span><span className="user-info"><b>{profile.full_name}</b><small>{user.email}</small></span><em className="logout-icon">↗</em></button>
-      </aside>
-      {mobileNav && <button className="nav-backdrop" aria-label="Đóng menu" onClick={() => setMobileNav(false)} />}
+      <main className="dashboard-shell">
+        <aside className={`sidebar ${mobileNav ? "open" : ""}`}>
+          <div className="brand"><span className="brand-mark"><i /><i /><i /></span><span>{t("common.total", undefined, language) === "Total" ? "EXPENSE BOOK" : "SỔ CHI TIÊU"}</span></div>
+          <button className="close-nav" onClick={() => setMobileNav(false)} aria-label={t("common.close", undefined, language)}>×</button>
+          <nav aria-label={t("nav.workspace", undefined, language)}>
+            <p className="nav-section-title">{t("nav.workspace", undefined, language)}</p>
+            {navItems.map(item => (
+              <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => { setView(item.id); setMobileNav(false); }}>
 
-      <section className="dashboard-main">
-        <div className="dashboard-container">
-          <header className="topbar">
-            <button className="menu-button" onClick={() => setMobileNav(true)} aria-label="Mở menu">☰</button>
-            <div className="topbar-left-info">
-              <p className="top-date">{new Date().toLocaleDateString(locale, { weekday: "long", day: "2-digit", month: "long" }).toUpperCase()}</p>
-              <div className="topbar-title-row">
-                <h1 className="top-greeting">
-                  {view === "overview" && (language === "vi" ? `Chào bạn, ${firstName}.` : `Welcome, ${firstName}.`)}
-                  {view === "transactions" && (language === "vi" ? "Giao dịch" : "Transactions")}
-                  {view === "wallets" && (language === "vi" ? "Ví & tài khoản" : "Wallets")}
-                  {view === "categories" && (language === "vi" ? "Danh mục thu & chi" : "Categories")}
-                  {view === "planning" && (language === "vi" ? "Ngân sách & mục tiêu" : "Planning & Goals")}
-                  {view === "recurring" && (language === "vi" ? "Giao dịch định kỳ" : "Recurring")}
-                  {view === "reports" && (language === "vi" ? "Báo cáo & thống kê" : "Reports")}
-                  {view === "ai-assistant" && (language === "vi" ? "Trợ lý tài chính AI" : "AI Assistant")}
-                  {view === "settings" && (language === "vi" ? "Hồ sơ & tùy chọn" : "Settings")}
-                </h1>
+                {t(`nav.${item.id === "ai-assistant" ? "aiAssistant" : item.id === "planning" ? "planning" : item.id}`, undefined, language)}
+                {item.id === "transactions" && <span className="count">{transactions.length}</span>}
+              </button>
+            ))}
+          </nav>
+          <div className="sidebar-total-card">
+            <small>{t("nav.totalAssets", undefined, language)}</small>
+            <strong>{money(totalAssets)}</strong>
+            <span className="sidebar-total-sub">{t("nav.availableBalance", undefined, language)} {money(totalBalance)}</span>
+            <span>{wallets.length} {t("nav.activeWallets", undefined, language)}</span>
+          </div>
+          <button type="button" onClick={onSignOut} className="user-profile-card" title={t("nav.signOut", undefined, language)}>
+            <span className="avatar-circle">{profile.full_name.charAt(0).toUpperCase()}</span>
+            <span className="user-info"><b>{profile.full_name}</b><small>{user.email}</small></span>
 
-                {view === "transactions" && (
-                  <span className="header-stat-pill">
-                    <b>{filteredTransactions.length}</b> {language === "vi" ? "giao dịch" : "transactions"}
-                  </span>
+          </button>
+        </aside>
+        {mobileNav && <button className="nav-backdrop" aria-label={t("common.close", undefined, language)} onClick={() => setMobileNav(false)} />}
+
+        <section className="dashboard-main">
+          <div className="dashboard-container">
+            <header className="topbar">
+              <button className="menu-button" onClick={() => setMobileNav(true)} aria-label="Menu">Menu</button>
+              <div className="topbar-left-info">
+                <p className="top-date">{new Date().toLocaleDateString(locale, { weekday: "long", day: "2-digit", month: "long" }).toUpperCase()}</p>
+                <div className="topbar-title-row">
+                  <h1 className="top-greeting">
+                    {view === "overview" && t("dashboard.greeting", { name: firstName }, language)}
+                    {view === "transactions" && t("nav.transactions", undefined, language)}
+                    {view === "wallets" && t("nav.wallets", undefined, language)}
+                    {view === "categories" && t("nav.categories", undefined, language)}
+                    {view === "planning" && t("nav.planning", undefined, language)}
+                    {view === "recurring" && t("nav.recurring", undefined, language)}
+                    {view === "reports" && t("nav.reports", undefined, language)}
+                    {view === "ai-assistant" && t("nav.aiAssistant", undefined, language)}
+                    {view === "settings" && t("nav.settings", undefined, language)}
+                  </h1>
+
+                  {view === "transactions" && (
+                    <span className="header-stat-pill">
+                      <b>{filteredTransactions.length}</b> {t("nav.transactions", undefined, language).toLowerCase()}
+                    </span>
+                  )}
+                  {view === "wallets" && (
+                    <span className="header-stat-pill">
+                      <b>{money(totalAssets)}</b> {t("nav.totalAssets", undefined, language).toLowerCase()}
+                    </span>
+                  )}
+                  {view === "categories" && (
+                    <span className="header-stat-pill">
+                      <b>{categories.length}</b> {t("nav.categories", undefined, language).toLowerCase()}
+                    </span>
+                  )}
+                  {view === "planning" && (
+                    <span className="header-stat-pill">
+                      <b>{budgets.length}</b> {t("budgets.title", undefined, language).toLowerCase()}
+                    </span>
+                  )}
+                  {view === "recurring" && (
+                    <span className="header-stat-pill">
+                      <b>{recurring.length}</b> {t("nav.recurring", undefined, language).toLowerCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="top-actions">
+                <label className="topbar-search" aria-label={t("common.search", undefined, language)}>
+
+                  <input
+                    value={query}
+                    onChange={e => handleGlobalSearch(e.target.value)}
+                    placeholder={t("transactions.searchPlaceholder", undefined, language)}
+                    aria-label={t("common.search", undefined, language)}
+                  />
+                  {query && <button type="button" className="topbar-search-clear" onClick={() => setQuery("")} aria-label={t("common.delete", undefined, language)}>×</button>}
+                </label>
+
+                <div className="notification-wrap">
+                  <button id="notification-bell" className="notification-bell" onClick={() => setShowNotifications(v => !v)} aria-label="Notifications" aria-expanded={showNotifications}>
+                    <span>Thông báo</span>
+                    {budgetAlerts.length > 0 && <span className="notif-badge">{budgetAlerts.length}</span>}
+                  </button>
+                  {showNotifications && <>
+                    <button className="notif-backdrop" onClick={() => setShowNotifications(false)} aria-label={t("common.close", undefined, language)} />
+                    <div className="notification-panel" role="dialog" aria-labelledby="notif-panel-title">
+                      <div className="notif-panel-head"><p>{t("common.status", undefined, language).toUpperCase()}</p><h3 id="notif-panel-title">{t("dashboard.planningOverview", undefined, language)}</h3></div>
+                      {budgetAlerts.length ? budgetAlerts.map(alert => (
+                        <div key={alert.id} className={`notif-item ${alert.kind}`}>
+
+                          <div><b>{alert.title}</b><p>{alert.body}</p></div>
+                        </div>
+                      )) : <div className="notif-empty"><p>{t("common.noData", undefined, language)}</p></div>}
+                    </div>
+                  </>}
+                </div>
+
+                {(view === "overview" || view === "wallets") && (
+                  <button className="ghost-action" onClick={() => openModal({ kind: "transfer" })} disabled={wallets.length < 2}>
+                    {t("dashboard.transferMoney", undefined, language)}
+                  </button>
+                )}
+                {(view === "overview" || view === "transactions") && (
+                  <div className="tx-action-btn-group">
+                    <button
+                      type="button"
+                      className="ghost-action ai-scan-quick-btn"
+                      onClick={() => setModal({ kind: "receipt-scan" })}
+                      title={t("dashboard.scanReceipt", undefined, language)}
+                    >
+                      {t("dashboard.scanReceipt", undefined, language)}
+                    </button>
+                    <button className="add-button" onClick={() => openModal({ kind: "transaction" })}>
+                      {t("dashboard.addTransaction", undefined, language)}
+                    </button>
+                  </div>
                 )}
                 {view === "wallets" && (
-                  <span className="header-stat-pill">
-                    <b>{money(totalAssets)}</b> {language === "vi" ? "tổng tài sản" : "total assets"}
-                  </span>
+                  <button className="add-button" onClick={() => openModal({ kind: "wallet" })}>
+                    {t("wallets.addTitle", undefined, language)}
+                  </button>
                 )}
                 {view === "categories" && (
-                  <span className="header-stat-pill">
-                    <b>{categories.length}</b> {language === "vi" ? "danh mục" : "categories"}
-                  </span>
+                  <button className="category-create-button" onClick={() => openModal({ kind: "category" })}>
+                    {t("categories.addTitle", undefined, language)}
+                  </button>
                 )}
                 {view === "planning" && (
-                  <span className="header-stat-pill">
-                    <b>{budgets.length}</b> {language === "vi" ? "ngân sách" : "budgets"}
-                  </span>
+                  <>
+                    <button className="ghost-action" onClick={() => openModal({ kind: "goal" })}>
+                      {t("goals.addTitle", undefined, language)}
+                    </button>
+                    <button className="add-button" onClick={() => openModal({ kind: "budget" })}>
+                      {t("budgets.addTitle", undefined, language)}
+                    </button>
+                  </>
                 )}
                 {view === "recurring" && (
-                  <span className="header-stat-pill">
-                    <b>{recurring.length}</b> {language === "vi" ? "lịch định kỳ" : "recurring"}
-                  </span>
+                  <button className="recurring-create-btn" onClick={() => openModal({ kind: "recurring" })}>
+                    {t("recurring.addTitle", undefined, language)}
+                  </button>
+                )}
+                {view === "reports" && (
+                  <div className="report-period-pill">
+                    {(["day", "week", "month", "year"] as const).map(item => (
+                      <button
+                        key={item}
+                        type="button"
+                        className={reportPeriod === item ? "active" : ""}
+                        onClick={() => setReportPeriod(item)}
+                      >
+                        {item === "day" ? "Ngày" : item === "week" ? "Tuần" : item === "month" ? "Tháng" : "Năm"}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-            </div>
+            </header>
 
-            <div className="top-actions">
-              <label className="topbar-search" aria-label="Tìm kiếm toàn cục">
-                <span aria-hidden="true">⌕</span>
-                <input
-                  value={query}
-                  onChange={e => handleGlobalSearch(e.target.value)}
-                  placeholder={language === "vi" ? "Tìm giao dịch…" : "Search…"}
-                  aria-label="Tìm kiếm giao dịch"
-                />
-                {query && <button type="button" className="topbar-search-clear" onClick={() => setQuery("")} aria-label="Xóa tìm kiếm">×</button>}
-              </label>
+            {notice && <div className="toast" role="status">{notice}</div>}
+            {loading && <div className="loading-banner"><i /> Đang đồng bộ dữ liệu an toàn…</div>}
 
-              <div className="notification-wrap">
-                <button id="notification-bell" className="notification-bell" onClick={() => setShowNotifications(v => !v)} aria-label="Thông báo" aria-expanded={showNotifications}>
-                  🔔{budgetAlerts.length > 0 && <span className="notif-badge">{budgetAlerts.length}</span>}
-                </button>
-                {showNotifications && <>
-                  <button className="notif-backdrop" onClick={() => setShowNotifications(false)} aria-label="Đóng" />
-                  <div className="notification-panel" role="dialog" aria-labelledby="notif-panel-title">
-                    <div className="notif-panel-head"><p>THÔNG BÁO</p><h3 id="notif-panel-title">Cảnh báo tài chính</h3></div>
-                    {budgetAlerts.length ? budgetAlerts.map(alert => (
-                      <div key={alert.id} className={`notif-item ${alert.kind}`}>
-                        <span className="notif-icon">{alert.kind === "over" ? "⚠" : alert.kind === "done" ? "✓" : "●"}</span>
-                        <div><b>{alert.title}</b><p>{alert.body}</p></div>
-                      </div>
-                    )) : <div className="notif-empty"><span>✓</span><p>Không có cảnh báo nào. Tài chính đang ổn định.</p></div>}
+            {view === "overview" && <>
+              <section className="summary-grid">
+                <article className="balance-card">
+                  <div className="card-top-row">
+                    <p>{t("nav.totalAssets", undefined, language)}</p>
+                    <span className="wallet-badge">{wallets.length} {t("nav.wallets", undefined, language).toUpperCase()}</span>
                   </div>
-                </>}
-              </div>
-
-              {(view === "overview" || view === "wallets") && (
-                <button className="ghost-action" onClick={() => openModal({ kind: "transfer" })} disabled={wallets.length < 2}>
-                  ⇄ {language === "vi" ? "Chuyển tiền" : "Transfer"}
-                </button>
-              )}
-              {(view === "overview" || view === "transactions") && (
-                <div className="tx-action-btn-group">
-                  <button
-                    type="button"
-                    className="ghost-action ai-scan-quick-btn"
-                    onClick={() => setModal({ kind: "receipt-scan" })}
-                    title="Quét hóa đơn bằng AI"
-                  >
-                    <span>📷</span> {language === "vi" ? "Quét hóa đơn AI" : "Scan receipt"}
-                  </button>
-                  <button className="add-button" onClick={() => openModal({ kind: "transaction" })}>
-                    <b>＋</b> {language === "vi" ? "Thêm giao dịch" : "Add transaction"}
-                  </button>
-                </div>
-              )}
-              {view === "wallets" && (
-                <button className="add-button" onClick={() => openModal({ kind: "wallet" })}>
-                  <b>＋</b> {language === "vi" ? "Tạo ví" : "Add wallet"}
-                </button>
-              )}
-              {view === "categories" && (
-                <button className="category-create-button" onClick={() => openModal({ kind: "category" })}>
-                  <b>＋</b> {language === "vi" ? "Tạo danh mục" : "Add category"}
-                </button>
-              )}
-              {view === "planning" && (
-                <>
-                  <button className="ghost-action" onClick={() => openModal({ kind: "goal" })}>
-                    ＋ {language === "vi" ? "Mục tiêu" : "Goal"}
-                  </button>
-                  <button className="add-button" onClick={() => openModal({ kind: "budget" })}>
-                    <b>＋</b> {language === "vi" ? "Ngân sách" : "Budget"}
-                  </button>
-                </>
-              )}
-              {view === "recurring" && (
-                <button className="recurring-create-btn" onClick={() => openModal({ kind: "recurring" })}>
-                  <b>＋</b> {language === "vi" ? "Tạo lịch" : "Add recurring"}
-                </button>
-              )}
-              {view === "reports" && (
-                <div className="report-period-pill">
-                  {(["day", "week", "month", "year"] as const).map(item => (
-                    <button
-                      key={item}
-                      type="button"
-                      className={reportPeriod === item ? "active" : ""}
-                      onClick={() => setReportPeriod(item)}
-                    >
-                      {item === "day" ? "Ngày" : item === "week" ? "Tuần" : item === "month" ? "Tháng" : "Năm"}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </header>
-
-          {notice && <div className="toast" role="status"><span>✓</span>{notice}</div>}
-          {loading && <div className="loading-banner"><i /> Đang đồng bộ dữ liệu an toàn…</div>}
-
-          {view === "overview" && <>
-            <section className="summary-grid">
-              <article className="balance-card">
-                <div className="card-top-row">
-                  <p>TỔNG TÀI SẢN</p>
-                  <span className="wallet-badge">{wallets.length} VÍ</span>
-                </div>
-                <h2>{money(totalAssets)}</h2>
-                <div className="card-sub-row">
-                  <span className="trend-badge">Khả dụng: {money(totalAvailable)}</span>
-                  <small>đã phân bổ: {money(totalReserved)}</small>
-                </div>
-                <div className="sparkline">
-                  <svg viewBox="0 0 300 70">
-                    <path d="M0 59 C25 51,35 60,58 48 S97 39,115 44 S144 54,164 31 S198 20,214 30 S249 42,267 15 S292 12,300 6" fill="none" stroke="#D2F544" strokeWidth="3.5" strokeLinecap="round" />
-                  </svg>
-                </div>
-              </article>
-              <article className="stat-card">
-                <div className="stat-icon-wrapper income">✓</div>
-                <p>THU NHẬP THÁNG</p>
-                <h3>{money(monthTotals.income)}</h3>
-                <small>{monthTransactions.filter(item => item.type === "income").length} khoản thu đã ghi nhận</small>
-              </article>
-              <article className="stat-card">
-                <div className="stat-icon-wrapper expense">↗</div>
-                <p>CHI TIÊU THÁNG</p>
-                <h3>{money(monthTotals.expense)}</h3>
-                <small>{monthTransactions.filter(item => item.type === "expense").length} khoản chi đã ghi nhận</small>
-              </article>
-              <article className="stat-card">
-                <div className={`stat-icon-wrapper ${monthTotals.income >= monthTotals.expense ? "income" : "expense"}`}>
-                  {monthTotals.income >= monthTotals.expense ? "✦" : "−"}
-                </div>
-                <p>TIẾT KIỆM THÁNG</p>
-                <h3 style={{ color: monthTotals.income >= monthTotals.expense ? "var(--income-green-text)" : "var(--expense-red-text)" }}>
-                  {money(monthTotals.income - monthTotals.expense)}
-                </h3>
-                <small>
-                  {monthTotals.income > 0
-                    ? `Tích lũy ${Math.round(((monthTotals.income - monthTotals.expense) / monthTotals.income) * 100)}% thu nhập`
-                    : monthTotals.expense > 0 ? "Thâm hụt chi tiêu" : "Chưa có biến động"}
-                </small>
-              </article>
-            </section>
-            <section className="overview-grid">
-              <article className="panel">
-                <div className="panel-head">
+                  <h2>{money(totalAssets)}</h2>
+                  <div className="card-sub-row">
+                    <span className="trend-badge">{t("dashboard.available", undefined, language)}: {money(totalAvailable)}</span>
+                    <small>{t("dashboard.allocated", undefined, language)}: {money(totalReserved)}</small>
+                  </div>
+                  <div className="sparkline">
+                    <svg viewBox="0 0 300 70">
+                      <path d="M0 59 C25 51,35 60,58 48 S97 39,115 44 S144 54,164 31 S198 20,214 30 S249 42,267 15 S292 12,300 6" fill="none" stroke="#D2F544" strokeWidth="3.5" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </article>
+                <article className="stat-card stat-income">
                   <div>
-                    <p>VÍ CỦA BẠN</p>
-                    <h3>Số dư theo tài khoản</h3>
+                    <span className="stat-tag income">{language === "vi" ? "Thu nhập" : "Income"}</span>
+                    <p>{t("dashboard.monthlyIncome", undefined, language).toUpperCase()}</p>
                   </div>
-                  <button className="pill-button" onClick={() => setView("wallets")}>Quản lý →</button>
-                </div>
-                <div className="wallet-mini-list">
-                  {wallets.slice(0, 4).map(wallet => {
-                    const wBal = walletBalances.get(wallet.id) ?? 0;
-                    const wAvail = availableBalances.get(wallet.id) ?? 0;
-                    const isNegAvail = wAvail < 0;
-                    const isNegBal = wBal < 0;
-                    return (
-                      <div key={wallet.id} className="wallet-mini-item">
-                        <span className="wallet-dot-box" style={{ background: `${wallet.color}25`, color: wallet.color }}>{wallet.icon}</span>
-                        <span className="wallet-info">
-                          <b>{wallet.name}</b>
-                          <small>{wallet.type === "cash" ? "Tiền mặt" : wallet.type === "bank" ? "Ngân hàng" : "Ví điện tử"}</small>
-                        </span>
-                        <div className="wallet-mini-balances">
-                          <strong style={isNegBal ? { color: "#dc2626" } : undefined}>{money(wBal)}</strong>
-                          <small style={isNegAvail ? { color: "#dc2626", fontWeight: 700 } : undefined}>
-                            {isNegAvail ? `Khả dụng ${money(wAvail)} (Âm tiền)` : `Khả dụng ${money(wAvail)}`}
+                  <h3>{money(monthTotals.income)}</h3>
+                  <small>{monthTransactions.filter(item => item.type === "income").length} {t("transactions.incomeLabel", undefined, language).toLowerCase()}</small>
+                </article>
+                <article className="stat-card stat-expense">
+                  <div>
+                    <span className="stat-tag expense">{language === "vi" ? "Chi tiêu" : "Expense"}</span>
+                    <p>{t("dashboard.monthlyExpense", undefined, language).toUpperCase()}</p>
+                  </div>
+                  <h3>{money(monthTotals.expense)}</h3>
+                  <small>{monthTransactions.filter(item => item.type === "expense").length} {t("transactions.expenseLabel", undefined, language).toLowerCase()}</small>
+                </article>
+                <article className="stat-card stat-savings">
+                  <div>
+                    <span className="stat-tag savings">{language === "vi" ? "Tích lũy" : "Savings"}</span>
+                    <p>{t("dashboard.netSavings", undefined, language).toUpperCase()}</p>
+                  </div>
+                  <h3 style={{ color: monthTotals.income >= monthTotals.expense ? "var(--income-green-text)" : "var(--expense-red-text)" }}>
+                    {money(monthTotals.income - monthTotals.expense)}
+                  </h3>
+                  <small>
+                    {monthTotals.income > 0
+                      ? `${language === "vi" ? "Tích lũy" : "Saved"} ${Math.round(((monthTotals.income - monthTotals.expense) / monthTotals.income) * 100)}%`
+                      : monthTotals.expense > 0 ? (language === "vi" ? "Thâm hụt chi tiêu" : "Deficit") : t("common.noData", undefined, language)}
+                  </small>
+                </article>
+              </section>
+              <section className="overview-grid">
+                <article className="panel">
+                  <div className="panel-head">
+                    <div>
+                      <p>{t("wallets.title", undefined, language).toUpperCase()}</p>
+                      <h3>{language === "vi" ? "Số dư theo tài khoản" : "Account balances"}</h3>
+                    </div>
+                    <button className="pill-button" onClick={() => setView("wallets")}>{language === "vi" ? "Quản lý" : "Manage"}</button>
+                  </div>
+                  <div className="wallet-mini-list">
+                    {wallets.slice(0, 4).map(wallet => {
+                      const wBal = walletBalances.get(wallet.id) ?? 0;
+                      const wAvail = availableBalances.get(wallet.id) ?? 0;
+                      const isNegAvail = wAvail < 0;
+                      const isNegBal = wBal < 0;
+                      return (
+                        <div key={wallet.id} className="wallet-mini-item">
+                          <span className="wallet-dot-box" style={{ background: `${wallet.color}25`, color: wallet.color }} />
+                          <span className="wallet-info">
+                            <b>{wallet.name}</b>
+                            <small>{wallet.type === "cash" ? t("wallets.cash", undefined, language) : wallet.type === "bank" ? t("wallets.bank", undefined, language) : t("wallets.ewallet", undefined, language)}</small>
+                          </span>
+                          <div className="wallet-mini-balances">
+                            <strong style={isNegBal ? { color: "#dc2626" } : undefined}>{money(wBal)}</strong>
+                            <small style={isNegAvail ? { color: "#dc2626", fontWeight: 700 } : undefined}>
+                              {isNegAvail ? `${t("dashboard.available", undefined, language)} ${money(wAvail)}` : `${t("dashboard.available", undefined, language)} ${money(wAvail)}`}
+                            </small>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </article>
+                <article className="panel">
+                  <div className="panel-head">
+                    <div>
+                      <p>{t("budgets.title", undefined, language).toUpperCase()}</p>
+                      <h3>{language === "vi" ? "Tiến độ tháng này" : "Monthly progress"}</h3>
+                    </div>
+                    <button className="pill-button" onClick={() => setView("planning")}>{language === "vi" ? "Xem hết" : "View all"}</button>
+                  </div>
+                  <div className="budget-stack">
+                    {budgets.length ? budgets.slice(0, 3).map(budget => {
+                      const totalCapacity = Math.max(budget.amount, budget.allocated_amount + budget.spent_amount);
+                      const withdrawnAmount = Math.max(0, totalCapacity - budget.remaining_amount - budget.spent_amount);
+                      const totalUsed = budget.spent_amount + withdrawnAmount;
+                      const pct = totalCapacity > 0 ? Math.min(100, Math.round((totalUsed / totalCapacity) * 100)) : 0;
+                      const isClosed = budget.remaining_amount <= 0 || budget.status === "completed" || budget.status === "cancelled";
+                      return (
+                        <div key={budget.id} className="budget-item">
+                          <div className="budget-item-head">
+                            <b>{budget.name}</b>
+                            <span className={pct >= 100 ? "danger" : pct >= budget.alert_percent ? "warning" : ""}>{pct}%</span>
+                          </div>
+                          <div className="meter"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>
+                          <small>
+                            {isClosed
+                              ? `${money(totalUsed)} / ${money(totalCapacity)}`
+                              : `${money(totalUsed)} / ${money(totalCapacity)}`
+                            }
                           </small>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </article>
-              <article className="panel">
+                      );
+                    }) : <Empty text={t("dashboard.emptyBudgets", undefined, language)} />}
+                  </div>
+                </article>
+              </section>
+              <article className="panel transaction-panel">
                 <div className="panel-head">
                   <div>
-                    <p>CẢNH BÁO NGÂN SÁCH</p>
-                    <h3>Tiến độ tháng này</h3>
+                    <p>{t("dashboard.recentTransactions", undefined, language).toUpperCase()}</p>
+                    <h3>{language === "vi" ? "Dòng tiền mới nhất" : "Recent cashflow"}</h3>
                   </div>
-                  <button className="pill-button" onClick={() => setView("planning")}>Xem hết →</button>
+                  <button className="pill-button" onClick={() => setView("transactions")}>{language === "vi" ? "Xem tất cả" : "View all"}</button>
                 </div>
-                <div className="budget-stack">
-                  {budgets.length ? budgets.slice(0, 3).map(budget => {
-                    const totalCapacity = Math.max(budget.amount, budget.allocated_amount + budget.spent_amount);
-                    const withdrawnAmount = Math.max(0, totalCapacity - budget.remaining_amount - budget.spent_amount);
-                    const totalUsed = budget.spent_amount + withdrawnAmount;
-                    const pct = totalCapacity > 0 ? Math.min(100, Math.round((totalUsed / totalCapacity) * 100)) : 0;
-                    const isClosed = budget.remaining_amount <= 0 || budget.status === "completed" || budget.status === "cancelled";
-                    return (
-                      <div key={budget.id} className="budget-item">
-                        <div className="budget-item-head">
-                          <b>{budget.name}</b>
-                          <span className={pct >= 100 ? "danger" : pct >= budget.alert_percent ? "warning" : ""}>{pct}%</span>
-                        </div>
-                        <div className="meter"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>
-                        <small>
-                          {isClosed
-                            ? `Đã rút/chi hết (${money(totalUsed)} / ${money(totalCapacity)})`
-                            : `${money(totalUsed)} / ${money(totalCapacity)}`
-                          }
-                        </small>
-                      </div>
-                    );
-                  }) : <Empty text="Chưa có ngân sách. Hãy đặt hạn mức đầu tiên." />}
-                </div>
+                <TransactionTable items={transactions.slice(0, 6)} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} />
               </article>
-            </section>
-            <article className="panel transaction-panel">
-              <div className="panel-head">
-                <div>
-                  <p>GIAO DỊCH GẦN ĐÂY</p>
-                  <h3>Dòng tiền mới nhất</h3>
+            </>}
+
+            {view === "transactions" && <>
+              <section className="panel filter-panel">
+                <label className="search-field"><input value={query} onChange={event => setQuery(event.target.value)} placeholder={t("transactions.searchPlaceholder", undefined, language)} /></label>
+                <div className="filter-grid">
+                  <select value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)}>
+                    <option value="all">{t("transactions.allTypes", undefined, language)}</option>
+                    <option value="expense">{t("transactions.expense", undefined, language)}</option>
+                    <option value="income">{t("transactions.income", undefined, language)}</option>
+                  </select>
+                  <select value={walletFilter} onChange={event => setWalletFilter(event.target.value)}>
+                    <option value="all">{t("transactions.allWallets", undefined, language)}</option>
+                    {wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </select>
+                  <select value={categoryFilter} onChange={event => setCategoryFilter(event.target.value)}>
+                    <option value="all">{t("transactions.allCategories", undefined, language)}</option>
+                    {categories.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </select>
+                  <div className="date-filter-wrap"><span>{t("common.from", undefined, language)}</span><input type="date" value={dateFrom} onChange={event => setDateFrom(event.target.value)} aria-label="From date" /></div>
+                  <div className="date-filter-wrap"><span>{t("common.to", undefined, language)}</span><input type="date" value={dateTo} onChange={event => setDateTo(event.target.value)} aria-label="To date" /></div>
+                  <input type="number" value={minAmount} onChange={event => setMinAmount(event.target.value)} placeholder={language === "vi" ? "Từ số tiền" : "Min amount"} />
+                  <input type="number" value={maxAmount} onChange={event => setMaxAmount(event.target.value)} placeholder={language === "vi" ? "Đến số tiền" : "Max amount"} />
+                  <select value={sort} onChange={event => setSort(event.target.value)}>
+                    <option value="date-desc">{language === "vi" ? "Mới nhất" : "Newest"}</option>
+                    <option value="date-asc">{language === "vi" ? "Cũ nhất" : "Oldest"}</option>
+                    <option value="amount-desc">{language === "vi" ? "Số tiền giảm dần" : "Highest amount"}</option>
+                    <option value="amount-asc">{language === "vi" ? "Số tiền tăng dần" : "Lowest amount"}</option>
+                  </select>
                 </div>
-                <button className="pill-button" onClick={() => setView("transactions")}>Xem tất cả →</button>
-              </div>
-              <TransactionTable items={transactions.slice(0, 6)} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} />
-            </article>
-          </>}
+              </section>
+              <article className="panel transaction-panel full-table"><TransactionTable items={filteredTransactions} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} /></article>
+            </>}
 
-        {view === "transactions" && <>
-          <section className="panel filter-panel"><label className="search-field">⌕<input value={query} onChange={event => setQuery(event.target.value)} placeholder="Tìm tên, ghi chú, danh mục hoặc ví…" /></label><div className="filter-grid"><select value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)}><option value="all">Tất cả loại</option><option value="expense">Khoản chi</option><option value="income">Khoản thu</option></select><select value={walletFilter} onChange={event => setWalletFilter(event.target.value)}><option value="all">Tất cả ví</option>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select value={categoryFilter} onChange={event => setCategoryFilter(event.target.value)}><option value="all">Tất cả danh mục</option>{categories.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><div className="date-filter-wrap"><span>Từ</span><input type="date" value={dateFrom} onChange={event => setDateFrom(event.target.value)} aria-label="Từ ngày" /></div><div className="date-filter-wrap"><span>Đến</span><input type="date" value={dateTo} onChange={event => setDateTo(event.target.value)} aria-label="Đến ngày" /></div><input type="number" value={minAmount} onChange={event => setMinAmount(event.target.value)} placeholder="Từ số tiền" /><input type="number" value={maxAmount} onChange={event => setMaxAmount(event.target.value)} placeholder="Đến số tiền" /><select value={sort} onChange={event => setSort(event.target.value)}><option value="date-desc">Mới nhất</option><option value="date-asc">Cũ nhất</option><option value="amount-desc">Số tiền giảm dần</option><option value="amount-asc">Số tiền tăng dần</option></select></div></section>
-          <article className="panel transaction-panel full-table"><TransactionTable items={filteredTransactions} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} /></article>
-        </>}
-
-        {view === "wallets" && <>
-          <section className="wallet-grid">
-            {wallets.map(wallet => {
-              const wBal = walletBalances.get(wallet.id) ?? 0;
-              const wAvail = availableBalances.get(wallet.id) ?? 0;
-              const wRes = walletReservedMap.get(wallet.id) ?? 0;
-              const isNegAvail = wAvail < 0;
-              const isNegBal = wBal < 0;
-              return (
-                <article className="wallet-card" key={wallet.id} style={{ "--wallet-color": wallet.color } as React.CSSProperties}>
-                  <div>
-                    <span>{wallet.icon}</span>
-                    <small>{wallet.type === "cash" ? "TIỀN MẶT" : wallet.type === "bank" ? "NGÂN HÀNG" : "VÍ ĐIỆN TỬ"}</small>
-                  </div>
-                  <h3>{wallet.name}</h3>
-                  <strong style={isNegBal ? { color: "#dc2626" } : undefined}>{money(wBal)}</strong>
-                  <p style={isNegAvail ? { color: "#dc2626", fontWeight: 700 } : undefined}>
-                    Khả dụng: {money(wAvail)} {isNegAvail ? "⚠ Đã phân bổ vượt số dư" : ""}
-                  </p>
-                  <p>Đã phân bổ: {money(wRes)}</p>
-                  <footer>
-                    <button onClick={() => openModal({ kind: "wallet", item: wallet })}>Chỉnh sửa</button>
-                    <button onClick={() => remove("wallets", wallet.id, wallet.name)}>Xóa</button>
-                  </footer>
-                </article>
-              );
-            })}
-          </section>
-          <article className="panel"><div className="panel-head"><div><p>LỊCH SỬ CHUYỂN TIỀN</p><h3>Điều chuyển giữa các ví</h3></div></div><div className="compact-list">{transfers.map(item => <div key={item.id}><span className="round-icon">⇄</span><span><b>{walletById.get(item.from_wallet_id)?.name} → {walletById.get(item.to_wallet_id)?.name}</b><small>{formatDate(item.occurred_at, language)} · {item.note || "Không có ghi chú"}</small></span><strong>{money(item.amount)}</strong><button onClick={() => remove("transfers", item.id, "lệnh chuyển tiền")}>×</button></div>)}{!transfers.length && <Empty text="Chưa có giao dịch chuyển tiền." />}</div></article>
-        </>}
-
-        {view === "categories" && (
-          <section className="category-main-card">
-
-            {(["expense", "income"] as TransactionType[]).map(kind => {
-              const items = categories.filter(item => item.kind === kind);
-              return (
-                <article className="category-section-card" key={kind}>
-                  <div className="category-section-head">
-                    <div>
-                      <p>{kind === "expense" ? "KHOẢN CHI" : "KHOẢN THU"}</p>
-                      <h3>{kind === "expense" ? "Danh mục chi tiêu" : "Nguồn thu nhập"}</h3>
-                    </div>
-                    <span className="category-section-count">{items.length}</span>
-                  </div>
-
-                  <div className="category-row-list">
-                    {items.map(item => (
-                      <div className="category-item-row" key={item.id}>
-                        <div className="category-item-left">
-                          <span className="category-item-dot" style={{ backgroundColor: item.color || "#84cc16" }} />
-                          <span className="category-item-name">{item.name}</span>
-                        </div>
-
-                        <div className="category-item-right">
-                          <button
-                            type="button"
-                            className="category-action-btn"
-                            onClick={() => openModal({ kind: "category", item })}
-                            title="Chỉnh sửa danh mục"
-                          >
-                            <span>✎</span> Sửa
-                          </button>
-                          <button
-                            type="button"
-                            className="category-action-btn delete"
-                            onClick={() => remove("categories", item.id, item.name)}
-                            title="Xóa danh mục"
-                          >
-                            <span>🗑</span> Xóa
-                          </button>
-                          <span className="drag-handle-icon" title="Kéo để di chuyển">⇗</span>
-                        </div>
-                      </div>
-                    ))}
-                    {!items.length && <Empty text={kind === "expense" ? "Chưa có danh mục chi tiêu." : "Chưa có danh mục thu nhập."} />}
-                  </div>
-                </article>
-              );
-            })}
-          </section>
-        )}
-
-        {view === "planning" && <>
-          <section className="planning-grid">
-            <article className="panel">
-              <div className="panel-head"><div><p>HẠN MỨC CHI TIÊU</p><h3>Ngân sách đang theo dõi</h3></div></div>
-              <div className="plan-list">
-                {budgets.map(budget => {
-                  const totalCapacity = Math.max(budget.amount, budget.allocated_amount + budget.spent_amount);
-                  const withdrawnAmount = Math.max(0, totalCapacity - budget.remaining_amount - budget.spent_amount);
-                  const totalUsed = budget.spent_amount + withdrawnAmount;
-                  const pct = totalCapacity > 0 ? Math.min(100, Math.round((totalUsed / totalCapacity) * 100)) : 0;
-                  const sourceWallet = walletById.get(budget.source_wallet_id ?? "");
-                  const isClosed = budget.remaining_amount <= 0 || budget.status === "completed" || budget.status === "cancelled";
-                  const isOver = isClosed;
-                  const isNear = !isOver && pct >= budget.alert_percent;
+            {view === "wallets" && <>
+              <section className="wallet-grid">
+                {wallets.map(wallet => {
+                  const wBal = walletBalances.get(wallet.id) ?? 0;
+                  const wAvail = availableBalances.get(wallet.id) ?? 0;
+                  const wRes = walletReservedMap.get(wallet.id) ?? 0;
+                  const isNegAvail = wAvail < 0;
+                  const isNegBal = wBal < 0;
                   return (
-                    <div className={`plan-card ${isOver ? "over" : isNear ? "near" : ""}`} key={budget.id}>
-                      <header>
-                        <span>
-                          <b>{budget.name}</b>
-                          <small>{budget.category_id ? categoryById.get(budget.category_id)?.name : "Tổng chi tiêu"} · {budget.period === "weekly" ? "Tuần" : budget.period === "yearly" ? "Năm" : "Tháng"}</small>
-                        </span>
-                        <strong>{pct}%</strong>
-                      </header>
-                      <div className="meter"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>
-                      <div className="budget-detail-rows">
-                        <div className="budget-detail-row"><span>Tổng phân bổ</span><b>{money(totalCapacity)}</b></div>
-                        <div className="budget-detail-row"><span>Đã chi</span><b className="expense">{money(budget.spent_amount)}</b></div>
-                        {withdrawnAmount > 0 && <div className="budget-detail-row"><span>Đã rút về ví</span><b>{money(withdrawnAmount)}</b></div>}
-                        <div className="budget-detail-row highlight"><span>Còn lại</span><b className={isOver ? "expense" : "income"}>{money(budget.remaining_amount)}</b></div>
-                        {sourceWallet && <div className="budget-detail-row"><span>Nguồn tiền</span><b>{sourceWallet.name}</b></div>}
-                      </div>
-                      {isClosed && <em>🔴 Đã hết tiền/rút hết ({pct}%) — Ngân sách đã kết thúc, không thể chi thêm.</em>}
-                      {isNear && !isClosed && <em>Sắp chạm hạn mức {budget.alert_percent}%</em>}
-                      <footer>
-                        <button type="button" onClick={() => openModal({ kind: "budget-topup", budget })} title="Nạp thêm tiền vào ngân sách">⊕ Nạp thêm</button>
-                        <button type="button" onClick={() => openModal({ kind: "budget-return", budget })} title="Rút tiền về ví" disabled={budget.remaining_amount <= 0}>⊖ Rút tiền</button>
-                        <button type="button" onClick={() => openModal({ kind: "budget", item: budget })}>✎ Sửa</button>
-                        <button type="button" onClick={() => deleteBudget(budget)}>🗑 Xóa</button>
-                      </footer>
-                    </div>
-                  );
-                })}
-                {!budgets.length && <Empty text="Tạo ngân sách để phân bổ tiền và kiểm soát chi tiêu." />}
-              </div>
-            </article>
-
-            <article className="panel">
-              <div className="panel-head"><div><p>TÍCH LŨY TƯƠNG LAI</p><h3>Mục tiêu tiết kiệm</h3></div></div>
-              <div className="plan-list">
-                {goals.map(goal => {
-                  const percent = goal.target_amount > 0 ? Math.round(goal.current_amount / goal.target_amount * 100) : 0;
-                  const sourceWallet = walletById.get(goal.source_wallet_id ?? "");
-                  return (
-                    <div className="goal-plan" key={goal.id}>
-                      <header>
-                        <span style={{ background: `${goal.color}25`, color: goal.color }}>◎</span>
-                        <div>
-                          <b>{goal.title}</b>
-                          <small>{goal.deadline ? `Hạn ${new Date(`${goal.deadline}T00:00:00`).toLocaleDateString(locale)}` : "Không có thời hạn"}</small>
-                        </div>
-                        <strong>{Math.min(100, percent)}%</strong>
-                      </header>
-                      <div className="meter"><i style={{ width: `${Math.min(100, percent)}%`, background: goal.color }} /></div>
-                      <div className="budget-detail-rows">
-                        <div className="budget-detail-row"><span>Đã dành</span><b className="income">{money(goal.current_amount)}</b></div>
-                        <div className="budget-detail-row"><span>Mục tiêu</span><b>{money(goal.target_amount)}</b></div>
-                        <div className="budget-detail-row highlight"><span>Còn thiếu</span><b>{money(Math.max(0, goal.target_amount - goal.current_amount))}</b></div>
-                        {sourceWallet && <div className="budget-detail-row"><span>Ví đang giữ</span><b>{sourceWallet.name}</b></div>}
-                      </div>
-                      <footer>
-                        <button type="button" onClick={() => openModal({ kind: "goal-topup", goal })} title="Nạp thêm vào mục tiêu">⊕ Gửi tiền</button>
-                        <button type="button" onClick={() => openModal({ kind: "goal-return", goal })} title="Rút tiền về ví" disabled={goal.current_amount <= 0}>⊖ Rút tiền</button>
-                        <button type="button" onClick={() => openModal({ kind: "goal", item: goal })}>✎ Sửa</button>
-                        <button type="button" onClick={() => { if (window.confirm(`Xóa mục tiêu "${goal.title}"?`)) { if (goal.current_amount > 0 && goal.source_wallet_id) { returnGoalToWallet(goal, goal.current_amount).then(() => remove("savings_goals", goal.id, goal.title)).catch(e => showNotice(e.message)); } else { remove("savings_goals", goal.id, goal.title); } } }}>🗑 Xóa</button>
-                      </footer>
-                    </div>
-                  );
-                })}
-                {!goals.length && <Empty text="Chưa có mục tiêu tiết kiệm nào." />}
-              </div>
-            </article>
-          </section>
-        </>}
-
-        {view === "recurring" && (
-          <section className="recurring-main-card">
-
-            <div className="automation-banner">
-              <div className="automation-banner-glow" aria-hidden="true" />
-              <div className="automation-banner-icon-wrap">
-                <span className="automation-banner-sparkle">✨</span>
-                <div className="automation-banner-icon">
-                  <span>🪄</span>
-                </div>
-              </div>
-              <div className="automation-banner-body">
-                <div className="automation-banner-header">
-                  <h3 className="automation-banner-title">
-                    Tự động hóa dòng tiền định kỳ
-                    <span className="automation-live-badge">
-                      <span className="automation-live-dot" />
-                      Đang hoạt động
-                    </span>
-                  </h3>
-                </div>
-                <p className="automation-banner-desc">
-                  Hệ thống sẽ <b>tự động ghi nhận giao dịch</b> khi đến hạn mỗi lần bạn mở ứng dụng, đồng thời <b>kiểm tra an toàn số dư ví</b> trước khi thực hiện.
-                </p>
-                <div className="automation-banner-features">
-                  <span className="automation-feature-pill">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7"/></svg>
-                    Tự động ghi nhận
-                  </span>
-                  <span className="automation-feature-pill">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                    Nhắc nhở đến hạn
-                  </span>
-                  <span className="automation-feature-pill">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    Bảo vệ chống số dư âm
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {recurring.length > 0 ? (
-              <section className="recurring-grid">
-                {recurring.map(item => {
-                  const due = item.active && new Date(item.next_run_at) <= new Date();
-                  const category = categoryById.get(item.category_id ?? "");
-                  const wallet = walletById.get(item.wallet_id ?? "");
-                  const walletAvail = availableBalances.get(item.wallet_id ?? "") ?? 0;
-                  const isInsufficient = item.type === "expense" && item.amount > walletAvail;
-                  return (
-                    <article className={`recurring-card ${due ? "due" : ""} ${isInsufficient ? "insufficient" : ""}`} key={item.id}>
+                    <article className="wallet-card" key={wallet.id} style={{ "--wallet-color": wallet.color } as React.CSSProperties}>
                       <div>
-                        <div className="recurring-card-header">
-                          <span className={`recurring-card-type-icon ${item.type}`}>
-                            {item.type === "income" ? "↙" : "↗"}
-                          </span>
-                          <div className="recurring-card-info">
-                            <b>{item.title}</b>
-                            <small>{category?.name ?? "Chưa chọn danh mục"} · {wallet?.name ?? "Chưa chọn ví"}</small>
-                          </div>
-                          <span className={`recurring-status-badge ${item.active ? "on" : "off"}`}>
-                            {item.active ? "Đang bật" : "Đã tắt"}
-                          </span>
-                        </div>
-
-                        <div className="recurring-card-amount">
-                          {item.type === "expense" ? "−" : "+"}{money(item.amount)}
-                        </div>
-
-                        <div className="recurring-card-next">
-                          Kỳ tiếp theo: <b>{formatDate(item.next_run_at, language)}</b>
-                        </div>
-
-                        <div className="recurring-card-tags">
-                          <span className="recurring-tag">
-                            {item.frequency === "daily" ? "Hàng ngày" : item.frequency === "weekly" ? "Hàng tuần" : item.frequency === "monthly" ? "Hàng tháng" : "Hàng năm"}
-                          </span>
-                          <span className="recurring-tag">
-                            {item.auto_create ? "Tự động ghi nhận" : "Chỉ nhắc nhở"}
-                          </span>
-                        </div>
-
-                        {isInsufficient && (
-                          <div className="insufficient-warning" title={`Khả dụng: ${money(walletAvail)}`}>
-                            <span>⚠️</span>
-                            <span>Số dư ví không đủ (Khả dụng: {money(walletAvail)})</span>
-                          </div>
-                        )}
+                        <span className="wallet-type-tag" style={{ background: `${wallet.color}25`, color: wallet.color }}>
+                          {wallet.type === "cash" ? t("wallets.cash", undefined, language).toUpperCase() : wallet.type === "bank" ? t("wallets.bank", undefined, language).toUpperCase() : t("wallets.ewallet", undefined, language).toUpperCase()}
+                        </span>
                       </div>
-
-                      <footer className="recurring-card-footer">
-                        {due && !item.auto_create && (
-                          <button
-                            type="button"
-                            className={`recurring-due-btn ${isInsufficient ? "danger" : ""}`}
-                            onClick={() => createDueTransaction(item)}
-                          >
-                            {isInsufficient ? "⚠️ Thiếu số dư — Bổ sung ví" : "Ghi nhận ngay"}
-                          </button>
-                        )}
-                        <div className="recurring-actions">
-                          <button type="button" onClick={() => openModal({ kind: "recurring", item })}>
-                            ✎ Sửa
-                          </button>
-                          <button type="button" onClick={() => remove("recurring_transactions", item.id, item.title)}>
-                            🗑 Xóa
-                          </button>
-                        </div>
+                      <h3>{wallet.name}</h3>
+                      <strong style={isNegBal ? { color: "#dc2626" } : undefined}>{money(wBal)}</strong>
+                      <p style={isNegAvail ? { color: "#dc2626", fontWeight: 700 } : undefined}>
+                        {t("wallets.available", undefined, language)}: {money(wAvail)} {isNegAvail ? t("wallets.overAllocatedWarning", undefined, language) : ""}
+                      </p>
+                      <p>{t("wallets.reserved", undefined, language)}: {money(wRes)}</p>
+                      <footer>
+                        <button onClick={() => openModal({ kind: "wallet", item: wallet })}>{t("common.edit", undefined, language)}</button>
+                        <button onClick={() => remove("wallets", wallet.id, wallet.name)}>{t("common.delete", undefined, language)}</button>
                       </footer>
                     </article>
                   );
                 })}
               </section>
-            ) : (
-              <div className="recurring-empty-box">
-                <div className="recurring-empty-illustration">
-                  <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="25" y="30" width="70" height="65" rx="14" fill="#F4F8F6" stroke="#D0DCD6" strokeWidth="2.5" />
-                    <path d="M25 45 H95" stroke="#D0DCD6" strokeWidth="2.5" />
-                    <circle cx="45" cy="24" r="5" fill="#161E1F" />
-                    <circle cx="75" cy="24" r="5" fill="#161E1F" />
-                    <rect x="37" y="55" width="10" height="10" rx="3" fill="#D2F544" />
-                    <rect x="55" y="55" width="10" height="10" rx="3" fill="#E2EAE6" />
-                    <rect x="73" y="55" width="10" height="10" rx="3" fill="#E2EAE6" />
-                    <rect x="37" y="72" width="10" height="10" rx="3" fill="#E2EAE6" />
-                    <rect x="55" y="72" width="10" height="10" rx="3" fill="#E2EAE6" />
-                    <circle cx="78" cy="77" r="18" fill="#FFFFFF" stroke="#161E1F" strokeWidth="2.5" />
-                    <path d="M78 68 V77 L83 80" stroke="#161E1F" strokeWidth="2.5" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className="empty-plus-circle">＋</div>
-                <p className="recurring-empty-text">Tạo lịch cho tiền thuê nhà, lương, hóa đơn hoặc khoản đăng ký định kỳ.</p>
-                <button type="button" className="recurring-create-btn" onClick={() => openModal({ kind: "recurring" })}>
-                  <b>＋</b> Tạo lịch
-                </button>
-              </div>
-            )}
-          </section>
-        )}
+              <article className="panel"><div className="panel-head"><div><p>{t("wallets.transferHistory", undefined, language)}</p><h3>{t("wallets.transferTitle", undefined, language)}</h3></div></div><div className="compact-list">{transfers.map(item => <div key={item.id}><span><b>{walletById.get(item.from_wallet_id)?.name} — {walletById.get(item.to_wallet_id)?.name}</b><small>{formatDate(item.occurred_at, language)} · {item.note || t("common.noData", undefined, language)}</small></span><strong>{money(item.amount)}</strong><button onClick={() => remove("transfers", item.id, "transfer")}>×</button></div>)}{!transfers.length && <Empty text={t("common.noData", undefined, language)} />}</div></article>
+            </>}
 
-        {view === "reports" && (
-          <>
+            {view === "categories" && (
+              <section className="category-main-card">
 
-            {/* Top 3 Stat Cards */}
-            <section className="report-stat-grid">
-              <article className="report-stat-card">
-                <div>
-                  <div className="report-stat-card-top">
-                    <span className="report-stat-icon-box income">📊</span>
-                    <p>THU NHẬP</p>
-                  </div>
-                  <h3 className="report-stat-amount">{money(report.current.income)}</h3>
-                </div>
-                <div className={`report-stat-trend ${comparison(report.current.income, report.previous.income) >= 0 ? "positive" : "negative"}`}>
-                  <span>{comparison(report.current.income, report.previous.income) >= 0 ? "+" : ""}{comparison(report.current.income, report.previous.income)}%</span>
-                  <span>↑</span>
-                </div>
-              </article>
-
-              <article className="report-stat-card">
-                <div>
-                  <div className="report-stat-card-top">
-                    <span className="report-stat-icon-box expense">💸</span>
-                    <p>CHI TIÊU</p>
-                  </div>
-                  <h3 className="report-stat-amount">{money(report.current.expense)}</h3>
-                </div>
-                <div className={`report-stat-trend ${comparison(report.current.expense, report.previous.expense) <= 0 ? "positive" : "negative"}`}>
-                  <span>{comparison(report.current.expense, report.previous.expense) >= 0 ? "+" : ""}{comparison(report.current.expense, report.previous.expense)}%</span>
-                  <span>↑</span>
-                </div>
-              </article>
-
-              <article className="report-stat-card">
-                <div>
-                  <div className="report-stat-card-top">
-                    <span className="report-stat-icon-box saving">🪙</span>
-                    <p>TIẾT KIỆM RÒNG</p>
-                  </div>
-                  <h3 className="report-stat-amount">{money(report.current.income - report.current.expense)}</h3>
-                </div>
-                <div className="report-stat-trend positive">
-                  <span>+{report.current.income ? Math.round((report.current.income - report.current.expense) / report.current.income * 100) : 0}%</span>
-                  <span>↑</span>
-                </div>
-              </article>
-            </section>
-
-            {/* Bottom 2 Charts Grid */}
-            <section className="report-charts-grid">
-              {/* Bar Chart */}
-              <article className="report-chart-card">
-                <div className="panel-head">
-                  <div>
-                    <p>BIỂU ĐỒ CỘT</p>
-                    <h3>Thu và chi theo thời gian</h3>
-                  </div>
-                  <div className="report-chart-legend">
-                    <span><i className="legend-dot income" /> Thu nhập</span>
-                    <span><i className="legend-dot expense" /> Chi tiêu</span>
-                  </div>
-                </div>
-
-                <div className="bar-chart-container">
-                  {report.buckets.map(bucket => (
-                    <div className="bar-column-group" key={bucket.index}>
-                      <div className="bar-bars-wrapper">
-                        {bucket.income > 0 && (
-                          <div
-                            className="single-bar income"
-                            style={{ height: `${Math.max(4, Math.min(100, bucket.income / maxReportBar * 100))}%` }}
-                            title={`Thu nhập: ${money(bucket.income)}`}
-                          >
-                            <span className="bar-val-label">{bucket.income > 1000 ? `${Math.round(bucket.income / 1000)}k` : bucket.income}</span>
-                          </div>
-                        )}
-                        {bucket.expense > 0 && (
-                          <div
-                            className="single-bar expense"
-                            style={{ height: `${Math.max(4, Math.min(100, bucket.expense / maxReportBar * 100))}%` }}
-                            title={`Chi tiêu: ${money(bucket.expense)}`}
-                          >
-                            <span className="bar-val-label">{bucket.expense > 1000 ? `${Math.round(bucket.expense / 1000)}k` : bucket.expense}</span>
-                          </div>
-                        )}
-                      </div>
-                      <span className="bar-x-label">{bucket.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              {/* Donut Chart */}
-              <article className="report-chart-card">
-                <div className="panel-head">
-                  <div>
-                    <p>BIỂU ĐỒ TRÒN</p>
-                    <h3>Chi tiêu theo danh mục</h3>
-                  </div>
-                </div>
-
-                <div className="donut-wrap-box">
-                  <div className="donut-circle-ring" style={{ background: pie }}>
-                    <div className="donut-center-label">
-                      <small>TỔNG CHI</small>
-                      <b>{money(report.current.expense)}</b>
-                    </div>
-                  </div>
-
-                  <div className="donut-legend-list">
-                    {report.categories.slice(0, 6).map(item => (
-                      <div className="donut-legend-item" key={item.id}>
-                        <div className="donut-legend-left">
-                          <i style={{ background: item.color }} />
-                          <span>{item.name}</span>
-                        </div>
-                        <div className="donut-legend-right">
-                          <b>{Math.round(item.amount / reportExpense * 100)}%</b>
-                          <small>({money(item.amount)})</small>
-                        </div>
-                      </div>
-                    ))}
-                    {!report.categories.length && <Empty text="Chưa có khoản chi trong kỳ này." />}
-                  </div>
-                </div>
-              </article>
-            </section>
-          </>
-        )}
-
-        {view === "ai-assistant" && (
-          <AiChatView
-            financialContext={{
-              totalBalance,
-              monthlyIncome: monthTotals.income,
-              monthlyExpense: monthTotals.expense,
-              wallets,
-              transactions,
-              budgets,
-              savingsGoals: goals,
-            }}
-          />
-        )}
-
-        {view === "settings" && (
-          <div className="settings-container">
-
-            {/* Card 1: Thông tin cơ bản */}
-            <form className="settings-card" onSubmit={saveProfile}>
-              <div className="settings-card-head">
-                <p>THÔNG TIN CƠ BẢN</p>
-                <h3>Hồ sơ của bạn</h3>
-              </div>
-
-              <div className="form-grid">
-                <label>
-                  <span>Tên tài khoản</span>
-                  <input
-                    name="username"
-                    defaultValue={profile.username ?? ""}
-                    minLength={3}
-                    maxLength={24}
-                    pattern="[A-Za-z0-9_]+"
-                    autoCapitalize="none"
-                    required
-                    placeholder="Username"
-                  />
-                </label>
-                <label>
-                  <span>
-                    Số điện thoại <small style={{ fontWeight: 400, color: "#8B989B", fontSize: "12px", marginLeft: 4 }}>(optional)</small>
-                  </span>
-                  <div className="phone-input-group">
-                    <span className="phone-prefix">+84</span>
-                    <input name="phone" placeholder="Nhập số điện thoại…" />
-                  </div>
-                </label>
-              </div>
-
-              <label>
-                Họ và tên
-                <input name="fullName" defaultValue={profile.full_name} required placeholder="Họ và tên hiển thị" />
-              </label>
-
-              <label>
-                Email
-                <input value={user.email} disabled style={{ background: "#F4F7F5", color: "#788689", cursor: "not-allowed" }} />
-              </label>
-
-              <div className="form-grid" style={{ marginTop: 24 }}>
-                <label>
-                  Đơn vị tiền tệ
-                  <select name="currency" defaultValue={profile.currency}>
-                    <option>VND</option>
-                    <option>USD</option>
-                    <option>SGD</option>
-                    <option>EUR</option>
-                    <option>JPY</option>
-                    <option>THB</option>
-                  </select>
-                </label>
-                <label>
-                  Ngôn ngữ
-                  <select name="language" defaultValue={profile.language}>
-                    <option value="vi">Tiếng Việt</option>
-                    <option value="en">English</option>
-                  </select>
-                </label>
-              </div>
-
-              <button className="save-button" disabled={saving}>
-                {saving ? "Đang lưu…" : "Lưu hồ sơ & tùy chọn"}
-              </button>
-            </form>
-
-            {/* Card 2: Giao diện & Bảng màu chủ đạo */}
-            <article className="settings-card theme-settings-card">
-              <div className="settings-card-head">
-                <p>CÁ NHÂN HÓA GIAO DIỆN</p>
-                <h3>Màu sắc chủ đạo (Accent Theme)</h3>
-              </div>
-
-              <p className="theme-card-intro">
-                Chọn gam màu nhận diện cho toàn bộ hệ thống (nút bấm, thanh điều hướng, huy hiệu phân loại và điểm nhấn nổi bật).
-              </p>
-
-              <div className="theme-presets-grid">
-                {APP_THEME_PRESETS.map((preset) => {
-                  const isSelected = appAccentColor.toLowerCase() === preset.hex.toLowerCase();
+                {(["expense", "income"] as TransactionType[]).map(kind => {
+                  const items = categories.filter(item => item.kind === kind);
                   return (
-                    <button
-                      key={preset.hex}
-                      type="button"
-                      className={`theme-preset-card ${isSelected ? "active" : ""}`}
-                      onClick={() => handleSelectAppAccent(preset.hex)}
-                    >
-                      <div className="theme-preset-color-badge" style={{ backgroundColor: preset.hex }}>
-                        {isSelected && <span className="theme-check-icon" style={{ color: getContrastColor(preset.hex) }}>✓</span>}
+                    <article className="category-section-card" key={kind}>
+                      <div className="category-section-head">
+                        <div>
+                          <p>{kind === "expense" ? t("categories.expenseCategories", undefined, language).toUpperCase() : t("categories.incomeCategories", undefined, language).toUpperCase()}</p>
+                          <h3>{kind === "expense" ? t("categories.expenseCategories", undefined, language) : t("categories.incomeCategories", undefined, language)}</h3>
+                        </div>
+                        <span className="category-section-count">{items.length}</span>
                       </div>
-                      <div className="theme-preset-info">
-                        <strong>{preset.name}</strong>
-                        <small>{preset.desc}</small>
+
+                      <div className="category-row-list">
+                        {items.map(item => (
+                          <div className="category-item-row" key={item.id}>
+                            <div className="category-item-left">
+                              <span className="category-item-dot" style={{ backgroundColor: item.color || "#84cc16" }} />
+                              <span className="category-item-name">{item.name}</span>
+                            </div>
+
+                            <div className="category-item-right">
+                              <button
+                                type="button"
+                                className="category-action-btn"
+                                onClick={() => openModal({ kind: "category", item })}
+                                title={t("common.edit", undefined, language)}
+                              >
+                                {t("common.edit", undefined, language)}
+                              </button>
+                              <button
+                                type="button"
+                                className="category-action-btn delete"
+                                onClick={() => remove("categories", item.id, item.name)}
+                                title={t("common.delete", undefined, language)}
+                              >
+                                {t("common.delete", undefined, language)}
+                              </button>
+
+                            </div>
+                          </div>
+                        ))}
+                        {!items.length && <Empty text={t("categories.empty", undefined, language)} />}
                       </div>
-                    </button>
+                    </article>
                   );
                 })}
-              </div>
-
-              <div className="theme-custom-row">
-                <div className="theme-custom-left">
-                  <label className="theme-custom-picker-label">
-                    <span>Màu tùy chọn tự do:</span>
-                    <div className="theme-custom-picker-btn">
-                      <span className="theme-custom-preview-dot" style={{ backgroundColor: appAccentColor }} />
-                      <span className="theme-custom-hex-code">{appAccentColor.toUpperCase()}</span>
-                      <input
-                        type="color"
-                        value={appAccentColor}
-                        onChange={(e) => handleSelectAppAccent(e.target.value)}
-                        className="modern-native-color-hidden"
-                      />
-                    </div>
-                  </label>
-                </div>
-                <button
-                  type="button"
-                  className="theme-reset-btn"
-                  onClick={() => handleSelectAppAccent("#D2F544")}
-                  title="Đặt lại màu mặc định Neon Lime"
-                >
-                  ↺ Mặc định (#D2F544)
-                </button>
-              </div>
-
-              <div className="theme-live-preview-box">
-                <span className="preview-heading">XEM TRƯỚC HIỆU ỨNG GIAO DIỆN</span>
-                <div className="preview-elements-row">
-                  <span className="preview-pill preview-pill--active">Tab đang chọn</span>
-                  <button type="button" className="preview-action-btn">Nút thao tác chính →</button>
-                  <span className="preview-badge-accent">+15.8% Tăng trưởng</span>
-                </div>
-              </div>
-            </article>
-
-            {/* Card 3: Quyền riêng tư */}
-            <article className="settings-card">
-              <div className="settings-card-head">
-                <p>QUYỀN RIÊNG TƯ</p>
-                <h3>Dữ liệu cá nhân</h3>
-              </div>
-
-              <div className="privacy-rows-list">
-                <div className="privacy-row-item">
-                  <div className="privacy-row-left">
-                    <span className="privacy-check-icon">✓</span>
-                    <div className="privacy-row-content">
-                      <b>Dữ liệu riêng theo tài khoản</b>
-                      <p>Thông tin được bảo vệ bằng phân quyền ở cơ sở dữ liệu.</p>
-                    </div>
-                  </div>
-                  <span className="privacy-row-more">Tìm hiểu thêm ∨</span>
-                </div>
-
-                <div className="privacy-row-item">
-                  <div className="privacy-row-left">
-                    <span className="privacy-check-icon">✓</span>
-                    <div className="privacy-row-content">
-                      <b>Hóa đơn riêng tư</b>
-                      <p>Tệp đính kèm chỉ được mở bằng liên kết tạm thời của chính bạn.</p>
-                    </div>
-                  </div>
-                  <span className="privacy-row-more">Tìm hiểu thêm ∨</span>
-                </div>
-
-                <div className="privacy-row-item">
-                  <div className="privacy-row-left">
-                    <span className="privacy-check-icon">✓</span>
-                    <div className="privacy-row-content">
-                      <b>Xóa dữ liệu tài chính</b>
-                      <p>Xóa vĩnh viễn ví, giao dịch, hóa đơn, ngân sách, mục tiêu và tùy chọn. Tài khoản đăng nhập vẫn được giữ.</p>
-                    </div>
-                  </div>
-                  <span className="privacy-row-more">Tìm hiểu thêm ∨</span>
-                </div>
-              </div>
-
-              <div className="settings-action-row">
-                <button type="button" className="download-data-btn" onClick={downloadData} disabled={isExporting}>
-                  <span>⤓</span> {isExporting ? "Đang chuẩn bị dữ liệu…" : "Tải xuống dữ liệu của bạn"}
-                </button>
-                <button type="button" className="danger-data-btn" onClick={deletePersonalData} disabled={saving}>
-                  <span>⚠</span> Xóa dữ liệu tài khoản
-                </button>
-              </div>
-            </article>
-          </div>
-        )}
-        </div>
-      </section>
-
-      {modal?.kind === "transaction" && (
-        <Modal title={modal.item ? "Chỉnh sửa giao dịch" : "Thêm giao dịch mới"} eyebrow="GHI NHẬN DÒNG TIỀN" onClose={() => setModal(null)}>
-          <form onSubmit={saveTransaction}>
-            {!modal.item && (
-              <div className="transaction-mode-switch">
-                <button type="button" className="mode-btn active">
-                  Nhập thủ công
-                </button>
-                <button
-                  type="button"
-                  className="mode-btn ai-scan-tab"
-                  onClick={() => setModal({ kind: "receipt-scan" })}
-                >
-                  Quét hóa đơn bằng AI
-                  <span className="mode-ai-tag">MỚI</span>
-                </button>
-              </div>
+              </section>
             )}
-            {!modal.item && (
-              <div className="smart-entry ai-quick-entry">
-                <div className="ai-entry-header">
-                  <label className="ai-entry-label">NHẬP NHANH BẰNG AI</label>
-                  <span className="ai-live-tag">GEMINI AI</span>
-                </div>
-                <p className="ai-entry-desc">
-                  Nhập giao dịch bằng ngôn ngữ tự nhiên. AI sẽ nhận diện số tiền, khoản thu/chi, danh mục, ví và thời gian.
-                </p>
-                <div className="ai-entry-input-group">
-                  <input
-                    value={smartInput}
-                    onChange={(event) => setSmartInput(event.target.value)}
-                    placeholder="Ví dụ: Ăn trưa 50k tiền mặt hôm nay"
-                    disabled={aiParsing}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        handleAITextParse();
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="ai-recognize-btn"
-                    disabled={aiParsing || !smartInput.trim()}
-                    onClick={() => handleAITextParse()}
-                  >
-                    {aiParsing ? (
-                      <>
-                        <span className="ai-btn-spinner" />
-                        Đang nhận diện...
-                      </>
-                    ) : (
-                      "Nhận diện"
-                    )}
-                  </button>
+
+            {view === "planning" && <>
+              <section className="planning-grid">
+                <article className="panel">
+                  <div className="panel-head"><div><p>{t("budgets.title", undefined, language).toUpperCase()}</p><h3>{language === "vi" ? "Ngân sách đang theo dõi" : "Active budgets"}</h3></div></div>
+                  <div className="plan-list">
+                    {budgets.map(budget => {
+                      const totalCapacity = Math.max(budget.amount, budget.allocated_amount + budget.spent_amount);
+                      const withdrawnAmount = Math.max(0, totalCapacity - budget.remaining_amount - budget.spent_amount);
+                      const totalUsed = budget.spent_amount + withdrawnAmount;
+                      const pct = totalCapacity > 0 ? Math.min(100, Math.round((totalUsed / totalCapacity) * 100)) : 0;
+                      const sourceWallet = walletById.get(budget.source_wallet_id ?? "");
+                      const isClosed = budget.remaining_amount <= 0 || budget.status === "completed" || budget.status === "cancelled";
+                      const isOver = isClosed;
+                      const isNear = !isOver && pct >= budget.alert_percent;
+                      return (
+                        <div className={`plan-card ${isOver ? "over" : isNear ? "near" : ""}`} key={budget.id}>
+                          <header>
+                            <span>
+                              <b>{budget.name}</b>
+                              <small>{budget.category_id ? categoryById.get(budget.category_id)?.name : t("categories.title", undefined, language)} · {budget.period === "weekly" ? t("budgets.weekly", undefined, language) : budget.period === "yearly" ? t("budgets.yearly", undefined, language) : t("budgets.monthly", undefined, language)}</small>
+                            </span>
+                            <strong>{pct}%</strong>
+                          </header>
+                          <div className="meter"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>
+                          <div className="budget-detail-rows">
+                            <div className="budget-detail-row"><span>{language === "vi" ? "Tổng phân bổ" : "Allocated"}</span><b>{money(totalCapacity)}</b></div>
+                            <div className="budget-detail-row"><span>{t("budgets.spent", undefined, language)}</span><b className="expense">{money(budget.spent_amount)}</b></div>
+                            {withdrawnAmount > 0 && <div className="budget-detail-row"><span>{language === "vi" ? "Đã rút về ví" : "Withdrawn"}</span><b>{money(withdrawnAmount)}</b></div>}
+                            <div className="budget-detail-row highlight"><span>{t("budgets.remaining", undefined, language)}</span><b className={isOver ? "expense" : "income"}>{money(budget.remaining_amount)}</b></div>
+                            {sourceWallet && <div className="budget-detail-row"><span>{language === "vi" ? "Nguồn tiền" : "Source"}</span><b>{sourceWallet.name}</b></div>}
+                          </div>
+                          {isClosed && <em>{t("budgets.overbudget", undefined, language)} ({pct}%)</em>}
+                          {isNear && !isClosed && <em>{t("budgets.warning", undefined, language)} ({budget.alert_percent}%)</em>}
+                          <footer>
+                            <button type="button" onClick={() => openModal({ kind: "budget-topup", budget })} title="Topup">{language === "vi" ? "Nạp thêm" : "Top up"}</button>
+                            <button type="button" onClick={() => openModal({ kind: "budget-return", budget })} title="Withdraw" disabled={budget.remaining_amount <= 0}>{language === "vi" ? "Rút tiền" : "Withdraw"}</button>
+                            <button type="button" onClick={() => openModal({ kind: "budget", item: budget })}>{t("common.edit", undefined, language)}</button>
+                            <button type="button" onClick={() => deleteBudget(budget)}>{t("common.delete", undefined, language)}</button>
+                          </footer>
+                        </div>
+                      );
+                    })}
+                    {!budgets.length && <Empty text={t("budgets.empty", undefined, language)} />}
+                  </div>
+                </article>
+
+                <article className="panel">
+                  <div className="panel-head"><div><p>{t("goals.title", undefined, language).toUpperCase()}</p><h3>{language === "vi" ? "Mục tiêu tiết kiệm" : "Savings goals"}</h3></div></div>
+                  <div className="plan-list">
+                    {goals.map(goal => {
+                      const percent = goal.target_amount > 0 ? Math.round(goal.current_amount / goal.target_amount * 100) : 0;
+                      const sourceWallet = walletById.get(goal.source_wallet_id ?? "");
+                      return (
+                        <div className="goal-plan" key={goal.id}>
+                          <header>
+
+                            <div>
+                              <b>{goal.title}</b>
+                              <small>{goal.deadline ? `${t("goals.deadline", undefined, language)}: ${new Date(`${goal.deadline}T00:00:00`).toLocaleDateString(locale)}` : t("common.noData", undefined, language)}</small>
+                            </div>
+                            <strong>{Math.min(100, percent)}%</strong>
+                          </header>
+                          <div className="meter"><i style={{ width: `${Math.min(100, percent)}%`, background: goal.color }} /></div>
+                          <div className="budget-detail-rows">
+                            <div className="budget-detail-row"><span>{t("goals.currentAmount", undefined, language)}</span><b className="income">{money(goal.current_amount)}</b></div>
+                            <div className="budget-detail-row"><span>{t("goals.targetAmount", undefined, language)}</span><b>{money(goal.target_amount)}</b></div>
+                            <div className="budget-detail-row highlight"><span>{language === "vi" ? "Còn thiếu" : "Remaining"}</span><b>{money(Math.max(0, goal.target_amount - goal.current_amount))}</b></div>
+                            {sourceWallet && <div className="budget-detail-row"><span>{t("goals.sourceWallet", undefined, language)}</span><b>{sourceWallet.name}</b></div>}
+                          </div>
+                          <footer>
+                            <button type="button" onClick={() => openModal({ kind: "goal-topup", goal })}>{language === "vi" ? "Gửi tiền" : "Deposit"}</button>
+                            <button type="button" onClick={() => openModal({ kind: "goal-return", goal })} disabled={goal.current_amount <= 0}>{language === "vi" ? "Rút tiền" : "Withdraw"}</button>
+                            <button type="button" onClick={() => openModal({ kind: "goal", item: goal })}>{t("common.edit", undefined, language)}</button>
+                            <button type="button" onClick={() => { if (window.confirm(`${t("common.confirmDelete", undefined, language)} "${goal.title}"?`)) { if (goal.current_amount > 0 && goal.source_wallet_id) { returnGoalToWallet(goal, goal.current_amount).then(() => remove("savings_goals", goal.id, goal.title)).catch(e => showNotice(e.message)); } else { remove("savings_goals", goal.id, goal.title); } } }}>{t("common.delete", undefined, language)}</button>
+                          </footer>
+                        </div>
+                      );
+                    })}
+                    {!goals.length && <Empty text={t("goals.empty", undefined, language)} />}
+                  </div>
+                </article>
+              </section>
+            </>}
+
+            {view === "recurring" && (
+              <section className="recurring-main-card">
+                <div className="automation-banner">
+                  <div className="automation-banner-glow" aria-hidden="true" />
+                  <div className="automation-banner-body">
+                    <div className="automation-banner-header">
+                      <h3 className="automation-banner-title">
+                        {language === "vi" ? "Tự động hóa dòng tiền định kỳ" : "Recurring Cashflow Automation"}
+                        <span className="automation-live-badge">
+                          <span className="automation-live-dot" />
+                          {t("common.active", undefined, language)}
+                        </span>
+                      </h3>
+                    </div>
+                    <p className="automation-banner-desc">
+                      {language === "vi"
+                        ? "Hệ thống sẽ tự động ghi nhận giao dịch khi đến hạn mỗi lần bạn mở ứng dụng, đồng thời kiểm tra an toàn số dư ví trước khi thực hiện."
+                        : "Automatically records recurring transactions on due dates with wallet balance safety checks."}
+                    </p>
+                    <div className="automation-banner-features">
+                      <span className="automation-feature-pill">
+                        {t("recurring.autoCreate", undefined, language)}
+                      </span>
+                      <span className="automation-feature-pill">
+                        {language === "vi" ? "Nhắc nhở đến hạn" : "Due reminders"}
+                      </span>
+                      <span className="automation-feature-pill">
+                        {language === "vi" ? "Bảo vệ chống số dư âm" : "Overdraft protection"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Example chips */}
-                <div className="ai-example-chips">
-                  <span className="chips-label">Gợi ý:</span>
-                  <button
-                    type="button"
-                    className="ai-chip"
-                    onClick={() => {
-                      setSmartInput("Ăn trưa 50k tiền mặt hôm nay");
-                      setAiFeedback(null);
-                    }}
-                  >
-                    Ăn trưa 50k tiền mặt
-                  </button>
-                  <button
-                    type="button"
-                    className="ai-chip"
-                    onClick={() => {
-                      setSmartInput("Đổ xăng 100k Momo");
-                      setAiFeedback(null);
-                    }}
-                  >
-                    Đổ xăng 100k Momo
-                  </button>
-                  <button
-                    type="button"
-                    className="ai-chip"
-                    onClick={() => {
-                      setSmartInput("Lương tháng này 12 triệu Techcombank");
-                      setAiFeedback(null);
-                    }}
-                  >
-                    Lương 12 triệu Techcombank
-                  </button>
-                  <button
-                    type="button"
-                    className="ai-chip"
-                    onClick={() => {
-                      setSmartInput("Mua áo 350k");
-                      setAiFeedback(null);
-                    }}
-                  >
-                    Mua áo 350k
-                  </button>
-                </div>
+                {recurring.length > 0 ? (
+                  <section className="recurring-grid">
+                    {recurring.map(item => {
+                      const due = item.active && new Date(item.next_run_at) <= new Date();
+                      const category = categoryById.get(item.category_id ?? "");
+                      const wallet = walletById.get(item.wallet_id ?? "");
+                      const walletAvail = availableBalances.get(item.wallet_id ?? "") ?? 0;
+                      const isInsufficient = item.type === "expense" && item.amount > walletAvail;
+                      return (
+                        <article className={`recurring-card ${due ? "due" : ""} ${isInsufficient ? "insufficient" : ""}`} key={item.id}>
+                          <div>
+                            <div className="recurring-card-header">
+                              <span className={`recurring-type-tag ${item.type}`}>
+                                {item.type === "income" ? (language === "vi" ? "THU" : "INC") : (language === "vi" ? "CHI" : "EXP")}
+                              </span>
+                              <div className="recurring-card-info">
+                                <b>{item.title}</b>
+                                <small>{category?.name ?? t("common.all", undefined, language)} · {wallet?.name ?? t("common.wallet", undefined, language)}</small>
+                              </div>
+                              <span className={`recurring-status-badge ${item.active ? "on" : "off"}`}>
+                                {item.active ? t("recurring.active", undefined, language) : t("recurring.paused", undefined, language)}
+                              </span>
+                            </div>
 
-                {/* Feedback alert */}
-                {aiFeedback && (
-                  <div className={`ai-parse-feedback ${aiFeedback.type}`}>
-                    {aiFeedback.message}
+                            <div className="recurring-card-amount">
+                              {item.type === "expense" ? "-" : "+"}{money(item.amount)}
+                            </div>
+
+                            <div className="recurring-card-next">
+                              {t("recurring.nextRun", undefined, language)}: <b>{formatDate(item.next_run_at, language)}</b>
+                            </div>
+
+                            <div className="recurring-card-tags">
+                              <span className="recurring-tag">
+                                {item.frequency === "daily" ? t("recurring.daily", undefined, language) : item.frequency === "weekly" ? t("recurring.weekly", undefined, language) : item.frequency === "monthly" ? t("recurring.monthly", undefined, language) : t("recurring.yearly", undefined, language)}
+                              </span>
+                              <span className="recurring-tag">
+                                {item.auto_create ? t("recurring.autoCreate", undefined, language) : (language === "vi" ? "Chỉ nhắc nhở" : "Reminder only")}
+                              </span>
+                            </div>
+
+                            {isInsufficient && (
+                              <div className="insufficient-warning" title={`${t("wallets.available", undefined, language)}: ${money(walletAvail)}`}>
+                                <span>{language === "vi" ? `Số dư ví không đủ (Khả dụng: ${money(walletAvail)})` : `Insufficient balance (Available: ${money(walletAvail)})`}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <footer className="recurring-card-footer">
+                            {due && !item.auto_create && (
+                              <button
+                                type="button"
+                                className={`recurring-due-btn ${isInsufficient ? "danger" : ""}`}
+                                onClick={() => createDueTransaction(item)}
+                              >
+                                {isInsufficient ? (language === "vi" ? "Thiếu số dư" : "Insufficient balance") : (language === "vi" ? "Ghi nhận ngay" : "Record now")}
+                              </button>
+                            )}
+                            <div className="recurring-actions">
+                              <button type="button" onClick={() => openModal({ kind: "recurring", item })}>
+                                {t("common.edit", undefined, language)}
+                              </button>
+                              <button type="button" onClick={() => remove("recurring_transactions", item.id, item.title)}>
+                                {t("common.delete", undefined, language)}
+                              </button>
+                            </div>
+                          </footer>
+                        </article>
+                      );
+                    })}
+                  </section>
+                ) : (
+                  <div className="recurring-empty-box">
+                    <div className="recurring-empty-illustration">
+                      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="25" y="30" width="70" height="65" rx="14" fill="#F4F8F6" stroke="#D0DCD6" strokeWidth="2.5" />
+                        <path d="M25 45 H95" stroke="#D0DCD6" strokeWidth="2.5" />
+                        <circle cx="45" cy="24" r="5" fill="#161E1F" />
+                        <circle cx="75" cy="24" r="5" fill="#161E1F" />
+                        <rect x="37" y="55" width="10" height="10" rx="3" fill="#D2F544" />
+                        <rect x="55" y="55" width="10" height="10" rx="3" fill="#E2EAE6" />
+                        <rect x="73" y="55" width="10" height="10" rx="3" fill="#E2EAE6" />
+                        <rect x="37" y="72" width="10" height="10" rx="3" fill="#E2EAE6" />
+                        <rect x="55" y="72" width="10" height="10" rx="3" fill="#E2EAE6" />
+                        <circle cx="78" cy="77" r="18" fill="#FFFFFF" stroke="#161E1F" strokeWidth="2.5" />
+                        <path d="M78 68 V77 L83 80" stroke="#161E1F" strokeWidth="2.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+
+                    <p className="recurring-empty-text">{t("recurring.empty", undefined, language)}</p>
+                    <button type="button" className="recurring-create-btn" onClick={() => openModal({ kind: "recurring" })}>
+                      {t("recurring.addTitle", undefined, language)}
+                    </button>
                   </div>
                 )}
-              </div>
+              </section>
             )}
-        <div className="type-toggle"><button type="button" className={transactionDraft.type === "expense" ? "active" : ""} onClick={() => setTransactionDraft(current => ({ ...current, type: "expense", categoryId: categories.find(item => item.kind === "expense")?.id ?? "", paymentSourceType: "wallet", budgetId: "" }))}>Khoản chi</button><button type="button" className={transactionDraft.type === "income" ? "active" : ""} onClick={() => setTransactionDraft(current => ({ ...current, type: "income", categoryId: categories.find(item => item.kind === "income")?.id ?? "", paymentSourceType: "wallet", budgetId: "" }))}>Khoản thu</button></div>
-        <label>Tên giao dịch<input required autoFocus value={transactionDraft.title} onChange={event => setTransactionDraft(current => ({ ...current, title: event.target.value }))} placeholder="Ví dụ: Ăn trưa" /></label>
-        <label>Số tiền<FormattedMoneyInput required autoFocus={focusAmountInput} value={transactionDraft.amount} onChangeValue={val => setTransactionDraft(current => ({ ...current, amount: val }))} /></label>
-        <label>Danh mục<select required value={transactionDraft.categoryId} onChange={event => setTransactionDraft(current => ({ ...current, categoryId: event.target.value, budgetId: "", paymentSourceType: "wallet" }))}>{categories.filter(item => item.kind === transactionDraft.type).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-        {transactionDraft.type === "expense" && (() => {
-          const matchingBudgets = budgets.filter(b => b.status === "active" && b.remaining_amount > 0 && (!b.category_id || b.category_id === transactionDraft.categoryId));
-          return (
-            <div className={`payment-source-group ${highlightWalletSelect ? "highlight-pulse" : ""}`}>
-              <label className="payment-source-label">⎨ Nguồn thanh toán</label>
-              <div className="payment-source-options">
-                {matchingBudgets.length > 0 && (
-                  <div className="payment-source-section">
-                    <div className="ps-section-title">NGÂN SÁCH</div>
-                    {matchingBudgets.map(b => {
-                      const avail = b.remaining_amount;
-                      const currentExpenseVal = Number(transactionDraft.amount) || 0;
-                      const isInsufficient = currentExpenseVal > 0 && currentExpenseVal > avail;
-                      const isSelected = transactionDraft.paymentSourceType === "budget" && transactionDraft.budgetId === b.id;
 
+            {view === "reports" && (
+              <>
+                {/* Top 3 Stat Cards */}
+                <section className="report-stat-grid">
+                  <article className="report-stat-card">
+                    <div>
+                      <div className="report-stat-card-top">
+                        <span className="report-stat-tag income">{language === "vi" ? "THU NHẬP" : "INCOME"}</span>
+                        <p>{t("transactions.income", undefined, language).toUpperCase()}</p>
+                      </div>
+                      <h3 className="report-stat-amount">{money(report.current.income)}</h3>
+                    </div>
+                    <div className={`report-stat-trend ${comparison(report.current.income, report.previous.income) >= 0 ? "positive" : "negative"}`}>
+                      <span>{comparison(report.current.income, report.previous.income) >= 0 ? "+" : ""}{comparison(report.current.income, report.previous.income)}%</span>
+                    </div>
+                  </article>
+
+                  <article className="report-stat-card">
+                    <div>
+                      <div className="report-stat-card-top">
+                        <span className="report-stat-tag expense">{language === "vi" ? "CHI TIÊU" : "EXPENSE"}</span>
+                        <p>{t("transactions.expense", undefined, language).toUpperCase()}</p>
+                      </div>
+                      <h3 className="report-stat-amount">{money(report.current.expense)}</h3>
+                    </div>
+                    <div className={`report-stat-trend ${comparison(report.current.expense, report.previous.expense) <= 0 ? "positive" : "negative"}`}>
+                      <span>{comparison(report.current.expense, report.previous.expense) >= 0 ? "+" : ""}{comparison(report.current.expense, report.previous.expense)}%</span>
+                    </div>
+                  </article>
+
+                  <article className="report-stat-card">
+                    <div>
+                      <div className="report-stat-card-top">
+                        <span className="report-stat-tag saving">{language === "vi" ? "DÒNG TIỀN" : "NET SAVINGS"}</span>
+                        <p>{t("reports.cashflow", undefined, language).toUpperCase()}</p>
+                      </div>
+                      <h3 className="report-stat-amount">{money(report.current.income - report.current.expense)}</h3>
+                    </div>
+                    <div className="report-stat-trend positive">
+                      <span>+{report.current.income ? Math.round((report.current.income - report.current.expense) / report.current.income * 100) : 0}%</span>
+                    </div>
+                  </article>
+                </section>
+
+                {/* Bottom 2 Charts Grid */}
+                <section className="report-charts-grid">
+                  {/* Bar Chart */}
+                  <article className="report-chart-card">
+                    <div className="panel-head">
+                      <div>
+                        <p>{t("reports.overview", undefined, language).toUpperCase()}</p>
+                        <h3>{t("reports.incomeVsExpense", undefined, language)}</h3>
+                      </div>
+                      <div className="report-chart-legend">
+                        <span><i className="legend-dot income" /> {t("transactions.income", undefined, language)}</span>
+                        <span><i className="legend-dot expense" /> {t("transactions.expense", undefined, language)}</span>
+                      </div>
+                    </div>
+
+                    <div className="bar-chart-container">
+                      {report.buckets.map(bucket => (
+                        <div className="bar-column-group" key={bucket.index}>
+                          <div className="bar-bars-wrapper">
+                            {bucket.income > 0 && (
+                              <div
+                                className="single-bar income"
+                                style={{ height: `${Math.max(4, Math.min(100, bucket.income / maxReportBar * 100))}%` }}
+                                title={`${t("transactions.income", undefined, language)}: ${money(bucket.income)}`}
+                              >
+                                <span className="bar-val-label">{bucket.income > 1000 ? `${Math.round(bucket.income / 1000)}k` : bucket.income}</span>
+                              </div>
+                            )}
+                            {bucket.expense > 0 && (
+                              <div
+                                className="single-bar expense"
+                                style={{ height: `${Math.max(4, Math.min(100, bucket.expense / maxReportBar * 100))}%` }}
+                                title={`${t("transactions.expense", undefined, language)}: ${money(bucket.expense)}`}
+                              >
+                                <span className="bar-val-label">{bucket.expense > 1000 ? `${Math.round(bucket.expense / 1000)}k` : bucket.expense}</span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="bar-x-label">{bucket.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+
+                  {/* Donut Chart */}
+                  <article className="report-chart-card">
+                    <div className="panel-head">
+                      <div>
+                        <p>{t("reports.categoryBreakdown", undefined, language).toUpperCase()}</p>
+                        <h3>{t("reports.categoryBreakdown", undefined, language)}</h3>
+                      </div>
+                    </div>
+
+                    <div className="donut-wrap-box">
+                      <div className="donut-circle-ring" style={{ background: pie }}>
+                        <div className="donut-center-label">
+                          <small>{t("common.total", undefined, language).toUpperCase()}</small>
+                          <b>{money(report.current.expense)}</b>
+                        </div>
+                      </div>
+
+                      <div className="donut-legend-list">
+                        {report.categories.slice(0, 6).map(item => (
+                          <div className="donut-legend-item" key={item.id}>
+                            <div className="donut-legend-left">
+                              <i style={{ background: item.color }} />
+                              <span>{item.name}</span>
+                            </div>
+                            <div className="donut-legend-right">
+                              <b>{Math.round(item.amount / reportExpense * 100)}%</b>
+                              <small>({money(item.amount)})</small>
+                            </div>
+                          </div>
+                        ))}
+                        {!report.categories.length && <Empty text={t("common.noData", undefined, language)} />}
+                      </div>
+                    </div>
+                  </article>
+                </section>
+              </>
+            )}
+
+            {view === "ai-assistant" && (
+              <AiChatView
+                financialContext={{
+                  totalBalance,
+                  monthlyIncome: monthTotals.income,
+                  monthlyExpense: monthTotals.expense,
+                  wallets,
+                  transactions,
+                  budgets,
+                  savingsGoals: goals,
+                }}
+              />
+            )}
+
+            {view === "settings" && (
+              <div className="settings-container">
+
+                {/* Card 1: Thông tin cơ bản */}
+                <form className="settings-card" onSubmit={saveProfile}>
+                  <div className="settings-card-head">
+                    <p>{t("settings.profile", undefined, language).toUpperCase()}</p>
+                    <h3>{t("settings.profile", undefined, language)}</h3>
+                  </div>
+
+                  <div className="form-grid">
+                    <label>
+                      <span>{t("settings.username", undefined, language)}</span>
+                      <input
+                        name="username"
+                        defaultValue={profile.username ?? ""}
+                        minLength={3}
+                        maxLength={24}
+                        pattern="[A-Za-z0-9_]+"
+                        autoCapitalize="none"
+                        required
+                        placeholder="Username"
+                      />
+                    </label>
+                    <label>
+                      <span>
+                        {language === "vi" ? "Số điện thoại" : "Phone number"} <small style={{ fontWeight: 400, color: "#8B989B", fontSize: "12px", marginLeft: 4 }}>(optional)</small>
+                      </span>
+                      <div className="phone-input-group">
+                        <span className="phone-prefix">+84</span>
+                        <input name="phone" placeholder={language === "vi" ? "Nhập số điện thoại…" : "Phone number…"} />
+                      </div>
+                    </label>
+                  </div>
+
+                  <label>
+                    {t("settings.fullName", undefined, language)}
+                    <input name="fullName" defaultValue={profile.full_name} required placeholder={t("settings.fullName", undefined, language)} />
+                  </label>
+
+                  <label>
+                    {t("settings.email", undefined, language)}
+                    <input value={user.email} disabled style={{ background: "#F4F7F5", color: "#788689", cursor: "not-allowed" }} />
+                  </label>
+
+                  <div className="form-grid" style={{ marginTop: 24 }}>
+                    <label>
+                      {t("settings.currency", undefined, language)}
+                      <select name="currency" defaultValue={profile.currency}>
+                        <option value="VND">VND (₫ - Đồng Việt Nam)</option>
+                        <option value="USD">USD ($ - US Dollar)</option>
+                        <option value="EUR">EUR (€ - Euro)</option>
+                        <option value="SGD">SGD (S$ - Singapore Dollar)</option>
+                        <option value="JPY">JPY (¥ - Japanese Yen)</option>
+                        <option value="THB">THB (฿ - Thai Baht)</option>
+                      </select>
+                      {profile.currency !== "VND" && (
+                        <small style={{ display: "block", marginTop: 4, color: "#166534", fontWeight: 600 }}>
+                          1 {profile.currency} ≈ {Math.round(1 / (exchangeRates[profile.currency] || DEFAULT_FALLBACK_RATES[profile.currency] || 1)).toLocaleString(locale)} VND
+                        </small>
+                      )}
+                    </label>
+                    <label>
+                      {t("settings.language", undefined, language)}
+                      <select name="language" defaultValue={profile.language}>
+                        <option value="vi">Tiếng Việt (VI)</option>
+                        <option value="en">English (EN)</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <button className="save-button" disabled={saving}>
+                    {saving ? t("common.saving", undefined, language) : t("settings.saveChanges", undefined, language)}
+                  </button>
+                </form>
+
+                {/* Card 2: Giao diện & Bảng màu chủ đạo */}
+                <article className="settings-card theme-settings-card">
+                  <div className="settings-card-head">
+                    <p>{t("settings.preferences", undefined, language).toUpperCase()}</p>
+                    <h3>{t("settings.accentColor", undefined, language)}</h3>
+                  </div>
+
+                  <p className="theme-card-intro">
+                    {language === "vi"
+                      ? "Chọn gam màu nhận diện cho toàn bộ hệ thống (nút bấm, thanh điều hướng, huy hiệu phân loại và điểm nhấn nổi bật)."
+                      : "Choose the primary accent color theme for buttons, navigation, and highlight badges."}
+                  </p>
+
+                  <div className="theme-presets-grid">
+                    {APP_THEME_PRESETS.map((preset) => {
+                      const isSelected = appAccentColor.toLowerCase() === preset.hex.toLowerCase();
                       return (
-                        <label key={b.id} className={`payment-source-option ${isSelected ? "selected" : ""} ${isInsufficient ? "insufficient" : ""}`}>
-                          <input type="radio" name="paymentSource" value={b.id} checked={isSelected}
-                            onChange={() => {
-                              setHighlightWalletSelect(false);
-                              setTransactionDraft(c => ({ ...c, paymentSourceType: "budget", budgetId: b.id, walletId: "" }));
-                            }} />
-                          <div className="ps-left">
-                            <div className="ps-radio-indicator">
-                              <span className="ps-radio-dot" />
-                            </div>
-                            <div className="ps-info">
-                              <span className="ps-badge budget">◉ {b.name}</span>
-                              {isInsufficient && <span className="insufficient-badge">Không đủ số dư</span>}
-                            </div>
+                        <button
+                          key={preset.hex}
+                          type="button"
+                          className={`theme-preset-card ${isSelected ? "active" : ""}`}
+                          onClick={() => handleSelectAppAccent(preset.hex)}
+                        >
+                          <div className="theme-preset-color-badge" style={{ backgroundColor: preset.hex }}>
+                            {isSelected && <span className="theme-active-dot" style={{ backgroundColor: getContrastColor(preset.hex) }} />}
                           </div>
-                          <div className="ps-right">
-                            <span className={`ps-balance ${isInsufficient ? "insufficient-text" : ""}`}>{money(avail)} còn lại</span>
+                          <div className="theme-preset-info">
+                            <strong>{preset.name}</strong>
+                            <small>{preset.desc}</small>
                           </div>
-                        </label>
+                        </button>
                       );
                     })}
                   </div>
-                )}
-                
-                <div className="payment-source-section">
-                  <div className="ps-section-title">VÍ / TÀI KHOẢN</div>
-                  {wallets.map(w => {
-                    let avail = availableBalances.get(w.id) ?? 0;
-                    if (modal.item?.type === "expense" && modal.item?.wallet_id === w.id) {
-                      avail += modal.item.amount;
-                    }
-                    const currentExpenseVal = Number(transactionDraft.amount) || 0;
-                    const isInsufficient = currentExpenseVal > 0 && currentExpenseVal > avail;
-                    const isSelected = transactionDraft.paymentSourceType === "wallet" && transactionDraft.walletId === w.id;
 
-                    return (
-                      <label key={w.id} className={`payment-source-option ${isSelected ? "selected" : ""} ${isInsufficient ? "insufficient" : ""}`}>
-                        <input type="radio" name="paymentSource" value={w.id} checked={isSelected}
-                          onChange={() => {
-                            setHighlightWalletSelect(false);
-                            setTransactionDraft(c => ({ ...c, paymentSourceType: "wallet", walletId: w.id, budgetId: "" }));
-                          }} />
-                        <div className="ps-left">
-                          <div className="ps-radio-indicator">
-                            <span className="ps-radio-dot" />
-                          </div>
-                          <div className="ps-info">
-                            <span className="ps-badge wallet">{w.icon} {w.name}</span>
-                            {isInsufficient && <span className="insufficient-badge">Không đủ số dư</span>}
-                          </div>
-                        </div>
-                        <div className="ps-right">
-                          <span className={`ps-balance ${isInsufficient ? "insufficient-text" : ""}`}>{money(avail)} khả dụng</span>
+                  <div className="theme-custom-row">
+                    <div className="theme-custom-left">
+                      <label className="theme-custom-picker-label">
+                        <span>{language === "vi" ? "Màu tùy chọn tự do:" : "Custom color:"}</span>
+                        <div className="theme-custom-picker-btn">
+                          <span className="theme-custom-preview-dot" style={{ backgroundColor: appAccentColor }} />
+                          <span className="theme-custom-hex-code">{appAccentColor.toUpperCase()}</span>
+                          <input
+                            type="color"
+                            value={appAccentColor}
+                            onChange={(e) => handleSelectAppAccent(e.target.value)}
+                            className="modern-native-color-hidden"
+                          />
                         </div>
                       </label>
-                    );
-                  })}
+                    </div>
+                    <button
+                      type="button"
+                      className="theme-reset-btn"
+                      onClick={() => handleSelectAppAccent("#D2F544")}
+                      title={language === "vi" ? "Đặt lại màu mặc định Neon Lime" : "Reset default theme"}
+                    >
+                      {language === "vi" ? "Mặc định (#D2F544)" : "Default (#D2F544)"}
+                    </button>
+                  </div>
+                </article>
+
+                {/* Card 3: Quyền riêng tư */}
+                <article className="settings-card">
+                  <div className="settings-card-head">
+                    <p>{language === "vi" ? "QUYỀN RIÊNG TƯ" : "PRIVACY & SECURITY"}</p>
+                    <h3>{language === "vi" ? "Dữ liệu cá nhân" : "Personal Data"}</h3>
+                  </div>
+
+                  <div className="privacy-rows-list">
+                    <div className="privacy-row-item">
+                      <div className="privacy-row-left">
+                        <span className="privacy-status-dot" />
+                        <div className="privacy-row-content">
+                          <b>{language === "vi" ? "Dữ liệu riêng theo tài khoản" : "Per-account data isolation"}</b>
+                          <p>{language === "vi" ? "Thông tin được bảo vệ bằng phân quyền ở cơ sở dữ liệu." : "Secured with row-level security policies."}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="privacy-row-item">
+                      <div className="privacy-row-left">
+                        <span className="privacy-status-dot" />
+                        <div className="privacy-row-content">
+                          <b>{language === "vi" ? "Hóa đơn riêng tư" : "Private receipt attachments"}</b>
+                          <p>{language === "vi" ? "Tệp đính kèm chỉ được mở bằng liên kết tạm thời của chính bạn." : "Files are accessible only through authenticated signed URLs."}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="settings-action-row">
+                    <button type="button" className="download-data-btn" onClick={downloadData} disabled={isExporting}>
+                      {isExporting ? t("common.loading", undefined, language) : t("reports.exportExcel", undefined, language)}
+                    </button>
+                    <button type="button" className="danger-data-btn" onClick={deletePersonalData} disabled={saving}>
+                      {t("settings.deleteAccount", undefined, language)}
+                    </button>
+                  </div>
+                </article>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {modal?.kind === "transaction" && (
+          <Modal title={modal.item ? "Chỉnh sửa giao dịch" : "Thêm giao dịch mới"} eyebrow="GHI NHẬN DÒNG TIỀN" onClose={() => setModal(null)}>
+            <form onSubmit={saveTransaction}>
+              {!modal.item && (
+                <div className="transaction-mode-switch">
+                  <button type="button" className="mode-btn active">
+                    Nhập thủ công
+                  </button>
+                  <button
+                    type="button"
+                    className="mode-btn ai-scan-tab"
+                    onClick={() => setModal({ kind: "receipt-scan" })}
+                  >
+                    Quét hóa đơn bằng AI
+                    <span className="mode-ai-tag">MỚI</span>
+                  </button>
+                </div>
+              )}
+              {!modal.item && (
+                <div className="smart-entry ai-quick-entry">
+                  <div className="ai-entry-header">
+                    <label className="ai-entry-label">NHẬP NHANH BẰNG AI</label>
+                    <span className="ai-live-tag">GEMINI AI</span>
+                  </div>
+                  <p className="ai-entry-desc">
+                    Nhập giao dịch bằng ngôn ngữ tự nhiên. AI sẽ nhận diện số tiền, khoản thu/chi, danh mục, ví và thời gian.
+                  </p>
+                  <div className="ai-entry-input-group">
+                    <input
+                      value={smartInput}
+                      onChange={(event) => setSmartInput(event.target.value)}
+                      placeholder="Ví dụ: Ăn trưa 50k tiền mặt hôm nay"
+                      disabled={aiParsing}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleAITextParse();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="ai-recognize-btn"
+                      disabled={aiParsing || !smartInput.trim()}
+                      onClick={() => handleAITextParse()}
+                    >
+                      {aiParsing ? (
+                        <>
+                          <span className="ai-btn-spinner" />
+                          Đang nhận diện...
+                        </>
+                      ) : (
+                        "Nhận diện"
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Example chips */}
+                  <div className="ai-example-chips">
+                    <span className="chips-label">Gợi ý:</span>
+                    <button
+                      type="button"
+                      className="ai-chip"
+                      onClick={() => {
+                        setSmartInput("Ăn trưa 50k tiền mặt hôm nay");
+                        setAiFeedback(null);
+                      }}
+                    >
+                      Ăn trưa 50k tiền mặt
+                    </button>
+                    <button
+                      type="button"
+                      className="ai-chip"
+                      onClick={() => {
+                        setSmartInput("Đổ xăng 100k Momo");
+                        setAiFeedback(null);
+                      }}
+                    >
+                      Đổ xăng 100k Momo
+                    </button>
+                    <button
+                      type="button"
+                      className="ai-chip"
+                      onClick={() => {
+                        setSmartInput("Lương tháng này 12 triệu Techcombank");
+                        setAiFeedback(null);
+                      }}
+                    >
+                      Lương 12 triệu Techcombank
+                    </button>
+                    <button
+                      type="button"
+                      className="ai-chip"
+                      onClick={() => {
+                        setSmartInput("Mua áo 350k");
+                        setAiFeedback(null);
+                      }}
+                    >
+                      Mua áo 350k
+                    </button>
+                  </div>
+
+                  {/* Feedback alert */}
+                  {aiFeedback && (
+                    <div className={`ai-parse-feedback ${aiFeedback.type}`}>
+                      {aiFeedback.message}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="type-toggle">
+                <button type="button" className={transactionDraft.type === "expense" ? "active" : ""} onClick={() => setTransactionDraft(current => ({ ...current, type: "expense", categoryId: categories.find(item => item.kind === "expense")?.id ?? "", paymentSourceType: "wallet", budgetId: "" }))}>{t("transactions.expense", undefined, language)}</button>
+                <button type="button" className={transactionDraft.type === "income" ? "active" : ""} onClick={() => setTransactionDraft(current => ({ ...current, type: "income", categoryId: categories.find(item => item.kind === "income")?.id ?? "", paymentSourceType: "wallet", budgetId: "" }))}>{t("transactions.income", undefined, language)}</button>
+              </div>
+              <label>{t("transactions.title", undefined, language)}<input required autoFocus value={transactionDraft.title} onChange={event => setTransactionDraft(current => ({ ...current, title: event.target.value }))} placeholder={language === "vi" ? "Ví dụ: Ăn trưa, Đổ xăng…" : "E.g. Lunch, Gas…"} /></label>
+              <label>{t("transactions.amount", undefined, language)}<FormattedMoneyInput required autoFocus={focusAmountInput} value={transactionDraft.amount} onChangeValue={val => setTransactionDraft(current => ({ ...current, amount: val }))} /></label>
+              <label>{t("transactions.category", undefined, language)}<select required value={transactionDraft.categoryId} onChange={event => setTransactionDraft(current => ({ ...current, categoryId: event.target.value, budgetId: "", paymentSourceType: "wallet" }))}>{categories.filter(item => item.kind === transactionDraft.type).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+              {transactionDraft.type === "expense" && (() => {
+                const matchingBudgets = budgets.filter(b => b.status === "active" && b.remaining_amount > 0 && (!b.category_id || b.category_id === transactionDraft.categoryId));
+                return (
+                  <div className={`payment-source-group ${highlightWalletSelect ? "highlight-pulse" : ""}`}>
+                    <label className="payment-source-label">{language === "vi" ? "Nguồn thanh toán" : "Payment Source"}</label>
+                    <div className="payment-source-options">
+                      {matchingBudgets.length > 0 && (
+                        <div className="payment-source-section">
+                          <div className="ps-section-title">{t("budgets.title", undefined, language).toUpperCase()}</div>
+                          {matchingBudgets.map(b => {
+                            const avail = b.remaining_amount;
+                            const currentExpenseVal = Number(transactionDraft.amount) || 0;
+                            const isInsufficient = currentExpenseVal > 0 && currentExpenseVal > avail;
+                            const isSelected = transactionDraft.paymentSourceType === "budget" && transactionDraft.budgetId === b.id;
+
+                            return (
+                              <label key={b.id} className={`payment-source-option ${isSelected ? "selected" : ""} ${isInsufficient ? "insufficient" : ""}`}>
+                                <input type="radio" name="paymentSource" value={b.id} checked={isSelected}
+                                  onChange={() => {
+                                    setHighlightWalletSelect(false);
+                                    setTransactionDraft(c => ({ ...c, paymentSourceType: "budget", budgetId: b.id, walletId: "" }));
+                                  }} />
+                                <div className="ps-left">
+                                  <div className="ps-radio-indicator">
+                                    <span className="ps-radio-dot" />
+                                  </div>
+                                  <div className="ps-info">
+                                    <span className="ps-badge budget">{b.name}</span>
+                                    {isInsufficient && <span className="insufficient-badge">{language === "vi" ? "Không đủ số dư" : "Insufficient"}</span>}
+                                  </div>
+                                </div>
+                                <div className="ps-right">
+                                  <span className={`ps-balance ${isInsufficient ? "insufficient-text" : ""}`}>{money(avail)} {language === "vi" ? "còn lại" : "left"}</span>
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      <div className="payment-source-section">
+                        <div className="ps-section-title">{t("wallets.title", undefined, language).toUpperCase()}</div>
+                        {wallets.map(w => {
+                          let avail = availableBalances.get(w.id) ?? 0;
+                          if (modal.item?.type === "expense" && modal.item?.wallet_id === w.id) {
+                            avail += modal.item.amount;
+                          }
+                          const currentExpenseVal = Number(transactionDraft.amount) || 0;
+                          const isInsufficient = currentExpenseVal > 0 && currentExpenseVal > avail;
+                          // Disable entirely if available balance is zero or negative (expense only)
+                          const isDisabled = transactionDraft.type === "expense" && avail <= 0;
+                          const isSelected = transactionDraft.paymentSourceType === "wallet" && transactionDraft.walletId === w.id;
+
+                          return (
+                            <label key={w.id} className={`payment-source-option ${isSelected ? "selected" : ""} ${isInsufficient ? "insufficient" : ""} ${isDisabled ? "disabled" : ""}`}
+                              onClick={isDisabled ? (e) => e.preventDefault() : undefined}
+                              title={isDisabled ? (language === "vi" ? "Ví không có tiền khả dụng" : "No available balance") : undefined}
+                            >
+                              <input type="radio" name="paymentSource" value={w.id} checked={isSelected}
+                                disabled={isDisabled}
+                                onChange={() => {
+                                  if (isDisabled) return;
+                                  setHighlightWalletSelect(false);
+                                  setTransactionDraft(c => ({ ...c, paymentSourceType: "wallet", walletId: w.id, budgetId: "" }));
+                                }} />
+                              <div className="ps-left">
+                                <div className="ps-radio-indicator">
+                                  <span className="ps-radio-dot" />
+                                </div>
+                                <div className="ps-info">
+                                  <span className="ps-badge wallet">{w.name}</span>
+                                  {isDisabled
+                                    ? <span className="ps-unavailable-badge">{language === "vi" ? "Không khả dụng" : "Unavailable"}</span>
+                                    : isInsufficient && <span className="insufficient-badge">{language === "vi" ? "Không đủ số dư" : "Insufficient"}</span>
+                                  }
+                                </div>
+                              </div>
+                              <div className="ps-right">
+                                <span className={`ps-balance ${isDisabled ? "unavailable-text" : isInsufficient ? "insufficient-text" : ""}`}>{money(avail)} {language === "vi" ? "khả dụng" : "avail"}</span>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              {transactionDraft.type === "income" && <label>{language === "vi" ? "Ví nhận tiền" : "Receiving wallet"}<select required value={transactionDraft.walletId} onChange={event => setTransactionDraft(current => ({ ...current, walletId: event.target.value }))}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>}
+              <label>{language === "vi" ? "Ngày & giờ" : "Date & time"}<input required type="datetime-local" value={transactionDraft.occurredAt} onChange={event => setTransactionDraft(current => ({ ...current, occurredAt: event.target.value }))} /></label>
+              <label>{t("transactions.note", undefined, language)}<textarea value={transactionDraft.note} onChange={event => setTransactionDraft(current => ({ ...current, note: event.target.value }))} placeholder={t("transactions.note", undefined, language)} /></label>
+              <label>{t("transactions.receipt", undefined, language)} <span>(JPG, PNG, WebP / PDF · max 8 MB)</span><input name="receipt" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" /></label>
+              {modal.item?.receipt_path && <p className="existing-file">{language === "vi" ? "Giao dịch đang có hóa đơn đính kèm." : "Transaction currently has an attached receipt."}</p>}
+              <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : t("common.save", undefined, language)}</button>
+            </form></Modal>)}
+
+        {modal?.kind === "wallet" && (
+          <Modal title={modal.item ? t("wallets.editTitle", undefined, language) : t("wallets.addTitle", undefined, language)} eyebrow={t("wallets.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}>
+            <WalletModalForm modalItem={modal.item} saving={saving} language={language} onSubmit={event => saveSimple(event, "wallet")} />
+          </Modal>
+        )}
+
+        {modal?.kind === "transfer" && <Modal title={t("wallets.transferTitle", undefined, language)} eyebrow={t("wallets.transferHistory", undefined, language)} onClose={() => setModal(null)}><form onSubmit={saveTransfer}><div className="form-grid"><label>{t("wallets.fromWallet", undefined, language)}<select name="fromWalletId">{wallets.map(item => <option key={item.id} value={item.id}>{item.name} · {money(walletBalances.get(item.id) ?? 0)}</option>)}</select></label><label>{t("wallets.toWallet", undefined, language)}<select name="toWalletId" defaultValue={wallets[1]?.id}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><label>{t("common.amount", undefined, language)}<FormattedMoneyInput name="amount" required /></label><label>{language === "vi" ? "Ngày & giờ" : "Date & time"}<input name="occurredAt" type="datetime-local" defaultValue={localDateTime()} required /></label><label>{t("common.note", undefined, language)}<textarea name="note" /></label><button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : t("common.confirm", undefined, language)}</button></form></Modal>}
+
+        {modal?.kind === "category" && (
+          <Modal title={modal.item ? t("categories.editTitle", undefined, language) : t("categories.addTitle", undefined, language)} eyebrow={t("categories.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}>
+            <form onSubmit={event => saveSimple(event, "category")}>
+              <label>{t("categories.name", undefined, language)}<input name="name" defaultValue={modal.item?.name} required placeholder={language === "vi" ? "Ví dụ: Ăn uống, Tiền điện…" : "E.g. Dining, Utilities…"} /></label>
+              <div className="form-grid">
+                <label>{t("categories.kind", undefined, language)}<select name="type" defaultValue={modal.item?.kind ?? "expense"}><option value="expense">{t("categories.expense", undefined, language)}</option><option value="income">{t("categories.income", undefined, language)}</option></select></label>
+                <label>{language === "vi" ? "Danh mục cha" : "Parent category"}<select name="parentId" defaultValue={modal.item?.parent_id ?? ""}><option value="">{t("common.all", undefined, language)}</option>{categories.filter(item => item.id !== modal.item?.id).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+              </div>
+              <input name="icon" type="hidden" value="" />
+              <ModernColorPicker name="color" defaultValue={modal.item?.color ?? "#7C8CFF"} label={t("categories.color", undefined, language)} />
+              <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : (modal.item ? t("common.save", undefined, language) : t("common.add", undefined, language))}</button>
+            </form>
+          </Modal>
+        )}
+
+        {modal?.kind === "budget" && <Modal title={modal.item ? t("budgets.editTitle", undefined, language) : t("budgets.addTitle", undefined, language)} eyebrow={t("budgets.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={saveBudget}>
+          <label>{t("budgets.name", undefined, language)}<input name="name" defaultValue={modal.item?.name} required placeholder={language === "vi" ? "Ví dụ: Tiền đổ xăng, Mua sắm…" : "E.g. Groceries, Fuel…"} /></label>
+          {!modal.item && <label>{t("budgets.amount", undefined, language)}<FormattedMoneyInput name="amount" required placeholder="0" /></label>}
+          {!modal.item && <label>{t("budgets.sourceWallet", undefined, language)}<select name="sourceWalletId" required><option value="">{language === "vi" ? "Chọn ví…" : "Select wallet…"}</option>{wallets.map(w => <option key={w.id} value={w.id}>{w.name} · {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>}
+          <div className="form-grid">
+            <label>{t("budgets.category", undefined, language)}<select name="categoryId" defaultValue={modal.item?.category_id ?? ""}><option value="">{language === "vi" ? "Tổng chi tiêu" : "All Expenses"}</option>{categories.filter(item => item.kind === "expense").map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+            <label>{t("budgets.period", undefined, language)}<select name="period" defaultValue={modal.item?.period ?? "monthly"}><option value="weekly">{t("budgets.weekly", undefined, language)}</option><option value="monthly">{t("budgets.monthly", undefined, language)}</option><option value="yearly">{t("budgets.yearly", undefined, language)}</option></select></label>
+          </div>
+          <div className="form-grid">
+            <label>{language === "vi" ? "Ngày bắt đầu" : "Start date"}<input name="periodStart" type="date" defaultValue={modal.item?.period_start ?? new Date().toISOString().slice(0, 10)} required /></label>
+            <label>{t("budgets.alertPercent", undefined, language)}<input name="alertPercent" type="number" min="1" max="100" defaultValue={modal.item?.alert_percent ?? 80} required /></label>
+          </div>
+          <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : (modal.item ? t("common.save", undefined, language) : t("common.add", undefined, language))}</button>
+        </form></Modal>}
+
+        {modal?.kind === "budget-topup" && <Modal title={`${language === "vi" ? "Nạp thêm" : "Top up"}: ${modal.budget.name}`} eyebrow={t("budgets.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={e => handleBudgetTopup(e, modal.budget)}>
+          <p className="allocation-info-box">{language === "vi" ? `Ngân sách hiện còn ${money(modal.budget.remaining_amount)}.` : `Current budget remaining: ${money(modal.budget.remaining_amount)}.`}</p>
+          <label>{t("budgets.sourceWallet", undefined, language)}<select name="walletId" defaultValue={modal.budget.source_wallet_id ?? wallets[0]?.id}>{wallets.map(w => <option key={w.id} value={w.id}>{w.name} · {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>
+          <label>{t("common.amount", undefined, language)}<FormattedMoneyInput name="amount" required autoFocus /></label>
+          <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : `${language === "vi" ? "Nạp vào ngân sách" : "Top up"}`}</button>
+        </form></Modal>}
+
+        {modal?.kind === "budget-return" && <Modal title={`${language === "vi" ? "Rút tiền" : "Withdraw"}: ${modal.budget.name}`} eyebrow={t("budgets.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={e => handleBudgetReturn(e, modal.budget)}>
+          <p className="allocation-info-box">{language === "vi" ? `Có thể rút tối đa ${money(modal.budget.remaining_amount)} về ví.` : `Max withdrawable amount: ${money(modal.budget.remaining_amount)}.`}</p>
+          <label>{t("common.amount", undefined, language)}<FormattedMoneyInput name="amount" defaultValue={modal.budget.remaining_amount} required autoFocus /></label>
+          <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : `${language === "vi" ? "Rút về ví" : "Withdraw"}`}</button>
+        </form></Modal>}
+
+        {modal?.kind === "goal" && (
+          <Modal title={modal.item ? t("goals.editTitle", undefined, language) : t("goals.addTitle", undefined, language)} eyebrow={t("goals.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}>
+            <form onSubmit={saveGoal}>
+              <label>{t("goals.name", undefined, language)}<input name="title" defaultValue={modal.item?.title} required placeholder={language === "vi" ? "Ví dụ: Mua laptop, Quỹ du lịch…" : "E.g. New Laptop, Vacation…"} /></label>
+              <label>{t("goals.targetAmount", undefined, language)}<FormattedMoneyInput name="targetAmount" defaultValue={modal.item?.target_amount} required /></label>
+              {!modal.item && (
+                <>
+                  <label>{language === "vi" ? "Gửi vào ngay bây giờ (tùy chọn)" : "Deposit now (optional)"}<FormattedMoneyInput name="initialDeposit" defaultValue={0} placeholder="0" /></label>
+                  <label>{t("goals.sourceWallet", undefined, language)}<select name="sourceWalletId"><option value="">{language === "vi" ? "Chọn ví…" : "Select wallet…"}</option>{wallets.map(w => <option key={w.id} value={w.id}>{w.name} · {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>
+                </>
+              )}
+              <div className="form-grid" style={{ marginTop: 14 }}>
+                <label>{t("goals.deadline", undefined, language)}<input name="deadline" type="date" defaultValue={modal.item?.deadline ?? ""} /></label>
+              </div>
+              <ModernColorPicker name="color" defaultValue={modal.item?.color ?? "#D9F45F"} label={language === "vi" ? "Màu đại diện mục tiêu" : "Goal color"} />
+              <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : (modal.item ? t("common.save", undefined, language) : t("common.add", undefined, language))}</button>
+            </form>
+          </Modal>
+        )}
+
+        {modal?.kind === "goal-topup" && <Modal title={`${language === "vi" ? "Gửi tiền" : "Deposit"}: ${modal.goal.title}`} eyebrow={t("goals.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={e => handleGoalTopup(e, modal.goal)}>
+          <p className="allocation-info-box">{money(modal.goal.current_amount)} / {money(modal.goal.target_amount)}</p>
+          <label>{t("goals.sourceWallet", undefined, language)}<select name="walletId" defaultValue={modal.goal.source_wallet_id ?? wallets[0]?.id}>{wallets.map(w => <option key={w.id} value={w.id}>{w.name} · {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>
+          <label>{t("common.amount", undefined, language)}<FormattedMoneyInput name="amount" required autoFocus /></label>
+          <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : `${language === "vi" ? "Gửi vào mục tiêu" : "Deposit"}`}</button>
+        </form></Modal>}
+
+        {modal?.kind === "goal-return" && <Modal title={`${language === "vi" ? "Rút tiền" : "Withdraw"}: ${modal.goal.title}`} eyebrow={t("goals.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={e => handleGoalReturn(e, modal.goal)}>
+          <p className="allocation-info-box">{language === "vi" ? `Có thể rút tối đa ${money(modal.goal.current_amount)}.` : `Max withdrawable: ${money(modal.goal.current_amount)}.`}</p>
+          <label>{t("common.amount", undefined, language)}<FormattedMoneyInput name="amount" defaultValue={modal.goal.current_amount} required autoFocus /></label>
+          <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : `${language === "vi" ? "Rút về ví" : "Withdraw"}`}</button>
+        </form></Modal>}
+
+        {modal?.kind === "recurring" && <Modal title={modal.item ? t("recurring.editTitle", undefined, language) : t("recurring.addTitle", undefined, language)} eyebrow={t("recurring.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={event => saveSimple(event, "recurring")}><div className="type-toggle"><button type="button" className={recurringType === "expense" ? "active" : ""} onClick={() => setRecurringType("expense")}>{t("transactions.expense", undefined, language)}</button><button type="button" className={recurringType === "income" ? "active" : ""} onClick={() => setRecurringType("income")}>{t("transactions.income", undefined, language)}</button></div><label>{t("transactions.title", undefined, language)}<input name="title" defaultValue={modal.item?.title} required /></label><label>{t("transactions.amount", undefined, language)}<FormattedMoneyInput name="amount" defaultValue={modal.item?.amount} required /></label><div className="form-grid"><label>{t("transactions.category", undefined, language)}<select name="categoryId" defaultValue={modal.item?.category_id ?? categories.find(item => item.kind === recurringType)?.id}>{categories.filter(item => item.kind === recurringType).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>{t("transactions.wallet", undefined, language)}<select name="walletId" defaultValue={modal.item?.wallet_id ?? wallets[0]?.id}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><div className="form-grid"><label>{t("recurring.frequency", undefined, language)}<select name="frequency" defaultValue={modal.item?.frequency ?? "monthly"}><option value="daily">{t("recurring.daily", undefined, language)}</option><option value="weekly">{t("recurring.weekly", undefined, language)}</option><option value="monthly">{t("recurring.monthly", undefined, language)}</option><option value="yearly">{t("recurring.yearly", undefined, language)}</option></select></label><label>{t("recurring.nextRun", undefined, language)}<input name="nextRun" type="datetime-local" defaultValue={localDateTime(modal.item?.next_run_at ?? new Date())} required /></label></div><label>{t("common.note", undefined, language)}<textarea name="note" defaultValue={modal.item?.note} /></label><div className="check-grid"><label><input name="active" type="checkbox" defaultChecked={modal.item?.active ?? true} /> {t("recurring.active", undefined, language)}</label><label><input name="autoCreate" type="checkbox" defaultChecked={modal.item?.auto_create ?? false} /> {t("recurring.autoCreate", undefined, language)}</label></div><button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : t("common.save", undefined, language)}</button></form></Modal>}
+
+        {modal?.kind === "receipt-scan" && (
+          <ReceiptScannerModal
+            categories={categories}
+            wallets={wallets}
+            budgets={budgets}
+            availableBalances={availableBalances}
+            onClose={() => setModal(null)}
+            onSwitchToManual={() => openModal({ kind: "transaction" })}
+            onConfirmTransaction={handleConfirmReceiptTransaction}
+            saving={saving}
+            money={money}
+          />
+        )}
+
+        {insufficientBalanceAlert && (
+          <div className="modal-wrap insufficient-alert-wrap" role="dialog" aria-modal="true" aria-labelledby="insufficient-modal-title">
+            <button className="modal-backdrop" onClick={() => setInsufficientBalanceAlert(null)} aria-label="Đóng" />
+            <section className="insufficient-modal-card">
+              <div className="insufficient-head">
+
+                <div>
+                  <p className="insufficient-eyebrow">CẢNH BÁO TÀI CHÍNH</p>
+                  <h2 id="insufficient-modal-title">Số dư không đủ</h2>
                 </div>
               </div>
-            </div>
-          );
-        })()}
-        {transactionDraft.type === "income" && <label>Ví nhận tiền<select required value={transactionDraft.walletId} onChange={event => setTransactionDraft(current => ({ ...current, walletId: event.target.value }))}>{wallets.map(item => <option key={item.id} value={item.id}>{item.icon} {item.name}</option>)}</select></label>}
-        <label>Ngày &amp; giờ<input required type="datetime-local" value={transactionDraft.occurredAt} onChange={event => setTransactionDraft(current => ({ ...current, occurredAt: event.target.value }))} /></label>
-        <label>Ghi chú<textarea value={transactionDraft.note} onChange={event => setTransactionDraft(current => ({ ...current, note: event.target.value }))} placeholder="Mô tả ngắn…" /></label>
-        <label>Hóa đơn <span>(JPG, PNG, WebP hoặc PDF · tối đa 8 MB)</span><input name="receipt" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" /></label>
-        {modal.item?.receipt_path && <p className="existing-file">✓ Giao dịch đang có hóa đơn. Chọn tệp mới để thay thế.</p>}
-        <button className="save-button" disabled={saving}>{saving ? "Đang lưu…" : "Lưu giao dịch →"}</button>
-      </form></Modal>)}
 
-      {modal?.kind === "wallet" && (
-        <Modal title={modal.item ? "Chỉnh sửa ví" : "Tạo ví mới"} eyebrow="VÍ & TÀI KHOẢN" onClose={() => setModal(null)}>
-          <WalletModalForm modalItem={modal.item} saving={saving} onSubmit={event => saveSimple(event, "wallet")} />
-        </Modal>
-      )}
-
-      {modal?.kind === "transfer" && <Modal title="Chuyển tiền giữa các ví" eyebrow="ĐIỀU CHUYỂN NỘI BỘ" onClose={() => setModal(null)}><form onSubmit={saveTransfer}><div className="form-grid"><label>Từ ví<select name="fromWalletId">{wallets.map(item => <option key={item.id} value={item.id}>{item.name} · {money(walletBalances.get(item.id) ?? 0)}</option>)}</select></label><label>Đến ví<select name="toWalletId" defaultValue={wallets[1]?.id}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><label>Số tiền<FormattedMoneyInput name="amount" required /></label><label>Ngày & giờ<input name="occurredAt" type="datetime-local" defaultValue={localDateTime()} required /></label><label>Ghi chú<textarea name="note" /></label><button className="save-button" disabled={saving}>Xác nhận chuyển tiền →</button></form></Modal>}
-
-      {modal?.kind === "category" && (
-        <Modal title={modal.item ? "Chỉnh sửa danh mục" : "Tạo danh mục"} eyebrow="PHÂN LOẠI DÒNG TIỀN" onClose={() => setModal(null)}>
-          <form onSubmit={event => saveSimple(event, "category")}>
-            <label>Tên danh mục<input name="name" defaultValue={modal.item?.name} required placeholder="Ví dụ: Ăn uống, Tiền điện…" /></label>
-            <div className="form-grid">
-              <label>Loại<select name="type" defaultValue={modal.item?.kind ?? "expense"}><option value="expense">Khoản chi</option><option value="income">Khoản thu</option></select></label>
-              <label>Danh mục cha<select name="parentId" defaultValue={modal.item?.parent_id ?? ""}><option value="">Không có</option>{categories.filter(item => item.id !== modal.item?.id).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-            </div>
-            <input name="icon" type="hidden" value="" />
-            <ModernColorPicker name="color" defaultValue={modal.item?.color ?? "#7C8CFF"} label="Màu sắc đại diện danh mục" />
-            <button className="save-button" disabled={saving}>{saving ? "Đang lưu…" : (modal.item ? "Cập nhật danh mục →" : "Lưu danh mục →")}</button>
-          </form>
-        </Modal>
-      )}
-
-      {modal?.kind === "budget" && <Modal title={modal.item ? "Chỉnh sửa ngân sách" : "Tạo ngân sách mới"} eyebrow="KIỂM SOÁT HẠN MỨC" onClose={() => setModal(null)}><form onSubmit={saveBudget}>
-        <label>Tên ngân sách<input name="name" defaultValue={modal.item?.name} required placeholder="Ví dụ: Tiền đổ xăng" /></label>
-        {!modal.item && <label>Số tiền phân bổ<FormattedMoneyInput name="amount" required placeholder="0" /></label>}
-        {!modal.item && <label>Ví nguồn<select name="sourceWalletId" required><option value="">Chọn ví…</option>{wallets.map(w => <option key={w.id} value={w.id}>{w.icon} {w.name} · khả dụng {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>}
-        <div className="form-grid">
-          <label>Danh mục<select name="categoryId" defaultValue={modal.item?.category_id ?? ""}><option value="">Tổng chi tiêu</option>{categories.filter(item => item.kind === "expense").map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-          <label>Chu kỳ<select name="period" defaultValue={modal.item?.period ?? "monthly"}><option value="weekly">Hàng tuần</option><option value="monthly">Hàng tháng</option><option value="yearly">Hàng năm</option></select></label>
-        </div>
-        <div className="form-grid">
-          <label>Ngày bắt đầu<input name="periodStart" type="date" defaultValue={modal.item?.period_start ?? new Date().toISOString().slice(0, 10)} required /></label>
-          <label>Cảnh báo khi (%)<input name="alertPercent" type="number" min="1" max="100" defaultValue={modal.item?.alert_percent ?? 80} required /></label>
-        </div>
-        {modal.item && <div className="allocation-info-box"><span>ⓘ Chỉnh sửa không thay đổi số tiền phân bổ. Dùng nút Nạp thêm / Rút tiền để điều chỉnh ngân sách.</span></div>}
-        <button className="save-button" disabled={saving}>{saving ? "Đang lưu…" : (modal.item ? "Cập nhật ngân sách →" : "Tạo ngân sách →")}</button>
-      </form></Modal>}
-
-      {modal?.kind === "budget-topup" && <Modal title={`Nạp thêm vào: ${modal.budget.name}`} eyebrow="TĂNG NGÂN SÁCH" onClose={() => setModal(null)}><form onSubmit={e => handleBudgetTopup(e, modal.budget)}>
-        <p className="allocation-info-box">Ngân sách hiện còn <b>{money(modal.budget.remaining_amount)}</b>. Chọn ví và nhập số tiền muốn bổ sung.</p>
-        <label>Ví nguồn<select name="walletId" defaultValue={modal.budget.source_wallet_id ?? wallets[0]?.id}>{wallets.map(w => <option key={w.id} value={w.id}>{w.icon} {w.name} · khả dụng {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>
-        <label>Số tiền nạp thêm<FormattedMoneyInput name="amount" required autoFocus /></label>
-        <button className="save-button" disabled={saving}>{saving ? "Đang xử lý…" : "⊕ Nạp vào ngân sách →"}</button>
-      </form></Modal>}
-
-      {modal?.kind === "budget-return" && <Modal title={`Rút tiền khỏi: ${modal.budget.name}`} eyebrow="HOÀN TRẢ VỀ VÍ" onClose={() => setModal(null)}><form onSubmit={e => handleBudgetReturn(e, modal.budget)}>
-        <p className="allocation-info-box">Có thể rút tối đa <b>{money(modal.budget.remaining_amount)}</b> về ví nguồn.</p>
-        <label>Số tiền rút<FormattedMoneyInput name="amount" defaultValue={modal.budget.remaining_amount} required autoFocus /></label>
-        <button className="save-button" disabled={saving}>{saving ? "Đang xử lý…" : "⊖ Rút về ví →"}</button>
-      </form></Modal>}
-
-      {modal?.kind === "goal" && (
-        <Modal title={modal.item ? "Cập nhật mục tiêu" : "Tạo mục tiêu tiết kiệm"} eyebrow="TÍCH LŨY TƯƠNG LAI" onClose={() => setModal(null)}>
-          <form onSubmit={saveGoal}>
-            <label>Tên mục tiêu<input name="title" defaultValue={modal.item?.title} required placeholder="Ví dụ: Mua laptop, Quỹ du lịch…" /></label>
-            <label>Số tiền mục tiêu<FormattedMoneyInput name="targetAmount" defaultValue={modal.item?.target_amount} required /></label>
-            {!modal.item && (
-              <>
-                <label>Gửi vào ngay bây giờ (tùy chọn)<FormattedMoneyInput name="initialDeposit" defaultValue={0} placeholder="0 = chưa gửi" /></label>
-                <label>Ví nguồn<select name="sourceWalletId"><option value="">Chọn ví (nếu gửi ngay)</option>{wallets.map(w => <option key={w.id} value={w.id}>{w.icon} {w.name} · khả dụng {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>
-              </>
-            )}
-            <div className="form-grid" style={{ marginTop: 14 }}>
-              <label>Thời hạn<input name="deadline" type="date" defaultValue={modal.item?.deadline ?? ""} /></label>
-            </div>
-            <ModernColorPicker name="color" defaultValue={modal.item?.color ?? "#D9F45F"} label="Màu đại diện mục tiêu" />
-            <button className="save-button" disabled={saving}>{saving ? "Đang lưu…" : (modal.item ? "Cập nhật mục tiêu →" : "Tạo mục tiêu →")}</button>
-          </form>
-        </Modal>
-      )}
-
-      {modal?.kind === "goal-topup" && <Modal title={`Gửi tiền vào: ${modal.goal.title}`} eyebrow="NẠP TIỀT KIỆM" onClose={() => setModal(null)}><form onSubmit={e => handleGoalTopup(e, modal.goal)}>
-        <p className="allocation-info-box">Mục tiêu hiện có <b>{money(modal.goal.current_amount)}</b> / {money(modal.goal.target_amount)}.</p>
-        <label>Ví nguồn<select name="walletId" defaultValue={modal.goal.source_wallet_id ?? wallets[0]?.id}>{wallets.map(w => <option key={w.id} value={w.id}>{w.icon} {w.name} · khả dụng {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>
-        <label>Số tiền gửi<FormattedMoneyInput name="amount" required autoFocus /></label>
-        <button className="save-button" disabled={saving}>{saving ? "Đang xử lý…" : "⊕ Gửi vào mục tiêu →"}</button>
-      </form></Modal>}
-
-      {modal?.kind === "goal-return" && <Modal title={`Rút tiền khỏi: ${modal.goal.title}`} eyebrow="HOÀN TRẢ VỀ VÍ" onClose={() => setModal(null)}><form onSubmit={e => handleGoalReturn(e, modal.goal)}>
-        <p className="allocation-info-box">Có thể rút tối đa <b>{money(modal.goal.current_amount)}</b>.</p>
-        <label>Số tiền rút<FormattedMoneyInput name="amount" defaultValue={modal.goal.current_amount} required autoFocus /></label>
-        <button className="save-button" disabled={saving}>{saving ? "Đang xử lý…" : "⊖ Rút về ví →"}</button>
-      </form></Modal>}
-
-      {modal?.kind === "recurring" && <Modal title={modal.item ? "Chỉnh sửa lịch định kỳ" : "Tạo giao dịch định kỳ"} eyebrow="DÒNG TIỀN LẶP LẠI" onClose={() => setModal(null)}><form onSubmit={event => saveSimple(event, "recurring")}><div className="type-toggle"><button type="button" className={recurringType === "expense" ? "active" : ""} onClick={() => setRecurringType("expense")}>Khoản chi</button><button type="button" className={recurringType === "income" ? "active" : ""} onClick={() => setRecurringType("income")}>Khoản thu</button></div><label>Tên giao dịch<input name="title" defaultValue={modal.item?.title} required /></label><label>Số tiền<FormattedMoneyInput name="amount" defaultValue={modal.item?.amount} required /></label><div className="form-grid"><label>Danh mục<select name="categoryId" defaultValue={modal.item?.category_id ?? categories.find(item => item.kind === recurringType)?.id}>{categories.filter(item => item.kind === recurringType).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>Ví<select name="walletId" defaultValue={modal.item?.wallet_id ?? wallets[0]?.id}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><div className="form-grid"><label>Tần suất<select name="frequency" defaultValue={modal.item?.frequency ?? "monthly"}><option value="daily">Hàng ngày</option><option value="weekly">Hàng tuần</option><option value="monthly">Hàng tháng</option><option value="yearly">Hàng năm</option></select></label><label>Kỳ tiếp theo<input name="nextRun" type="datetime-local" defaultValue={localDateTime(modal.item?.next_run_at ?? new Date())} required /></label></div><label>Ghi chú<textarea name="note" defaultValue={modal.item?.note} /></label><div className="check-grid"><label><input name="active" type="checkbox" defaultChecked={modal.item?.active ?? true} /> Kích hoạt lịch</label><label><input name="autoCreate" type="checkbox" defaultChecked={modal.item?.auto_create ?? false} /> Tự động ghi nhận khi mở ứng dụng</label></div><button className="save-button" disabled={saving}>Lưu lịch định kỳ →</button></form></Modal>}
-
-      {modal?.kind === "receipt-scan" && (
-        <ReceiptScannerModal
-          categories={categories}
-          wallets={wallets}
-          budgets={budgets}
-          availableBalances={availableBalances}
-          onClose={() => setModal(null)}
-          onSwitchToManual={() => openModal({ kind: "transaction" })}
-          onConfirmTransaction={handleConfirmReceiptTransaction}
-          saving={saving}
-          money={money}
-        />
-      )}
-
-      {insufficientBalanceAlert && (
-        <div className="modal-wrap insufficient-alert-wrap" role="dialog" aria-modal="true" aria-labelledby="insufficient-modal-title">
-          <button className="modal-backdrop" onClick={() => setInsufficientBalanceAlert(null)} aria-label="Đóng" />
-          <section className="insufficient-modal-card">
-            <div className="insufficient-head">
-              <span className="insufficient-icon">⚠️</span>
-              <div>
-                <p className="insufficient-eyebrow">CẢNH BÁO TÀI CHÍNH</p>
-                <h2 id="insufficient-modal-title">Số dư không đủ</h2>
+              <div className="insufficient-body">
+                <p className="insufficient-main-text">
+                  {insufficientBalanceAlert.type === "budget" ? "Ngân sách" : "Ví"} <strong>&quot;{insufficientBalanceAlert.name}&quot;</strong> hiện chỉ có{" "}
+                  <strong className="avail-text">{money(insufficientBalanceAlert.availableBalance)}</strong>, trong khi khoản chi là{" "}
+                  <strong className="expense-text">{money(insufficientBalanceAlert.expenseAmount)}</strong>.
+                </p>
+                <div className="missing-notice-box">
+                  <span>Bạn còn thiếu:</span>
+                  <strong>{money(insufficientBalanceAlert.missingAmount)}</strong>
+                </div>
               </div>
-            </div>
 
-            <div className="insufficient-body">
-              <p className="insufficient-main-text">
-                {insufficientBalanceAlert.type === "budget" ? "Ngân sách" : "Ví"} <strong>&quot;{insufficientBalanceAlert.name}&quot;</strong> hiện chỉ có{" "}
-                <strong className="avail-text">{money(insufficientBalanceAlert.availableBalance)}</strong>, trong khi khoản chi là{" "}
-                <strong className="expense-text">{money(insufficientBalanceAlert.expenseAmount)}</strong>.
-              </p>
-              <div className="missing-notice-box">
-                <span>Bạn còn thiếu:</span>
-                <strong>{money(insufficientBalanceAlert.missingAmount)}</strong>
-              </div>
-            </div>
-
-            <div className="insufficient-actions">
-              <button type="button" className="insufficient-btn change-wallet" onClick={handleChooseAnotherWallet}>
-                <span>🔄</span> Đổi nguồn thanh toán
-              </button>
-              <button type="button" className="insufficient-btn reduce-amount" onClick={handleReduceAmount}>
-                <span>✏️</span> Giảm số tiền
-              </button>
-              {insufficientBalanceAlert.type === "wallet" && (
-                <button type="button" className="insufficient-btn add-funds" onClick={handleOpenTopup}>
-                  <span>➕</span> Bổ sung số dư
+              <div className="insufficient-actions">
+                <button type="button" className="insufficient-btn change-wallet" onClick={handleChooseAnotherWallet}>
+                  Đổi nguồn thanh toán
                 </button>
-              )}
-            </div>
-          </section>
-        </div>
-      )}
+                <button type="button" className="insufficient-btn reduce-amount" onClick={handleReduceAmount}>
+                  Giảm số tiền
+                </button>
+                {insufficientBalanceAlert.type === "wallet" && (
+                  <button type="button" className="insufficient-btn add-funds" onClick={handleOpenTopup}>
+                    Bổ sung số dư
+                  </button>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
 
-      {quickTopupModal && (
-        <Modal title="Bổ sung số dư ví" eyebrow="NẠP TIỀN VÀO VÍ" onClose={() => setQuickTopupModal(null)}>
-          <form onSubmit={handleSaveQuickTopup}>
-            <div className="topup-alert-banner">
-              <span className="topup-info-icon">💡</span>
-              <p>
-                Bạn cần bổ sung ít nhất <strong>{money(quickTopupModal.missingAmount)}</strong> vào ví{" "}
-                <strong>&quot;{quickTopupModal.walletName}&quot;</strong> để thực hiện khoản chi.
-              </p>
-            </div>
+        {quickTopupModal && (
+          <Modal title="Bổ sung số dư ví" eyebrow="NẠP TIỀN VÀO VÍ" onClose={() => setQuickTopupModal(null)}>
+            <form onSubmit={handleSaveQuickTopup}>
+              <div className="topup-alert-banner">
 
-            <label>
-              Ví nhận tiền
-              <input type="text" disabled value={quickTopupModal.walletName} className="disabled-input" />
-            </label>
+                <p>
+                  Bạn cần bổ sung ít nhất <strong>{money(quickTopupModal.missingAmount)}</strong> vào ví{" "}
+                  <strong>&quot;{quickTopupModal.walletName}&quot;</strong> để thực hiện khoản chi.
+                </p>
+              </div>
 
-            <label>
-              Số tiền bổ sung
-              <FormattedMoneyInput name="amount" defaultValue={quickTopupModal.missingAmount} required autoFocus />
-            </label>
+              <label>
+                Ví nhận tiền
+                <input type="text" disabled value={quickTopupModal.walletName} className="disabled-input" />
+              </label>
 
-            <label>
-              Danh mục thu nhập
-              <select name="categoryId" defaultValue={categories.find(c => c.kind === "income")?.id ?? ""}>
-                {categories.filter(c => c.kind === "income").map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label>
+                Số tiền bổ sung
+                <FormattedMoneyInput name="amount" defaultValue={quickTopupModal.missingAmount} required autoFocus />
+              </label>
 
-            <label>
-              Ghi chú
-              <textarea name="note" defaultValue={`Bổ sung số dư cho khoản chi "${transactionDraft.title}"`} />
-            </label>
+              <label>
+                Danh mục thu nhập
+                <select name="categoryId" defaultValue={categories.find(c => c.kind === "income")?.id ?? ""}>
+                  {categories.filter(c => c.kind === "income").map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <button className="save-button" disabled={saving}>
-              {saving ? "Đang xử lý…" : "✓ Xác nhận bổ sung tiền →"}
-            </button>
-          </form>
-        </Modal>
-      )}
+              <label>
+                Ghi chú
+                <textarea name="note" defaultValue={`Bổ sung số dư cho khoản chi "${transactionDraft.title}"`} />
+              </label>
 
-      <AiFloatingChat
-        view={view}
-        financialContext={{
-          totalBalance,
-          monthlyIncome: monthTotals.income,
-          monthlyExpense: monthTotals.expense,
-          wallets,
-          transactions,
-          budgets,
-          savingsGoals: goals,
-        }}
-      />
-    </main>
+              <button className="save-button" disabled={saving}>
+                {saving ? "Đang xử lý…" : "Xác nhận bổ sung tiền"}
+              </button>
+            </form>
+          </Modal>
+        )}
+
+        <AiFloatingChat
+          view={view}
+          financialContext={{
+            totalBalance,
+            monthlyIncome: monthTotals.income,
+            monthlyExpense: monthTotals.expense,
+            wallets,
+            transactions,
+            budgets,
+            savingsGoals: goals,
+          }}
+        />
+      </main>
     </AiChatProvider>
   );
 }
@@ -2972,16 +3036,14 @@ function ModernColorPicker({
               title={hex}
               aria-label={`Chọn màu ${hex}`}
             >
-              {isSelected && (
-                <span className="modern-swatch-check" style={{ color: getContrastColor(hex) }}>✓</span>
-              )}
+
             </button>
           );
         })}
 
         {/* Nút mở Color Wheel picker tự do */}
         <label className="modern-color-custom-btn" title="Chọn màu tự do qua bảng màu">
-          <span className="modern-color-custom-icon">🎨</span>
+          <span className="modern-color-custom-icon" style={{ fontSize: "11px", fontWeight: 700 }}>+</span>
           <input
             type="color"
             value={selectedColor}
@@ -3013,57 +3075,82 @@ function ModernColorPicker({
   );
 }
 
-function WalletModalForm({ modalItem, saving, onSubmit }: { modalItem?: Wallet | null; saving: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) {
+function WalletModalForm({ modalItem, saving, language = "vi", onSubmit }: { modalItem?: Wallet | null; saving: boolean; language?: Language; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) {
   const initialBalance = modalItem?.balance ?? 0;
 
   return (
     <form onSubmit={onSubmit}>
       <label>
-        Tên ví
-        <input name="name" defaultValue={modalItem?.name} required placeholder="Ví dụ: Techcombank, Tiền mặt…" />
+        {t("wallets.name", undefined, language)}
+        <input name="name" defaultValue={modalItem?.name} required placeholder={t("wallets.namePlaceholder", undefined, language)} />
       </label>
 
       <div className="form-grid">
         <label>
-          Loại ví
+          {t("wallets.type", undefined, language)}
           <select name="type" defaultValue={modalItem?.type ?? "cash"}>
-            <option value="cash">Tiền mặt</option>
-            <option value="bank">Ngân hàng</option>
-            <option value="ewallet">Ví điện tử</option>
+            <option value="cash">{t("wallets.cash", undefined, language)}</option>
+            <option value="bank">{t("wallets.bank", undefined, language)}</option>
+            <option value="ewallet">{t("wallets.ewallet", undefined, language)}</option>
           </select>
         </label>
 
         <label>
-          Số dư ban đầu
+          {t("wallets.balance", undefined, language)}
           <FormattedMoneyInput name="balance" defaultValue={initialBalance} required placeholder="0" />
         </label>
       </div>
 
-      <div className="form-grid" style={{ marginTop: 14 }}>
-        <label>
-          Biểu tượng
-          <select name="icon" defaultValue={modalItem?.icon ?? "💵"}>
-            <option value="💵">💵 Tiền mặt</option>
-            <option value="🏦">🏦 Ngân hàng</option>
-            <option value="💳">💳 Thẻ tín dụng/ATM</option>
-            <option value="📱">📱 Ví điện tử (Momo, ZaloPay...)</option>
-            <option value="💰">💰 Tiết kiệm / Quỹ</option>
-          </select>
-        </label>
-      </div>
+      <input name="icon" type="hidden" value="" />
 
-      <ModernColorPicker name="color" defaultValue={modalItem?.color ?? "#D9F45F"} label="Màu sắc đại diện ví" />
+      <ModernColorPicker name="color" defaultValue={modalItem?.color ?? "#D9F45F"} label={t("wallets.color", undefined, language)} />
 
       <button className="save-button" disabled={saving}>
-        {saving ? "Đang lưu…" : (modalItem ? "Cập nhật ví →" : "Tạo ví mới →")}
+        {saving ? t("common.saving", undefined, language) : (modalItem ? t("common.save", undefined, language) : t("common.add", undefined, language))}
       </button>
     </form>
   );
 }
 
-function Empty({ text }: { text: string }) { return <div className="empty-state"><span>＋</span><p>{text}</p></div>; }
+function Empty({ text }: { text: string }) { return <div className="empty-state"><p>{text}</p></div>; }
 
 function TransactionTable({ items, money, language, categoryById, walletById, onEdit, onDelete, onReceipt }: { items: Transaction[]; money: (value: number) => string; language: "vi" | "en"; categoryById: Map<string, Category>; walletById: Map<string, Wallet>; onEdit: (item: Transaction) => void; onDelete: (item: Transaction) => void; onReceipt: (path: string) => void }) {
-  if (!items.length) return <Empty text="Chưa có giao dịch phù hợp." />;
-  return <div className="transaction-table"><div className="table-head"><span>GIAO DỊCH</span><span>DANH MỤC / VÍ</span><span>NGÀY & GIỜ</span><span>SỐ TIỀN</span><span /></div>{items.map(item => { const category = categoryById.get(item.category_id ?? ""); const wallet = walletById.get(item.wallet_id ?? ""); return <div className="transaction-row" key={item.id}><span className="transaction-title"><i style={{ background: `${category?.color ?? "#98A1A5"}22`, color: category?.color ?? "#687273" }}>{item.type === "income" ? "↙" : "↗"}</i><span><b>{item.title}</b><small>{item.note || "Không có ghi chú"}</small></span></span><span><b>{category?.name ?? item.category}</b><small>{wallet?.name ?? "Không gắn ví"}</small></span><span>{formatDate(item.occurred_at, language)}</span><strong className={item.type}>{item.type === "expense" ? "−" : "+"}{money(item.amount)}</strong><span className="row-actions">{item.receipt_path && <button onClick={() => onReceipt(item.receipt_path!)} title="Mở hóa đơn">▱</button>}<button onClick={() => onEdit(item)} title="Chỉnh sửa">✎</button><button onClick={() => onDelete(item)} title="Xóa">×</button></span></div>; })}</div>;
+  if (!items.length) return <Empty text={t("transactions.empty", undefined, language)} />;
+  return (
+    <div className="transaction-table">
+      <div className="table-head">
+        <span>{t("transactions.title", undefined, language).toUpperCase()}</span>
+        <span>{language === "vi" ? "DANH MỤC / VÍ" : "CATEGORY / WALLET"}</span>
+        <span>{language === "vi" ? "NGÀY & GIỜ" : "DATE & TIME"}</span>
+        <span>{t("common.amount", undefined, language).toUpperCase()}</span>
+        <span />
+      </div>
+      {items.map(item => {
+        const category = categoryById.get(item.category_id ?? "");
+        const wallet = walletById.get(item.wallet_id ?? "");
+        return (
+          <div className="transaction-row" key={item.id}>
+            <span className="transaction-title">
+              <i style={{ background: `${category?.color ?? "#98A1A5"}22`, color: category?.color ?? "#687273" }} />
+              <span>
+                <b>{item.title}</b>
+                <small>{item.note || t("common.noData", undefined, language)}</small>
+              </span>
+            </span>
+            <span>
+              <b>{category?.name ?? item.category}</b>
+              <small>{wallet?.name ?? (language === "vi" ? "Không gắn ví" : "No wallet")}</small>
+            </span>
+            <span>{formatDate(item.occurred_at, language)}</span>
+            <strong className={item.type}>{item.type === "expense" ? "-" : "+"}{money(item.amount)}</strong>
+            <span className="row-actions">
+              {item.receipt_path && <button type="button" onClick={() => onReceipt(item.receipt_path!)} title={t("transactions.viewReceipt", undefined, language)} className="tx-text-btn receipt">{t("transactions.receipt", undefined, language)}</button>}
+              <button type="button" onClick={() => onEdit(item)} title={t("common.edit", undefined, language)} className="tx-text-btn edit">{t("common.edit", undefined, language)}</button>
+              <button type="button" onClick={() => onDelete(item)} title={t("common.delete", undefined, language)} className="tx-text-btn delete">{t("common.delete", undefined, language)}</button>
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }

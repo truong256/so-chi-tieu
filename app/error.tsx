@@ -42,10 +42,8 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
         <div className="p-8 sm:p-10 flex flex-col items-center text-center">
           
           <div className="relative mb-6">
-            <div className="w-16 h-16 bg-[#151d1f] rounded-2xl flex items-center justify-center shadow-sm">
-              <svg className="w-8 h-8 text-[#d2f544]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="w-16 h-16 bg-[#151d1f] rounded-2xl flex items-center justify-center shadow-sm text-[#d2f544] font-black text-xl tracking-wider">
+              SCT
             </div>
             <div className="absolute -bottom-1.5 -right-1.5 flex space-x-1 bg-white p-1.5 rounded-full border border-[#d5ddda] shadow-sm">
               <div className="w-1.5 h-1.5 rounded-full bg-[#3d494c] animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -77,17 +75,7 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
               disabled={isReloading}
               className="w-full flex items-center justify-center py-3.5 px-4 bg-[#151d1f] hover:bg-[#1d2628] text-white rounded-xl font-semibold transition-all duration-200 active:translate-y-[1px] shadow-[0_4px_14px_rgba(21,29,31,0.2)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#151d1f] disabled:opacity-80 disabled:active:translate-y-0"
             >
-              {isReloading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#d2f544]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Đang chuẩn bị...
-                </>
-              ) : (
-                "Tải lại giao diện"
-              )}
+              {isReloading ? "Đang chuẩn bị..." : "Tải lại giao diện"}
             </button>
           </div>
         </div>

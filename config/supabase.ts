@@ -49,6 +49,19 @@ export function createClient() {
     browserClient = createBrowserClient(
       browserConfig.supabaseUrl,
       browserConfig.supabasePublishableKey,
+      {
+        auth: {
+          storage: typeof window !== "undefined" ? window.sessionStorage : undefined,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+        cookieOptions: {
+          maxAge: undefined, // Session cookie: removed when browser session terminates
+          sameSite: "lax",
+          path: "/",
+        },
+      }
     );
   }
 
