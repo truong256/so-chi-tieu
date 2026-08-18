@@ -1,11 +1,11 @@
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export type SupabaseBrowserConfig = {
   supabaseUrl: string;
   supabasePublishableKey: string;
 };
 
-let browserClient: ReturnType<typeof createBrowserClient> | undefined;
+let browserClient: SupabaseClient | undefined;
 let browserConfig: SupabaseBrowserConfig | undefined = (() => {
   const envUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
   const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
@@ -14,6 +14,28 @@ let browserConfig: SupabaseBrowserConfig | undefined = (() => {
   }
   return undefined;
 })();
+
+function clearLegacyPersistentStorage() {
+  if (typeof window === "undefined") return;
+  try {
+    // Clear any persistent localStorage auth items from previous configurations
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("sb-") || key.includes("supabase.auth.token")) {
+        localStorage.removeItem(key);
+      }
+    });
+    // Remove persistent cookies so sessions are not preserved across tab/browser exits
+    if (typeof document !== "undefined" && document.cookie) {
+      document.cookie.split(";").forEach((cookie) => {
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.slice(0, eqPos).trim() : cookie.trim();
+        if (name.startsWith("sb-") || name.includes("supabase")) {
+          document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; SameSite=Lax`;
+        }
+      });
+    }
+  } catch {}
+}
 
 export function configureClient(config: SupabaseBrowserConfig) {
   const supabaseUrl = config.supabaseUrl.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
@@ -34,7 +56,7 @@ export function configureClient(config: SupabaseBrowserConfig) {
   browserConfig = { supabaseUrl, supabasePublishableKey };
 }
 
-export function createClient() {
+export function createClient(): SupabaseClient {
   if (!browserConfig) {
     const envUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
     const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
@@ -46,7 +68,8 @@ export function createClient() {
   }
 
   if (!browserClient) {
-    browserClient = createBrowserClient(
+    clearLegacyPersistentStorage();
+    browserClient = createSupabaseClient(
       browserConfig.supabaseUrl,
       browserConfig.supabasePublishableKey,
       {
@@ -55,11 +78,6 @@ export function createClient() {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-        },
-        cookieOptions: {
-          maxAge: undefined, // Session cookie: removed when browser session terminates
-          sameSite: "lax",
-          path: "/",
         },
       }
     );
