@@ -10,6 +10,7 @@ import {
   normalizeTime,
   parseAiJsonObject,
 } from "./ai-output-validation.service";
+import { GEMINI_TEXT_MODELS } from "./gemini-models";
 
 export interface UserWalletInfo {
   id: string;
@@ -106,14 +107,6 @@ QUY TẮC BẮT BUỘC VÀ NGHIÊM NGẶT:
   "confidence_notes": string[]
 }`;
 
-const CANDIDATE_MODELS = [
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-flash-latest",
-  "gemini-3.1-flash-lite",
-];
-
 export async function parseTransactionWithAI(options: ParseTransactionOptions): Promise<ParseTransactionResult> {
   const { geminiApiKey, rawText, userWallets, userCategories } = options;
 
@@ -185,7 +178,7 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
   let usedModel = "";
   let lastErrorText = "";
 
-  for (const modelName of CANDIDATE_MODELS) {
+  for (const modelName of GEMINI_TEXT_MODELS) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`;
       const res = await fetch(url, {

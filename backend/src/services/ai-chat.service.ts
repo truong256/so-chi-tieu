@@ -4,6 +4,7 @@
  */
 
 import type { ChatMessage, FinancialContext, AiChatRequest, AiChatResult } from "../types/ai.types";
+import { GEMINI_TEXT_MODELS } from "./gemini-models";
 
 export { type ChatMessage, type FinancialContext, type AiChatRequest, type AiChatResult };
 
@@ -105,14 +106,6 @@ export function isObviouslyOffTopic(message: string): boolean {
 
 export const OFF_TOPIC_REPLY =
   "Tôi là trợ lý AI chuyên hỗ trợ quản lý chi tiêu cá nhân. Tôi chỉ có thể hỗ trợ các câu hỏi liên quan đến tài chính cá nhân và các chức năng trong hệ thống Sổ Chi Tiêu.";
-
-const CANDIDATE_MODELS = [
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-flash-latest",
-  "gemini-3.1-flash-lite",
-];
 
 const MAX_CHAT_MESSAGE_LENGTH = 2_000;
 const MAX_HISTORY_MESSAGES = 20;
@@ -254,7 +247,7 @@ export async function processChat(
   let geminiRes: Response | null = null;
   let lastErrorText = "";
 
-  for (const modelName of CANDIDATE_MODELS) {
+  for (const modelName of GEMINI_TEXT_MODELS) {
     try {
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`,

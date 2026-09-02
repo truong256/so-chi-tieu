@@ -10,6 +10,7 @@ import {
   normalizeTime,
   parseAiJsonObject,
 } from "./ai-output-validation.service";
+import { GEMINI_VISION_MODELS } from "./gemini-models";
 
 export interface ParseReceiptOptions {
   geminiApiKey: string;
@@ -86,15 +87,6 @@ BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON HỢP LỆ VỚI
   ]
 }`;
 
-const CANDIDATE_MODELS = [
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-flash-latest",
-  "gemini-2.5-flash-lite",
-  "gemini-3.1-flash-lite",
-];
-
 export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<ParseReceiptResult> {
   const { geminiApiKey, base64Data, mimeType, categoriesList = [], walletsList = [] } = options;
 
@@ -141,7 +133,7 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
   let lastErrorText = "";
   let usedModel = "";
 
-  for (const modelName of CANDIDATE_MODELS) {
+  for (const modelName of GEMINI_VISION_MODELS) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`;
 
