@@ -17,7 +17,8 @@ database/
 │   ├── 003_recurring_transactions_v2.sql
 │   ├── 004_reserved_money.sql
 │   ├── 005_true_balances_rpc.sql
-│   └── 006_finance_integrity_and_security.sql
+│   ├── 006_finance_integrity_and_security.sql
+│   └── 007_query_performance_indexes.sql
 │
 └── fixes/             # SQL fixes áp dụng trên production
     └── production_fix.sql
@@ -38,10 +39,11 @@ Chạy theo thứ tự trên Supabase SQL Editor:
 5. `004_reserved_money.sql` — Tiền dự trữ và lịch sử phân bổ
 6. `005_true_balances_rpc.sql` — RPC tính số dư thực tế
 7. `006_finance_integrity_and_security.sql` — Xác thực ownership, RPC nguyên tử, khóa số tổng hợp và vô hiệu hóa email enumeration/auto-confirm
+8. `007_query_performance_indexes.sql` — Index cho các truy vấn dashboard theo người dùng, thời gian và loại dữ liệu
 
 ### Fixes
 
-- `fixes/production_fix.sql` — Script tương thích cho hệ thống cũ. Ưu tiên chuỗi migration `000`–`006`; luôn sao lưu và đọc script trước khi chạy trên production.
+- `fixes/production_fix.sql` — Script tương thích cho hệ thống cũ. Ưu tiên chuỗi migration `000`–`007`; luôn sao lưu và đọc script trước khi chạy trên production.
 
 ---
 

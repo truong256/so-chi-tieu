@@ -48,6 +48,7 @@ Mở **Supabase Dashboard** → **SQL Editor** và chạy các file migration th
 5. `database/migrations/004_reserved_money.sql`
 6. `database/migrations/005_true_balances_rpc.sql`
 7. `database/migrations/006_finance_integrity_and_security.sql`
+8. `database/migrations/007_query_performance_indexes.sql`
 
 Giữ bật **Confirm email** và **Secure email change**. Nếu dịch vụ gửi thư mặc định chạm rate limit, cấu hình SMTP riêng trong Supabase; không tự xác nhận email bằng trigger SQL.
 

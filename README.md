@@ -61,7 +61,8 @@ so-chi-tieu/
 │   │   ├── 003_recurring_transactions_v2.sql
 │   │   ├── 004_reserved_money.sql
 │   │   ├── 005_true_balances_rpc.sql
-│   │   └── 006_finance_integrity_and_security.sql
+│   │   ├── 006_finance_integrity_and_security.sql
+│   │   └── 007_query_performance_indexes.sql
 │   ├── fixes/                        # SQL fixes cho môi trường production
 │   │   └── production_fix.sql
 │   └── README.md                     # Hướng dẫn chi tiết migration
@@ -145,7 +146,7 @@ GEMINI_API_KEY=your-gemini-api-key
 ```
 
 ### 4. Thiết lập Cơ sở dữ liệu
-Chạy tất cả tệp SQL trong `database/migrations/` theo thứ tự từ `000` đến `006` trên **Supabase SQL Editor**. Migration `006` bắt buộc cho xác thực API và các nghiệp vụ tài chính nguyên tử. Chi tiết xem tại [`docs/database.md`](./docs/database.md).
+Chạy tất cả tệp SQL trong `database/migrations/` theo thứ tự từ `000` đến `007` trên **Supabase SQL Editor**. Migration `006` bắt buộc cho xác thực API và các nghiệp vụ tài chính nguyên tử; migration `007` bổ sung index cho các truy vấn dashboard. Chi tiết xem tại [`docs/database.md`](./docs/database.md).
 
 ---
 
