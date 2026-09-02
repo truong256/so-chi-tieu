@@ -14,6 +14,8 @@ Tài liệu mô tả các API endpoints và dịch vụ xử lý backend của h
 | `/api/runtime-config` | `GET` | Cung cấp cấu hình Supabase URL/Key an toàn cho client | Public | Direct Handler |
 | `/api/client-error` | `POST` | Thu thập log lỗi client-side để giám sát | Public | Direct Handler |
 
+Ba endpoint AI xác minh access token trực tiếp với Supabase Auth; chỉ có chuỗi `Bearer` là chưa đủ. Body được giới hạn kích thước, ngữ cảnh hội thoại được cắt ngắn, và JSON do model trả về được kiểm tra kiểu/giới hạn trước khi gửi cho client. `GEMINI_API_KEY` chỉ tồn tại ở server/Worker và không được log.
+
 ---
 
 ## 2. Chi tiết Endpoints

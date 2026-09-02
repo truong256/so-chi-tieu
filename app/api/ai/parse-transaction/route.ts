@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { parseTransactionWithAI } from "@/backend/src/services/ai-parser.service";
+import { asRecord, HttpInputError, readJsonBody } from "@/backend/src/services/http-input.service";
+import { AuthenticationError, extractBearerToken, verifySupabaseAccessToken } from "@/backend/src/services/supabase-auth.service";
 
 export const maxDuration = 30; // 30s timeout
 
@@ -8,13 +10,7 @@ export async function POST(request: Request) {
   try {
     const geminiApiKey = process.env.GEMINI_API_KEY?.trim() ?? "";
 
-    // Authenticate user via Supabase Bearer token
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Yêu cầu đăng nhập để sử dụng tính năng này." }, { status: 401 });
-    }
-
-    const token = authHeader.replace("Bearer ", "").trim();
+    const token = extractBearerToken(request);
     const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
     const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
 
@@ -27,21 +23,12 @@ export async function POST(request: Request) {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(token);
+    const user = await verifySupabaseAccessToken(token, {
+      supabaseUrl,
+      supabasePublishableKey: supabaseAnonKey,
+    });
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Phiên đăng nhập không hợp lệ hoặc đã hết hạn." }, { status: 401 });
-    }
-
-    let body: any = {};
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Dữ liệu gửi lên không đúng định dạng JSON." }, { status: 400 });
-    }
+    const body = asRecord(await readJsonBody(request, 8 * 1024));
 
     const rawText = typeof body.text === "string" ? body.text.trim() : "";
 
@@ -51,14 +38,18 @@ export async function POST(request: Request) {
       supabase.from("categories").select("id, name, kind, icon").eq("user_id", user.id).order("name"),
     ]);
 
-    const userWallets = (walletsRes.data || []).map((w: any) => ({
+    if (walletsRes.error || catsRes.error) {
+      return NextResponse.json({ error: "Không thể tải dữ liệu ví và danh mục của tài khoản." }, { status: 503 });
+    }
+
+    const userWallets = (walletsRes.data || []).map((w) => ({
       id: w.id,
       name: w.name,
       type: w.type || "other",
       icon: w.icon || "",
     }));
 
-    const userCategories = (catsRes.data || []).map((c: any) => ({
+    const userCategories = (catsRes.data || []).map((c) => ({
       id: c.id,
       name: c.name,
       type: c.kind || "expense",
@@ -70,9 +61,9 @@ export async function POST(request: Request) {
       rawText,
       userWallets,
       userCategories,
-      clientDate: body.client_date,
-      clientTime: body.client_time,
-      timezone: body.timezone,
+      clientDate: typeof body.client_date === "string" ? body.client_date : undefined,
+      clientTime: typeof body.client_time === "string" ? body.client_time : undefined,
+      timezone: typeof body.timezone === "string" ? body.timezone : undefined,
     });
 
     if (!result.success && result.error) {
@@ -86,10 +77,13 @@ export async function POST(request: Request) {
         model: result.modelUsed,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof HttpInputError || error instanceof AuthenticationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error("AI Parse Transaction route error:", error);
     return NextResponse.json(
-      { error: error?.message || "Đã xảy ra lỗi máy chủ trong quá trình xử lý AI." },
+      { error: "Đã xảy ra lỗi máy chủ trong quá trình xử lý AI." },
       { status: 500 }
     );
   }

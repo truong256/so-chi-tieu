@@ -13,7 +13,8 @@ database/
 │   ├── 002_insufficient_balance_check.sql          # Ràng buộc số dư không âm
 │   ├── 003_recurring_transactions_v2.sql           # Giao dịch định kỳ v2 & occurrences tracking
 │   ├── 004_reserved_money.sql                      # Cơ chế khóa/dự trữ tiền cho ngân sách & mục tiêu
-│   └── 005_true_balances_rpc.sql                   # Hàm RPC tính số dư khả dụng thực tế
+│   ├── 005_true_balances_rpc.sql                   # Hàm RPC tính số dư khả dụng thực tế
+│   └── 006_finance_integrity_and_security.sql      # RPC nguyên tử, ownership guards và hardening
 ├── fixes/                                          # Các script vá dữ liệu sản xuất
 │   └── production_fix.sql                          # Hotfix dữ liệu production
 └── README.md                                       # Hướng dẫn thao tác nhanh
@@ -41,3 +42,7 @@ database/
 ## 3. Bảo mật & Phân quyền (Row Level Security)
 
 Tất cả bảng đều được bật **RLS**. Mỗi người dùng chỉ có quyền đọc (`SELECT`), thêm (`INSERT`), sửa (`UPDATE`), xóa (`DELETE`) trên các bản ghi có `user_id = auth.uid()`.
+
+Các trường tổng hợp tài chính (`reserved_amount`, số dư ngân sách/mục tiêu) không được sửa trực tiếp. Ứng dụng dùng RPC `create_*_with_allocation`, `adjust_*_funds` và `record_recurring_transaction`; mỗi nghiệp vụ khóa bản ghi liên quan và commit/rollback trong một transaction PostgreSQL.
+
+Mọi hàm `SECURITY DEFINER` đặt `search_path` cố định, kiểm tra `auth.uid()` và chỉ cấp `EXECUTE` cho `authenticated`. Không có RPC công khai đổi username thành email và không có trigger tự xác nhận địa chỉ email.

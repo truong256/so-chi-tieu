@@ -34,7 +34,9 @@ function clearLegacyPersistentStorage() {
         }
       });
     }
-  } catch {}
+  } catch {
+    // Some privacy modes block browser storage and cookie access.
+  }
 }
 
 export function configureClient(config: SupabaseBrowserConfig) {
@@ -85,4 +87,3 @@ export function createClient(): SupabaseClient {
 
   return browserClient;
 }
-

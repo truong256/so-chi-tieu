@@ -3,6 +3,13 @@
  */
 
 import type { AITransactionParseResult, TransactionType } from "@/frontend/types/finance.types";
+import {
+  cleanMoneyAmount,
+  cleanText,
+  normalizeIsoDate,
+  normalizeTime,
+  parseAiJsonObject,
+} from "./ai-output-validation.service";
 
 export interface UserWalletInfo {
   id: string;
@@ -185,23 +192,17 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          system_instruction: { parts: [{ text: AI_PARSE_SYSTEM_PROMPT }] },
           contents: [
             {
               role: "user",
-              parts: [{ text: `${AI_PARSE_SYSTEM_PROMPT}\n\n${userPromptContent}` }],
+              parts: [{ text: userPromptContent }],
             },
           ],
           generationConfig: {
-            temperature: 0.1,
             responseMimeType: "application/json",
-            maxOutputTokens: 8192,
+            maxOutputTokens: 1024,
           },
-          safetySettings: [
-            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-          ],
         }),
         signal: AbortSignal.timeout(25000),
       });
@@ -213,7 +214,7 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
       }
 
       const errBody = await res.text().catch(() => "");
-      console.error(`Gemini Text Parse error for model ${modelName}:`, res.status, errBody);
+      console.error(`Gemini Text Parse error for model ${modelName}:`, res.status);
       lastErrorText = errBody;
 
       if (res.status !== 404 && res.status !== 400 && res.status !== 503) {
@@ -256,19 +257,9 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
     };
   }
 
-  let jsonStr = rawReply;
-  if (jsonStr.startsWith("```json")) {
-    jsonStr = jsonStr.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-  } else if (jsonStr.startsWith("```")) {
-    jsonStr = jsonStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
-  }
-  jsonStr = jsonStr.trim();
-
-  let parsed: any;
-  try {
-    parsed = JSON.parse(jsonStr);
-  } catch (parseError) {
-    console.error("JSON parse error from Gemini text parser output:", jsonStr, parseError);
+  const parsed = parseAiJsonObject(rawReply);
+  if (!parsed) {
+    console.error("Gemini text parser returned invalid JSON.");
     return {
       success: false,
       error: "Dữ liệu AI trả về không đúng cấu trúc. Vui lòng nhập rõ ràng hơn hoặc nhập thủ công.",
@@ -282,25 +273,13 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
     transactionType = parsed.transaction_type;
   }
 
-  const cleanNumber = (val: any): number | null => {
-    if (val === null || val === undefined || val === "") return null;
-    if (typeof val === "number" && !isNaN(val) && isFinite(val) && val >= 0) return Math.round(val);
-    if (typeof val === "string") {
-      const digitsOnly = val.replace(/[^0-9]/g, "");
-      if (!digitsOnly) return null;
-      const num = parseInt(digitsOnly, 10);
-      return !isNaN(num) && isFinite(num) && num >= 0 ? num : null;
-    }
-    return null;
-  };
-
-  const amount = cleanNumber(parsed.amount);
+  const amount = cleanMoneyAmount(parsed.amount, false);
 
   let categoryId: string | null = null;
   let categoryName: string | null = null;
 
   if (parsed.category_id && typeof parsed.category_id === "string") {
-    const match = userCategories.find((c) => c.id === parsed.category_id);
+    const match = userCategories.find((c) => c.id === parsed.category_id && (!transactionType || c.type === transactionType));
     if (match) {
       categoryId = match.id;
       categoryName = match.name;
@@ -308,8 +287,9 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
   }
 
   if (!categoryId && parsed.category_name && typeof parsed.category_name === "string") {
+    const parsedCategoryName = parsed.category_name.toLowerCase();
     const nameMatch = userCategories.find(
-      (c) => c.name.toLowerCase() === parsed.category_name.toLowerCase()
+      (c) => c.name.toLowerCase() === parsedCategoryName && (!transactionType || c.type === transactionType)
     );
     if (nameMatch) {
       categoryId = nameMatch.id;
@@ -329,8 +309,9 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
   }
 
   if (!walletId && parsed.wallet_name && typeof parsed.wallet_name === "string") {
+    const parsedWalletName = parsed.wallet_name.toLowerCase();
     const nameMatch = userWallets.find(
-      (w) => w.name.toLowerCase() === parsed.wallet_name.toLowerCase()
+      (w) => w.name.toLowerCase() === parsedWalletName
     );
     if (nameMatch) {
       walletId = nameMatch.id;
@@ -338,35 +319,9 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
     }
   }
 
-  let date: string | null = null;
-  if (typeof parsed.date === "string" && parsed.date.trim()) {
-    const dStr = parsed.date.trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
-      date = dStr;
-    } else {
-      const dMatch = dStr.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
-      if (dMatch) {
-        const day = dMatch[1].padStart(2, "0");
-        const month = dMatch[2].padStart(2, "0");
-        const year = dMatch[3];
-        date = `${year}-${month}-${day}`;
-      }
-    }
-  }
-  if (!date) {
-    date = currentDate;
-  }
-
-  let time: string | null = null;
-  if (typeof parsed.time === "string" && parsed.time.trim()) {
-    const tStr = parsed.time.trim();
-    if (/^\d{1,2}:\d{2}$/.test(tStr)) {
-      const parts = tStr.split(":");
-      time = `${parts[0].padStart(2, "0")}:${parts[1]}`;
-    }
-  }
-
-  const description = typeof parsed.description === "string" && parsed.description.trim() ? parsed.description.trim() : null;
+  const date = normalizeIsoDate(parsed.date) ?? normalizeIsoDate(currentDate);
+  const time = normalizeTime(parsed.time);
+  const description = cleanText(parsed.description, 200);
 
   const hasMeaningfulData = Boolean(amount || transactionType || categoryId || walletId || description);
   if (!hasMeaningfulData) {
@@ -388,7 +343,12 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
     description,
     date,
     time,
-    confidence_notes: Array.isArray(parsed.confidence_notes) ? parsed.confidence_notes : [],
+    confidence_notes: Array.isArray(parsed.confidence_notes)
+      ? parsed.confidence_notes.flatMap((note) => {
+          const text = cleanText(note, 200);
+          return text ? [text] : [];
+        }).slice(0, 10)
+      : [],
   };
 
   return {

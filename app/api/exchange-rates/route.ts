@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getExchangeRates } from "@/backend/src/services/exchange-rate.service";
 
-export const revalidate = 3600; // 1 hour caching
+// Rates require live network access, so never execute this route during a build.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {

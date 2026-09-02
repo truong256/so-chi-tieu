@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { useAiChat, ChatMessage } from "./ai-chat-context";
+import { useAiChat } from "./ai-chat-context";
 import type { FinancialContext } from "./ai-chat-context";
 
 // ─── Suggested questions ─────────────────────────────────────────────────────

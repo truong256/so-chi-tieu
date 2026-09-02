@@ -33,7 +33,7 @@ so-chi-tieu/
 | **Backend / Edge Runtime** | Cloudflare Workers + Vinext (Vite 8) | Edge API handling, Serverless execution, Image optimization |
 | **Database & Auth** | Supabase (PostgreSQL + Supabase Auth) | Lưu trữ dữ liệu tài chính, phân quyền RLS, quản lý phiên đăng nhập |
 | **AI Copilot** | Google Gemini API (2.5-flash / Pro) | Xử lý ngôn ngữ tự nhiên (NLP), chatbot tài chính, trích xuất hóa đơn (OCR) |
-| **Data Export** | SheetJS (xlsx) | Xuất báo cáo tài chính ra định dạng Excel |
+| **Data Export** | OOXML writer + fflate | Xuất báo cáo tài chính ra định dạng Excel mà không cần parser bảng tính phía client |
 | **Language & Tooling** | TypeScript 5.9 + ESLint 9 | Type-safety toàn diện từ frontend tới backend |
 
 ---

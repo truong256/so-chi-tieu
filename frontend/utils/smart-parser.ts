@@ -127,6 +127,10 @@ export function removeAccents(str: string): string {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
 }
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function containsWord(text: string, word: string): boolean {
   const normText = text.toLowerCase();
   const normKw = word.toLowerCase();
@@ -157,7 +161,11 @@ function matchesPrefixNoAccent(text: string, prefix: string): boolean {
   return regex.test(normText);
 }
 
-function parseAmount(text: string): { amount: number | null, score: number, matchedStr: string } {
+export function parseVietnameseAmount(text: string): { amount: number | null, score: number, matchedStr: string } {
+  const halfMillion = text.match(/(\d+(?:[.,]\d+)?)\s*(?:triệu|tr)\s*rưỡi\b/i);
+  if (halfMillion) {
+    return { amount: Math.round(Number(halfMillion[1].replace(",", ".")) * 1_000_000 + 500_000), score: 100, matchedStr: halfMillion[0] };
+  }
   // 1. Check "X triệu Y" / "X tr Y" (e.g. 1 triệu 500 = 1,500,000)
   const regexTrY = /(\d+(?:\.\d+)?)\s*(?:triệu|tr)\s+(\d{1,3})\b/i;
   const matchTrY = text.match(regexTrY);
@@ -181,13 +189,15 @@ function parseAmount(text: string): { amount: number | null, score: number, matc
   }
 
   // 3. Match generic multipliers (k, nghìn, ngàn, tr, triệu)
-  const regexUnit = /(\d+(?:[.,]\d+)?)\s*(k|nghìn|ngàn|tr|triệu)\b/i;
+  const regexUnit = /(\d+(?:[.,]\d+)?)\s*(k|nghìn|ngàn|tr|triệu|tỷ|tỉ|ty|củ)(?=\s|$|[.,;!?])/i;
   const matchUnit = text.match(regexUnit);
   if (matchUnit) {
     const num = Number(matchUnit[1].replace(/,/g, "."));
     const unit = matchUnit[2].toLowerCase();
-    const multiplier = (unit === "tr" || unit === "triệu") ? 1000000 : 1000;
-    return { amount: Math.round(num * multiplier), score: 100, matchedStr: matchUnit[0] };
+    const multiplier = ["tỷ", "tỉ", "ty"].includes(unit) ? 1_000_000_000
+      : ["tr", "triệu", "củ"].includes(unit) ? 1_000_000 : 1_000;
+    const amount = Math.round(num * multiplier);
+    return { amount: Number.isSafeInteger(amount) && amount <= 1_000_000_000_000_000 ? amount : null, score: 100, matchedStr: matchUnit[0] };
   }
 
   // 4. Match plain numbers (e.g. 50000, 50.000, 50,000)
@@ -196,7 +206,7 @@ function parseAmount(text: string): { amount: number | null, score: number, matc
   if (matches.length > 0) {
     const best = matches[0][0];
     const num = Number(best.replace(/[.,]/g, ""));
-    return { amount: num, score: 90, matchedStr: best };
+    return { amount: Number.isSafeInteger(num) && num <= 1_000_000_000_000_000 ? num : null, score: 90, matchedStr: best };
   }
 
   return { amount: null, score: 0, matchedStr: "" };
@@ -205,8 +215,9 @@ function parseAmount(text: string): { amount: number | null, score: number, matc
 function detectType(text: string): { type: TransactionType | null, score: number, typeMatchedStr: string } {
   const t = text;
   // Income indicators
-  if (/\b(nhận lương|được thưởng|mẹ cho|ba cho|ông cho|bà cho|ba mẹ cho|bố mẹ cho|được cho|được hỗ trợ)\b/i.test(t)) {
-    return { type: "income", score: 100, typeMatchedStr: t.match(/\b(nhận lương|được thưởng|mẹ cho|ba cho|ông cho|bà cho|ba mẹ cho|bố mẹ cho|được cho|được hỗ trợ)\b/i)?.[0] || "" };
+  const strongIncome = /(nhận lương|được thưởng|mẹ cho|ba cho|ông cho|bà cho|ba mẹ cho|bố mẹ cho|được cho|được hỗ trợ|hoàn tiền|cashback|được .{1,40} trả lại)/i;
+  if (strongIncome.test(t)) {
+    return { type: "income", score: 100, typeMatchedStr: t.match(strongIncome)?.[0] || "" };
   }
   if (/\b(lương|thưởng|trợ cấp|nhận tiền|thu nhập)\b/i.test(t)) {
     return { type: "income", score: 70, typeMatchedStr: t.match(/\b(lương|thưởng|trợ cấp|nhận tiền|thu nhập)\b/i)?.[0] || "" };
@@ -231,13 +242,17 @@ function detectDate(text: string): { date: Date | null, score: number, dateMatch
   }
   
   // Match "ngày 10/8" or "10/8"
-  const dateRegex = /(?:ngày\s+)?(\d{1,2})\/(\d{1,2})/i;
+  const dateRegex = /(?:ngày\s+)?(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/i;
   const match = t.match(dateRegex);
   if (match) {
     const day = parseInt(match[1]);
     const month = parseInt(match[2]);
-    if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
-      const date = new Date(now.getFullYear(), month - 1, day);
+    const year = match[3] ? parseInt(match[3]) : now.getFullYear();
+    if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2100) {
+      const date = new Date(year, month - 1, day);
+      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+        return { date: null, score: 0, dateMatchedStr: "" };
+      }
       return { date, score: 100, dateMatchedStr: match[0] };
     }
   }
@@ -250,7 +265,7 @@ function detectWallet(text: string, wallets: Wallet[]): { walletId: string | nul
   for (const wallet of wallets) {
     const wName = removeAccents(wallet.name.toLowerCase());
     if (t.includes(wName)) {
-      const originalMatch = text.match(new RegExp(wallet.name, "i"));
+      const originalMatch = text.match(new RegExp(escapeRegex(wallet.name), "i"));
       return { walletId: wallet.id, score: 100, walletMatchedStr: originalMatch ? originalMatch[0] : wName };
     }
   }
@@ -385,7 +400,7 @@ export function parseSmartTransaction(text: string, categories: Category[], wall
   const norm = normalizeVietnameseText(text);
 
   // Parse amount
-  const { amount, score: amountScore, matchedStr: amountStr } = parseAmount(norm);
+  const { amount, score: amountScore, matchedStr: amountStr } = parseVietnameseAmount(norm);
   
   // Parse wallet
   const { walletId, score: walletScore, walletMatchedStr } = detectWallet(norm, wallets);
@@ -396,18 +411,12 @@ export function parseSmartTransaction(text: string, categories: Category[], wall
   // Remove used tokens to help with type and name extraction
   let leftover = norm;
   if (amountStr) leftover = leftover.replace(amountStr, "");
-  if (walletMatchedStr) leftover = leftover.replace(new RegExp(walletMatchedStr, "i"), "");
-  if (dateMatchedStr) leftover = leftover.replace(new RegExp(dateMatchedStr, "i"), "");
+  if (walletMatchedStr) leftover = leftover.replace(new RegExp(escapeRegex(walletMatchedStr), "i"), "");
+  if (dateMatchedStr) leftover = leftover.replace(new RegExp(escapeRegex(dateMatchedStr), "i"), "");
   leftover = leftover.replace(/\s{2,}/g, " ").trim();
 
   // Parse type
   let { type, score: typeScore } = detectType(leftover);
-  // Default to expense if completely unknown and no other signals but has amount
-  if (!type && amountScore > 0) {
-    type = "expense";
-    typeScore = 40;
-  }
-
   // Parse category (using full normalized text for better context)
   const { categoryId, score: catScore, catMatchedStr } = detectCategory(norm, type, categories);
 
@@ -423,7 +432,7 @@ export function parseSmartTransaction(text: string, categories: Category[], wall
   // Extract Name
   let name = leftover.replace(/^(tiền|bằng|vào)\s+/i, "").trim();
   if (name.length === 0) {
-    name = catMatchedStr || (type === "income" ? "Khoản thu" : "Khoản chi");
+    name = catMatchedStr || (type === "income" ? "Khoản thu" : type === "expense" ? "Khoản chi" : "Giao dịch");
   }
   // Capitalize first letter
   name = name.charAt(0).toUpperCase() + name.slice(1);
@@ -469,4 +478,3 @@ export function parseSmartTransaction(text: string, categories: Category[], wall
     summaryText
   };
 }
-

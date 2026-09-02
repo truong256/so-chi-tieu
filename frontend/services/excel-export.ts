@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import { downloadXlsxFile, type WorkbookRow, type WorkbookSheet } from "./xlsx-writer";
 import type {
   Budget,
   Category,
@@ -85,18 +85,8 @@ function formatTimeVN(dateStr?: string | null): string {
   }
 }
 
-function computeColWidths(data: Array<Record<string, any>>): Array<{ wch: number }> {
-  if (!data.length) return [];
-  const keys = Object.keys(data[0]);
-  return keys.map((key) => {
-    let maxLen = key.length;
-    for (const row of data) {
-      const val = row[key];
-      const strLen = val !== null && val !== undefined ? String(val).length : 0;
-      if (strLen > maxLen) maxLen = strLen;
-    }
-    return { wch: Math.min(60, Math.max(12, maxLen + 3)) };
-  });
+function addSheet(sheets: WorkbookSheet[], name: string, rows: WorkbookRow[]): void {
+  sheets.push({ name, rows });
 }
 
 /**
@@ -129,7 +119,7 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
   const exportDateStr = formatDateTimeVN(now.toISOString());
   const fileDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-  const wb = XLSX.utils.book_new();
+  const sheets: WorkbookSheet[] = [];
 
   // ─── Sheet 01: Tổng quan ──────────────────────────────────────────────────
   const netSavings = monthTotals.income - monthTotals.expense;
@@ -154,9 +144,7 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
     { "Chỉ số tổng hợp": "Tổng số lần điều chuyển ví", "Giá trị": transfers.length, "Đơn vị / Ghi chú": "Lần chuyển" },
   ];
 
-  const wsOverview = XLSX.utils.json_to_sheet(overviewRows);
-  wsOverview["!cols"] = computeColWidths(overviewRows);
-  XLSX.utils.book_append_sheet(wb, wsOverview, "01_Tong_quan");
+  addSheet(sheets, "01_Tong_quan", overviewRows);
 
   // ─── Sheet 02: Giao dịch ──────────────────────────────────────────────────
   const transactionRows = transactions.map((t, idx) => {
@@ -187,11 +175,7 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
     };
   });
 
-  const wsTransactions = XLSX.utils.json_to_sheet(
-    transactionRows.length ? transactionRows : [{ "Thông báo": "Chưa có giao dịch nào được ghi nhận." }]
-  );
-  if (transactionRows.length) wsTransactions["!cols"] = computeColWidths(transactionRows);
-  XLSX.utils.book_append_sheet(wb, wsTransactions, "02_Giao_dich");
+  addSheet(sheets, "02_Giao_dich", transactionRows.length ? transactionRows : [{ "Thông báo": "Chưa có giao dịch nào được ghi nhận." }]);
 
   // ─── Sheet 03: Ví tài khoản ───────────────────────────────────────────────
   const walletRows = wallets.map((w, idx) => {
@@ -214,17 +198,13 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
     };
   });
 
-  const wsWallets = XLSX.utils.json_to_sheet(
-    walletRows.length ? walletRows : [{ "Thông báo": "Chưa có ví nào được tạo." }]
-  );
-  if (walletRows.length) wsWallets["!cols"] = computeColWidths(walletRows);
-  XLSX.utils.book_append_sheet(wb, wsWallets, "03_Vi");
+  addSheet(sheets, "03_Vi", walletRows.length ? walletRows : [{ "Thông báo": "Chưa có ví nào được tạo." }]);
 
   // ─── Sheet 04: Ngân sách ──────────────────────────────────────────────────
   const budgetRows = budgets.map((b, idx) => {
     const categoryObj = categoryById.get(b.category_id ?? "");
     const sourceWallet = walletById.get(b.source_wallet_id ?? "");
-    const totalCapacity = Math.max(b.amount, b.allocated_amount + b.spent_amount);
+    const totalCapacity = Math.max(b.amount, b.allocated_amount);
     const progressPct = totalCapacity > 0 ? Math.round((b.spent_amount / totalCapacity) * 100) : 0;
     const periodLabel = b.period === "weekly" ? "Hàng tuần" : b.period === "yearly" ? "Hàng năm" : "Hàng tháng";
     const isClosed = b.remaining_amount <= 0 || b.status === "completed" || b.status === "cancelled";
@@ -246,11 +226,7 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
     };
   });
 
-  const wsBudgets = XLSX.utils.json_to_sheet(
-    budgetRows.length ? budgetRows : [{ "Thông báo": "Chưa có ngân sách nào được tạo." }]
-  );
-  if (budgetRows.length) wsBudgets["!cols"] = computeColWidths(budgetRows);
-  XLSX.utils.book_append_sheet(wb, wsBudgets, "04_Ngan_sach");
+  addSheet(sheets, "04_Ngan_sach", budgetRows.length ? budgetRows : [{ "Thông báo": "Chưa có ngân sách nào được tạo." }]);
 
   // ─── Sheet 05: Mục tiêu tiết kiệm ─────────────────────────────────────────
   const goalRows = goals.map((g, idx) => {
@@ -273,11 +249,7 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
     };
   });
 
-  const wsGoals = XLSX.utils.json_to_sheet(
-    goalRows.length ? goalRows : [{ "Thông báo": "Chưa có mục tiêu tiết kiệm nào được tạo." }]
-  );
-  if (goalRows.length) wsGoals["!cols"] = computeColWidths(goalRows);
-  XLSX.utils.book_append_sheet(wb, wsGoals, "05_Muc_tieu");
+  addSheet(sheets, "05_Muc_tieu", goalRows.length ? goalRows : [{ "Thông báo": "Chưa có mục tiêu tiết kiệm nào được tạo." }]);
 
   // ─── Sheet 06: Danh mục ───────────────────────────────────────────────────
   const categoryRows = categories.map((c, idx) => {
@@ -292,11 +264,7 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
     };
   });
 
-  const wsCategories = XLSX.utils.json_to_sheet(
-    categoryRows.length ? categoryRows : [{ "Thông báo": "Chưa có danh mục nào." }]
-  );
-  if (categoryRows.length) wsCategories["!cols"] = computeColWidths(categoryRows);
-  XLSX.utils.book_append_sheet(wb, wsCategories, "06_Danh_muc");
+  addSheet(sheets, "06_Danh_muc", categoryRows.length ? categoryRows : [{ "Thông báo": "Chưa có danh mục nào." }]);
 
   // ─── Sheet 07: Thông tin tài khoản ────────────────────────────────────────
   const accountRows = [
@@ -308,9 +276,7 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
     { "Thông tin": "Thời điểm xuất file", "Chi tiết": exportDateStr },
   ];
 
-  const wsAccount = XLSX.utils.json_to_sheet(accountRows);
-  wsAccount["!cols"] = computeColWidths(accountRows);
-  XLSX.utils.book_append_sheet(wb, wsAccount, "07_Thong_tin_tai_khoan");
+  addSheet(sheets, "07_Thong_tin_tai_khoan", accountRows);
 
   // ─── Sheet 08: Lịch sử chuyển tiền giữa các ví ────────────────────────────
   const transferRows = transfers.map((tr, idx) => {
@@ -328,15 +294,11 @@ export async function exportFinancialDataToExcel(payload: ExportDataPayload): Pr
     };
   });
 
-  const wsTransfers = XLSX.utils.json_to_sheet(
-    transferRows.length ? transferRows : [{ "Thông báo": "Chưa có lịch sử chuyển tiền giữa các ví." }]
-  );
-  if (transferRows.length) wsTransfers["!cols"] = computeColWidths(transferRows);
-  XLSX.utils.book_append_sheet(wb, wsTransfers, "08_Lich_su_chuyen_tien");
+  addSheet(sheets, "08_Lich_su_chuyen_tien", transferRows.length ? transferRows : [{ "Thông báo": "Chưa có lịch sử chuyển tiền giữa các ví." }]);
 
   // ─── Trigger File Download ────────────────────────────────────────────────
   const fileName = `du-lieu-tai-chinh-${fileDateStr}.xlsx`;
-  XLSX.writeFile(wb, fileName, { compression: true });
+  downloadXlsxFile(fileName, sheets);
 
   return fileName;
 }

@@ -59,18 +59,13 @@ export function FormattedMoneyInput({
     return isNaN(parsed) ? "" : new Intl.NumberFormat("vi-VN").format(parsed);
   });
 
-  useEffect(() => {
-    if (value !== undefined) {
-      if (String(value) === "") {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDisplay("");
-      } else {
-        const parsed = parseInt(String(value).replace(/\D/g, ""), 10);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDisplay(isNaN(parsed) ? "" : new Intl.NumberFormat("vi-VN").format(parsed));
-      }
-    }
-  }, [value]);
+  const controlledDisplay = (() => {
+    if (value === undefined) return undefined;
+    if (String(value) === "") return "";
+    const parsed = parseInt(String(value).replace(/\D/g, ""), 10);
+    return Number.isNaN(parsed) ? "" : new Intl.NumberFormat("vi-VN").format(parsed);
+  })();
+  const visibleDisplay = controlledDisplay ?? display;
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const inputVal = e.target.value;
@@ -101,14 +96,14 @@ export function FormattedMoneyInput({
     onChangeValue?.(String(parsed));
   }
 
-  const rawValue = display ? display.replace(/\D/g, "") : "";
+  const rawValue = visibleDisplay ? visibleDisplay.replace(/\D/g, "") : "";
 
   return (
     <div className="amount-input-wrapper">
       <input
         type="text"
         inputMode="numeric"
-        value={display}
+        value={visibleDisplay}
         onChange={handleChange}
         onPaste={handlePaste}
         placeholder={placeholder ?? "0"}
@@ -157,6 +152,28 @@ export default function ReceiptScannerModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusTimer = window.setTimeout(() => dialogRef.current?.focus(), 0);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCloseRef.current();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", handleKeyDown);
+      abortRef.current?.abort();
+      previouslyFocused?.focus();
+    };
+  }, []);
 
   // Cleanup object URL when previewUrl changes or component unmounts
   useEffect(() => {
@@ -169,14 +186,15 @@ export default function ReceiptScannerModal({
 
   // Loading animation step timer
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (step === "loading") {
-      setLoadingStepIndex(0);
       interval = setInterval(() => {
         setLoadingStepIndex((prev) => (prev < 4 ? prev + 1 : prev));
       }, 700);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [step]);
 
   function handleFileSelected(file: File) {
@@ -228,6 +246,7 @@ export default function ReceiptScannerModal({
     if (!selectedFile) return;
 
     setStep("loading");
+    setLoadingStepIndex(0);
     setErrorMessage(null);
 
     try {
@@ -243,8 +262,9 @@ export default function ReceiptScannerModal({
 
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append("categories", JSON.stringify(categories.map((c) => c.name)));
-      formData.append("wallets", JSON.stringify(wallets.map((w) => w.name)));
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       const response = await fetch("/api/receipt/parse", {
         method: "POST",
@@ -252,15 +272,17 @@ export default function ReceiptScannerModal({
           Authorization: `Bearer ${token}`,
         },
         body: formData,
+        signal: controller.signal,
       });
 
-      const resJson = await response.json();
+      const resJson = await response.json() as { success?: boolean; error?: string; data?: ParsedReceiptResult };
 
       if (!response.ok || !resJson.success) {
         throw new Error(resJson.error || "Không thể phân tích hóa đơn. Vui lòng thử lại.");
       }
 
-      const result: ParsedReceiptResult = resJson.data;
+      if (!resJson.data) throw new Error("Máy chủ không trả về dữ liệu hóa đơn hợp lệ.");
+      const result = resJson.data;
       setParsedData(result);
 
       if (!result.is_receipt && result.document_type === "other") {
@@ -345,10 +367,13 @@ export default function ReceiptScannerModal({
       setNote(noteLines.join("\n"));
 
       setStep("result");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") return;
       console.error("Analysis error:", err);
-      setErrorMessage(err.message || "Không thể phân tích hóa đơn. Vui lòng thử lại.");
+      setErrorMessage(err instanceof Error ? err.message : "Không thể phân tích hóa đơn. Vui lòng thử lại.");
       setStep("error");
+    } finally {
+      abortRef.current = null;
     }
   }
 
@@ -361,7 +386,7 @@ export default function ReceiptScannerModal({
     }
 
     const numAmount = parseInt(amount.replace(/\D/g, ""), 10);
-    if (isNaN(numAmount) || numAmount <= 0) {
+    if (!Number.isFinite(numAmount) || numAmount <= 0 || numAmount > 1_000_000_000_000_000) {
       alert("Số tiền giao dịch phải lớn hơn 0. Vui lòng nhập số tiền hợp lệ.");
       return;
     }
@@ -407,7 +432,7 @@ export default function ReceiptScannerModal({
     <div className="modal-wrap receipt-modal-wrap" role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title">
       <button className="modal-backdrop" onClick={onClose} aria-label="Đóng" />
 
-      <section className="receipt-scanner-modal">
+      <section ref={dialogRef} tabIndex={-1} className="receipt-scanner-modal">
         {/* Modal Header */}
         <div className="receipt-modal-head">
           <div className="receipt-head-info">
@@ -434,12 +459,9 @@ export default function ReceiptScannerModal({
           >
             Nhập thủ công
           </button>
-          <button
-            type="button"
-            className="receipt-tab-btn active"
-          >
+          <span className="receipt-tab-btn active" aria-current="page">
             Quét hóa đơn bằng AI
-          </button>
+          </span>
         </div>
 
         {/* Step 1: Select / Dropzone */}

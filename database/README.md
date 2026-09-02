@@ -11,11 +11,13 @@ Dự án sử dụng **Supabase** (PostgreSQL) làm database chính.
 ```
 database/
 ├── migrations/        # SQL schema migrations theo thứ tự
+│   ├── 000_base_schema.sql
 │   ├── 001_initial_schema.sql
 │   ├── 002_insufficient_balance_check.sql
 │   ├── 003_recurring_transactions_v2.sql
 │   ├── 004_reserved_money.sql
-│   └── 005_true_balances_rpc.sql
+│   ├── 005_true_balances_rpc.sql
+│   └── 006_finance_integrity_and_security.sql
 │
 └── fixes/             # SQL fixes áp dụng trên production
     └── production_fix.sql
@@ -29,15 +31,17 @@ database/
 
 Chạy theo thứ tự trên Supabase SQL Editor:
 
-1. `001_initial_schema.sql` — Schema ban đầu: bảng profiles, wallets, categories, transactions, transfers
-2. `002_insufficient_balance_check.sql` — Thêm kiểm tra số dư không đủ
-3. `003_recurring_transactions_v2.sql` — Giao dịch định kỳ v2 (status, occurrences)
-4. `004_reserved_money.sql` — Tiền dự trữ cho budgets và savings goals
-5. `005_true_balances_rpc.sql` — RPC functions tính số dư thực tế
+1. `000_base_schema.sql` — Tạo các bảng lõi cho project mới
+2. `001_initial_schema.sql` — RLS, index, notifications và Storage
+3. `002_insufficient_balance_check.sql` — Kiểm tra số dư
+4. `003_recurring_transactions_v2.sql` — Giao dịch định kỳ v2
+5. `004_reserved_money.sql` — Tiền dự trữ và lịch sử phân bổ
+6. `005_true_balances_rpc.sql` — RPC tính số dư thực tế
+7. `006_finance_integrity_and_security.sql` — Xác thực ownership, RPC nguyên tử, khóa số tổng hợp và vô hiệu hóa email enumeration/auto-confirm
 
 ### Fixes
 
-- `fixes/production_fix.sql` — Sửa lỗi dữ liệu trên production (chỉ chạy khi cần thiết)
+- `fixes/production_fix.sql` — Script tương thích cho hệ thống cũ. Ưu tiên chuỗi migration `000`–`006`; luôn sao lưu và đọc script trước khi chạy trên production.
 
 ---
 
@@ -64,5 +68,6 @@ Authentication do Supabase Auth quản lý (email + password). Không cần migr
 
 Cấu hình cần thiết trong Supabase Dashboard:
 - Bật Email/Password Auth
-- Cấu hình Email Templates (tùy chọn)
+- Giữ bật xác minh email và secure email change
+- Cấu hình Email Templates/SMTP riêng khi cần
 - Cấu hình URL redirect cho Password Recovery

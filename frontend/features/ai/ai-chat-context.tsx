@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { createClient } from "@/config/supabase";
 import type { Budget, SavingsGoal, Transaction, Wallet } from "@/frontend/types/finance.types";
 
@@ -35,7 +35,7 @@ interface AiChatContextValue {
   isMinimized: boolean; // For floating bubble
   toggleOpen: () => void;
   toggleMinimize: () => void;
-  sendMessage: (text: string, currentPage: string, financialContext: any) => Promise<void>;
+  sendMessage: (text: string, currentPage: string, financialContext: FinancialContext) => Promise<void>;
   stopGeneration: () => void;
   clearMessages: () => void;
 }
@@ -64,6 +64,9 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const inFlightRef = useRef(false);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const toggleOpen = useCallback(() => {
     setIsOpen(prev => {
@@ -80,17 +83,22 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
   const clearMessages = useCallback(() => {
     setMessages([]);
     abortRef.current?.abort();
+    abortRef.current = null;
+    inFlightRef.current = false;
     setLoading(false);
   }, []);
 
   const stopGeneration = useCallback(() => {
     abortRef.current?.abort();
+    abortRef.current = null;
+    inFlightRef.current = false;
     setLoading(false);
   }, []);
 
-  const sendMessage = useCallback(async (text: string, currentPage: string, financialContext: any) => {
+  const sendMessage = useCallback(async (text: string, currentPage: string, financialContext: FinancialContext) => {
     const trimmed = text.trim();
-    if (!trimmed || loading) return;
+    if (!trimmed || inFlightRef.current) return;
+    inFlightRef.current = true;
 
     // Expand the bubble if it's minimized when user sends a message via quick action
     if (isMinimized) setIsMinimized(false);
@@ -106,15 +114,14 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
         role: m.role === "user" ? "user" : "model",
         parts: [{ text: m.text }],
       }));
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     try {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-
       const supabase = createClient();
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token ?? "";
+      if (!accessToken) throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -132,7 +139,13 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
         signal: controller.signal,
       });
 
-      const data = await response.json() as { reply?: string; error?: string };
+      const raw = await response.text();
+      let data: { reply?: string; error?: string } = {};
+      try {
+        data = JSON.parse(raw) as { reply?: string; error?: string };
+      } catch {
+        throw new Error("Máy chủ trả về phản hồi không hợp lệ.");
+      }
 
       if (!response.ok || data.error) {
         throw new Error(data.error ?? "Lỗi không xác định");
@@ -169,10 +182,13 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
       };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
-      setLoading(false);
-      abortRef.current = null;
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        inFlightRef.current = false;
+        setLoading(false);
+      }
     }
-  }, [loading, messages, isMinimized, isOpen]);
+  }, [messages, isMinimized, isOpen]);
 
   return (
     <AiChatContext.Provider

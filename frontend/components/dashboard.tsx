@@ -1,13 +1,11 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import * as XLSX from "xlsx";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/config/supabase";
 import type {
   AITransactionParseResult,
   Budget,
   Category,
-  FundAllocation,
   ModalState,
   Profile,
   RecurringTransaction,
@@ -18,14 +16,14 @@ import type {
   Wallet,
 } from "@/frontend/types/finance.types";
 import { advanceRecurring, formatDate, inRange, localDateTime, periodBounds, toNumber } from "@/frontend/utils/finance.utils";
-import { parseSmartTransaction } from "@/frontend/utils/smart-parser";
-import AiChatView, { MessageContent } from "@/frontend/features/ai/ai-chat";
+import { parseSmartTransaction, type SmartTransactionResult } from "@/frontend/utils/smart-parser";
+import AiChatView from "@/frontend/features/ai/ai-chat";
 import { AiChatProvider } from "@/frontend/features/ai/ai-chat-context";
 import AiFloatingChat from "@/frontend/features/ai/ai-floating-chat";
 import ReceiptScannerModal, { FormattedMoneyInput } from "@/frontend/components/receipt-scanner-modal";
 import { exportFinancialDataToExcel } from "@/frontend/services/excel-export";
 import { t, setAppLanguage, type Language } from "@/frontend/services/i18n.service";
-import { getExchangeRates, formatMoney, convertVndToTarget, DEFAULT_FALLBACK_RATES } from "@/frontend/services/currency.service";
+import { getExchangeRates, formatMoney, DEFAULT_FALLBACK_RATES } from "@/frontend/services/currency.service";
 
 type View = "overview" | "transactions" | "wallets" | "categories" | "planning" | "recurring" | "reports" | "settings" | "ai-assistant";
 type UserInfo = { id: string; name: string; email: string };
@@ -57,13 +55,38 @@ function mapTransfer(row: Record<string, unknown>): Transfer { return { ...row, 
 function mapBudget(row: Record<string, unknown>): Budget { return { ...row, amount: toNumber(row.amount), allocated_amount: toNumber(row.allocated_amount), spent_amount: toNumber(row.spent_amount), remaining_amount: toNumber(row.remaining_amount), alert_percent: toNumber(row.alert_percent), status: (row.status as string) ?? "active" } as Budget; }
 function mapGoal(row: Record<string, unknown>): SavingsGoal { return { ...row, target_amount: toNumber(row.target_amount), current_amount: toNumber(row.current_amount), reserved_in_wallet: toNumber(row.reserved_in_wallet) } as SavingsGoal; }
 function mapRecurring(row: Record<string, unknown>): RecurringTransaction { return { ...row, amount: toNumber(row.amount) } as RecurringTransaction; }
-function mapAllocation(row: Record<string, unknown>): FundAllocation { return { ...row, amount: toNumber(row.amount) } as FundAllocation; }
+
+const MAX_MONEY_AMOUNT = 1_000_000_000_000_000;
+function isValidMoneyAmount(value: number, allowZero = false): boolean {
+  return Number.isFinite(value) && value <= MAX_MONEY_AMOUNT && (allowZero ? value >= 0 : value > 0);
+}
 
 function Modal({ title, eyebrow, onClose, children }: { title: string; eyebrow: string; onClose: () => void; children: React.ReactNode }) {
+  const panelRef = useRef<HTMLElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusTimer = window.setTimeout(() => panelRef.current?.focus(), 0);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCloseRef.current();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, []);
+
   return (
     <div className="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button className="modal-backdrop" onClick={onClose} aria-label="Đóng" />
-      <section className="transaction-modal finance-modal">
+      <section ref={panelRef} tabIndex={-1} className="transaction-modal finance-modal">
         <div className="modal-head"><div><p>{eyebrow}</p><h2 id="modal-title">{title}</h2></div><button type="button" onClick={onClose}>×</button></div>
         {children}
       </section>
@@ -175,9 +198,9 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       let loadedWallets: Wallet[] = walletResult.status === "fulfilled" && !walletResult.value.error ? ((walletResult.value.data ?? []).map((row: Record<string, unknown>) => mapWallet(row))) : [];
       let loadedCategories: Category[] = categoryResult.status === "fulfilled" && !categoryResult.value.error ? ((categoryResult.value.data ?? []) as Category[]) : [];
       let loadedTransactions: Transaction[] = transactionResult.status === "fulfilled" && !transactionResult.value.error ? ((transactionResult.value.data ?? []).map((row: Record<string, unknown>) => mapTransaction(row))) : [];
-      let loadedTransfers: Transfer[] = transferResult.status === "fulfilled" && !transferResult.value.error ? ((transferResult.value.data ?? []).map((row: Record<string, unknown>) => mapTransfer(row))) : [];
-      let loadedBudgets: Budget[] = budgetResult.status === "fulfilled" && !budgetResult.value.error ? ((budgetResult.value.data ?? []).map((row: Record<string, unknown>) => mapBudget(row))) : [];
-      let loadedGoals: SavingsGoal[] = goalResult.status === "fulfilled" && !goalResult.value.error ? ((goalResult.value.data ?? []).map((row: Record<string, unknown>) => mapGoal(row))) : [];
+      const loadedTransfers: Transfer[] = transferResult.status === "fulfilled" && !transferResult.value.error ? ((transferResult.value.data ?? []).map((row: Record<string, unknown>) => mapTransfer(row))) : [];
+      const loadedBudgets: Budget[] = budgetResult.status === "fulfilled" && !budgetResult.value.error ? ((budgetResult.value.data ?? []).map((row: Record<string, unknown>) => mapBudget(row))) : [];
+      const loadedGoals: SavingsGoal[] = goalResult.status === "fulfilled" && !goalResult.value.error ? ((goalResult.value.data ?? []).map((row: Record<string, unknown>) => mapGoal(row))) : [];
       let loadedRecurring: RecurringTransaction[] = recurringResult.status === "fulfilled" && !recurringResult.value.error ? ((recurringResult.value.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row))) : [];
 
       // Auto-provision profile if missing
@@ -243,7 +266,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           return bal - res;
         };
 
-        for (const schedule of loadedRecurring.filter((item: any) => item.active && item.auto_create && new Date(item.next_run_at) <= new Date())) {
+        for (const schedule of loadedRecurring.filter((item) => item.active && item.auto_create && new Date(item.next_run_at) <= new Date())) {
           if (schedule.type === "expense" && schedule.wallet_id) {
             const avail = getDynamicAvail(schedule.wallet_id);
             if (avail < schedule.amount) {
@@ -252,15 +275,12 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
             }
           }
 
-          const category = loadedCategories.find(item => item.id === schedule.category_id);
-          const { data: newTx, error } = await supabase.from("transactions").insert({
-            user_id: user.id, title: schedule.title, amount: schedule.amount, type: schedule.type,
-            category: category?.name ?? (schedule.type === "income" ? "Thu khác" : "Khác"), category_id: schedule.category_id,
-            wallet_id: schedule.wallet_id, occurred_at: schedule.next_run_at, note: schedule.note, recurrence_id: schedule.id,
-          }).select().single();
-          if (!error && newTx) {
-            loadedTransactions.unshift(mapTransaction(newTx));
-            await supabase.from("recurring_transactions").update({ next_run_at: advanceRecurring(schedule.next_run_at, schedule.frequency) }).eq("id", schedule.id);
+          const { error } = await supabase.rpc("record_recurring_transaction", {
+            p_recurring_id: schedule.id,
+            p_occurred_at: schedule.next_run_at,
+            p_next_run_at: advanceRecurring(schedule.next_run_at, schedule.frequency),
+          });
+          if (!error) {
             automated = true;
           }
         }
@@ -488,7 +508,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     }, 100);
   }
 
-  const applyParsedTransaction = (parsed: any, mode: "local" | "fallback", customMsg?: string) => {
+  const applyParsedTransaction = (parsed: SmartTransactionResult, customMsg?: string) => {
     setTransactionDraft((cur) => {
       const nextType = parsed.type || cur.type;
       let nextCategoryId = parsed.categoryId;
@@ -550,7 +570,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (!token) {
         // Fallback to local parser if not logged in
         const parsed = parseSmartTransaction(textToParse, categories, wallets);
-        applyParsedTransaction(parsed, "local");
+        applyParsedTransaction(parsed);
         return;
       }
 
@@ -572,7 +592,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         const errMsg = resJson.error || "Không thể phân tích bằng AI. Đang chuyển sang nhận diện ngoại tuyến.";
         console.warn("AI parse API error, falling back:", errMsg);
         const parsed = parseSmartTransaction(textToParse, categories, wallets);
-        applyParsedTransaction(parsed, "fallback", errMsg);
+        applyParsedTransaction(parsed, errMsg);
         return;
       }
 
@@ -637,10 +657,10 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         });
         showNotice(`AI đã nhận diện: ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("AI parse exception:", err);
       const parsed = parseSmartTransaction(textToParse, categories, wallets);
-      applyParsedTransaction(parsed, "fallback", "Lỗi kết nối AI. Đã nhận diện ngoại tuyến.");
+      applyParsedTransaction(parsed, "Lỗi kết nối AI. Đã nhận diện ngoại tuyến.");
     } finally {
       setAiParsing(false);
     }
@@ -730,7 +750,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
     const isEditing = modal?.kind === "transaction" && modal.item;
     const amount = Number(transactionDraft.amount);
-    if (isNaN(amount) || amount <= 0) {
+    if (!isValidMoneyAmount(amount)) {
       return showNotice("Số tiền phải lớn hơn 0.");
     }
 
@@ -826,41 +846,9 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         if (error) throw error;
         if (uploadedPath && oldReceipt) await supabase.storage.from("receipts").remove([oldReceipt]);
       } else {
-        // Insert transaction first
+        // The database trigger atomically validates funds and adjusts a budget.
         const { error } = await supabase.from("transactions").insert(payload);
         if (error) throw error;
-
-        // If budget-sourced: update budget spent/remaining
-        if (isBudgetSource) {
-          const budget = budgets.find(b => b.id === transactionDraft.budgetId);
-          if (budget) {
-            if (budget.status !== "active" || budget.remaining_amount <= 0) {
-              throw new Error(`Ngân sách “${budget.name}” đã rút hết hoặc đã kết thúc, không thể chi thêm.`);
-            }
-            if (amount > budget.remaining_amount) {
-              throw new Error(`Ngân sách này không đủ số dư. Thiếu ${money(amount - budget.remaining_amount)}`);
-            }
-            const newRemaining = Math.max(0, budget.remaining_amount - amount);
-            const newSpent = budget.spent_amount + amount;
-            const newStatus = newRemaining <= 0 ? "completed" : budget.status;
-
-            const { error: budgetErr } = await supabase.from("budgets").update({
-              spent_amount: newSpent,
-              remaining_amount: newRemaining,
-              status: newStatus,
-            }).eq("id", budget.id);
-            if (budgetErr) throw budgetErr;
-            // Also reduce reserved_amount in source wallet
-            if (budget.source_wallet_id) {
-              const sourceWallet = wallets.find(w => w.id === budget.source_wallet_id);
-              if (sourceWallet) {
-                await supabase.from("wallets").update({
-                  reserved_amount: Math.max(0, sourceWallet.reserved_amount - amount),
-                }).eq("id", sourceWallet.id);
-              }
-            }
-          }
-        }
       }
 
       setModal(null);
@@ -911,7 +899,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const { title, amount, type, categoryId, walletId, budgetId, paymentSourceType, occurredAt, note, receiptFile } = data;
 
     if (!title.trim()) return showNotice("Hãy nhập tên giao dịch.");
-    if (amount <= 0 || isNaN(amount)) return showNotice("Số tiền phải lớn hơn 0.");
+    if (!isValidMoneyAmount(amount)) return showNotice("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
     if (!categoryId) return showNotice("Hãy chọn danh mục.");
     if (paymentSourceType === "wallet" && !walletId) return showNotice("Hãy chọn ví thanh toán.");
     if (paymentSourceType === "budget" && !budgetId) return showNotice("Hãy chọn ngân sách.");
@@ -993,28 +981,6 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       const { error: insertErr } = await supabase.from("transactions").insert(payload);
       if (insertErr) throw insertErr;
 
-      if (isBudgetSource) {
-        const budget = budgets.find(b => b.id === budgetId);
-        if (budget) {
-          const newRemaining = Math.max(0, budget.remaining_amount - amount);
-          const newSpent = budget.spent_amount + amount;
-          const newStatus = newRemaining <= 0 ? "completed" : budget.status;
-          await supabase.from("budgets").update({
-            spent_amount: newSpent,
-            remaining_amount: newRemaining,
-            status: newStatus,
-          }).eq("id", budget.id);
-          if (budget.source_wallet_id) {
-            const sourceWallet = wallets.find(w => w.id === budget.source_wallet_id);
-            if (sourceWallet) {
-              await supabase.from("wallets").update({
-                reserved_amount: Math.max(0, sourceWallet.reserved_amount - amount),
-              }).eq("id", sourceWallet.id);
-            }
-          }
-        }
-      }
-
       setModal(null);
       showNotice("Đã tạo giao dịch thành công từ hóa đơn.");
       await loadData(false);
@@ -1035,51 +1001,20 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     if (!wallet) throw new Error("Không tìm thấy ví.");
     const available = (availableBalances.get(walletId) ?? 0);
     if (amount > available) throw new Error(`Ví “${wallet.name}” chỉ có ${money(available)} khả dụng.`);
-    // Step 1: Increase reserved_amount in wallet
-    const { error: wErr } = await supabase.from("wallets").update({ reserved_amount: wallet.reserved_amount + amount }).eq("id", walletId);
-    if (wErr) throw wErr;
-    // Step 2: Update budget allocation
-    const budget = budgets.find(b => b.id === budgetId);
-    const newAllocated = (budget?.allocated_amount ?? 0) + amount;
-    const newRemaining = (budget?.remaining_amount ?? 0) + amount;
-    const newAmount = Math.max(budget?.amount ?? 0, newAllocated + (budget?.spent_amount ?? 0));
-    const { error: bErr } = await supabase.from("budgets").update({
-      allocated_amount: newAllocated,
-      remaining_amount: newRemaining,
-      source_wallet_id: walletId,
-      amount: newAmount,
-      status: "active",
-    }).eq("id", budgetId);
-    if (bErr) {
-      // Rollback wallet
-      await supabase.from("wallets").update({ reserved_amount: wallet.reserved_amount }).eq("id", walletId);
-      throw bErr;
-    }
-    // Step 3: Log fund allocation
-    await supabase.from("fund_allocations").insert({ user_id: user.id, type: "wallet_to_budget", wallet_id: walletId, budget_id: budgetId, amount, note: "Phân bổ ngân sách" });
+    const { error } = await supabase.rpc("adjust_budget_funds", {
+      p_budget_id: budgetId, p_wallet_id: walletId, p_amount: amount, p_direction: "allocate",
+    });
+    if (error) throw error;
   }
 
   async function returnBudgetToWallet(budget: Budget, amount: number): Promise<void> {
     if (amount <= 0) return;
     if (!budget.source_wallet_id) throw new Error("Ngân sách không liên kết ví nguồn.");
     if (amount > budget.remaining_amount) throw new Error(`Chỉ có thể rút tối đa ${money(budget.remaining_amount)}.`);
-    const wallet = wallets.find(w => w.id === budget.source_wallet_id);
-    if (!wallet) throw new Error("Không tìm thấy ví nguồn.");
-
-    const newRemaining = Math.max(0, budget.remaining_amount - amount);
-    const newAllocated = Math.max(0, budget.allocated_amount - amount);
-    const newStatus = newRemaining <= 0 ? "completed" : budget.status;
-
-    // Update budget
-    const { error: bErr } = await supabase.from("budgets").update({
-      remaining_amount: newRemaining,
-      allocated_amount: newAllocated,
-      status: newStatus,
-    }).eq("id", budget.id);
-    if (bErr) throw bErr;
-    // Update wallet reserved
-    await supabase.from("wallets").update({ reserved_amount: Math.max(0, wallet.reserved_amount - amount) }).eq("id", wallet.id);
-    await supabase.from("fund_allocations").insert({ user_id: user.id, type: "budget_to_wallet", wallet_id: wallet.id, budget_id: budget.id, amount, note: "Rút tiền khỏi ngân sách" });
+    const { error } = await supabase.rpc("adjust_budget_funds", {
+      p_budget_id: budget.id, p_wallet_id: budget.source_wallet_id, p_amount: amount, p_direction: "return",
+    });
+    if (error) throw error;
   }
 
   async function saveBudget(event: FormEvent<HTMLFormElement>) {
@@ -1097,7 +1032,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
       if (!name) throw new Error("Hãy nhập tên ngân sách.");
       if (!existingBudget) {
-        if (amount <= 0 || isNaN(amount)) throw new Error("Số tiền phải lớn hơn 0.");
+        if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
         if (!walletId) throw new Error("Hãy chọn ví nguồn.");
         const sourceWallet = wallets.find(w => w.id === walletId);
         const avail = availableBalances.get(walletId) ?? 0;
@@ -1112,16 +1047,11 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         }).eq("id", existingBudget.id);
         if (error) throw error;
       } else {
-        // Creating: insert budget with zero allocation, then allocate
-        const { data, error } = await supabase.from("budgets").insert({
-          user_id: user.id, name, amount: amount, allocated_amount: 0, spent_amount: 0, remaining_amount: 0,
-          category_id: categoryId, source_wallet_id: walletId, period, period_start: periodStart, alert_percent: alertPercent, status: "active",
-        }).select("id").single();
+        const { error } = await supabase.rpc("create_budget_with_allocation", {
+          p_name: name, p_amount: amount, p_wallet_id: walletId, p_category_id: categoryId,
+          p_period: period, p_period_start: periodStart, p_alert_percent: alertPercent,
+        });
         if (error) throw error;
-        // Load budgets into state first so allocateToBudget sees the new budget
-        const { data: freshBudgets } = await supabase.from("budgets").select("id,user_id,category_id,name,amount,allocated_amount,spent_amount,remaining_amount,source_wallet_id,period,period_start,start_date,end_date,alert_percent,status").order("created_at");
-        setBudgets((freshBudgets ?? []).map((r: any) => mapBudget(r as Record<string, unknown>)));
-        await allocateToBudget(walletId, data.id, amount);
       }
       setModal(null); showNotice("Đã lưu ngân sách."); await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể lưu ngân sách."); }
@@ -1129,17 +1059,15 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   }
 
   async function deleteBudget(budget: Budget) {
-    if (!window.confirm(`Xóa ngân sách “${budget.name}”?`)) return;
+    const returnNote = budget.remaining_amount > 0 ? ` ${money(budget.remaining_amount)} còn lại sẽ tự động được hoàn về ví.` : "";
+    const historyNote = budget.spent_amount > 0 ? " Ngân sách sẽ được đóng thay vì xóa để giữ lịch sử giao dịch." : "";
+    if (!window.confirm(`Xóa ngân sách “${budget.name}”?${returnNote}${historyNote}`)) return;
     setSaving(true);
     try {
-      // Return remaining to wallet first
-      if (budget.remaining_amount > 0 && budget.source_wallet_id) {
-        const confirmed = window.confirm(`Hoàn ${money(budget.remaining_amount)} còn lại về ví?`);
-        if (confirmed) await returnBudgetToWallet(budget, budget.remaining_amount);
-      }
-      const { error } = await supabase.from("budgets").delete().eq("id", budget.id);
+      const { data, error } = await supabase.rpc("close_budget", { p_budget_id: budget.id });
       if (error) throw error;
-      showNotice("Đã xóa ngân sách."); await loadData(false);
+      showNotice(data === "closed" ? "Đã đóng ngân sách và giữ lại lịch sử giao dịch." : "Đã xóa ngân sách.");
+      await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể xóa."); }
     finally { setSaving(false); }
   }
@@ -1150,7 +1078,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     try {
       const amount = Number(form.get("amount") || 0);
       const walletId = String(form.get("walletId") || budget.source_wallet_id || "");
-      if (amount <= 0) throw new Error("Số tiền phải lớn hơn 0.");
+      if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       await allocateToBudget(walletId, budget.id, amount);
       setModal(null); showNotice(`Đã nạp thêm ${money(amount)} vào ngân sách.`); await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể nạp tiền."); }
@@ -1162,7 +1090,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const form = new FormData(event.currentTarget);
     try {
       const amount = Number(form.get("amount") || 0);
-      if (amount <= 0) throw new Error("Số tiền phải lớn hơn 0.");
+      if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       await returnBudgetToWallet(budget, amount);
       setModal(null); showNotice(`Đã rút ${money(amount)} về ví.`); await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể rút tiền."); }
@@ -1175,34 +1103,20 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     if (!wallet) throw new Error("Không tìm thấy ví.");
     const available = availableBalances.get(walletId) ?? 0;
     if (amount > available) throw new Error(`Ví “${wallet.name}” chỉ có ${money(available)} khả dụng.`);
-    const { error: wErr } = await supabase.from("wallets").update({ reserved_amount: wallet.reserved_amount + amount }).eq("id", walletId);
-    if (wErr) throw wErr;
-    const goal = goals.find(g => g.id === goalId);
-    const { error: gErr } = await supabase.from("savings_goals").update({
-      current_amount: (goal?.current_amount ?? 0) + amount,
-      reserved_in_wallet: (goal?.reserved_in_wallet ?? 0) + amount,
-      source_wallet_id: walletId,
-    }).eq("id", goalId);
-    if (gErr) {
-      await supabase.from("wallets").update({ reserved_amount: wallet.reserved_amount }).eq("id", walletId);
-      throw gErr;
-    }
-    await supabase.from("fund_allocations").insert({ user_id: user.id, type: "wallet_to_goal", wallet_id: walletId, goal_id: goalId, amount, note: "Phân bổ mục tiêu" });
+    const { error } = await supabase.rpc("adjust_goal_funds", {
+      p_goal_id: goalId, p_wallet_id: walletId, p_amount: amount, p_direction: "allocate",
+    });
+    if (error) throw error;
   }
 
   async function returnGoalToWallet(goal: SavingsGoal, amount: number): Promise<void> {
     if (amount <= 0) return;
     if (!goal.source_wallet_id) throw new Error("Mục tiêu không liên kết ví.");
     if (amount > goal.current_amount) throw new Error(`Chỉ có ${money(goal.current_amount)} trong mục tiêu.`);
-    const wallet = wallets.find(w => w.id === goal.source_wallet_id);
-    if (!wallet) throw new Error("Không tìm thấy ví.");
-    const { error: gErr } = await supabase.from("savings_goals").update({
-      current_amount: goal.current_amount - amount,
-      reserved_in_wallet: Math.max(0, goal.reserved_in_wallet - amount),
-    }).eq("id", goal.id);
-    if (gErr) throw gErr;
-    await supabase.from("wallets").update({ reserved_amount: Math.max(0, wallet.reserved_amount - amount) }).eq("id", wallet.id);
-    await supabase.from("fund_allocations").insert({ user_id: user.id, type: "goal_to_wallet", wallet_id: wallet.id, goal_id: goal.id, amount, note: "Rút tiền khỏi mục tiêu" });
+    const { error } = await supabase.rpc("adjust_goal_funds", {
+      p_goal_id: goal.id, p_wallet_id: goal.source_wallet_id, p_amount: amount, p_direction: "return",
+    });
+    if (error) throw error;
   }
 
   async function saveGoal(event: FormEvent<HTMLFormElement>) {
@@ -1216,7 +1130,8 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       const deadline = String(form.get("deadline") || "") || null;
       const color = String(form.get("color") || "#D9F45F");
       if (!title) throw new Error("Hãy nhập tên mục tiêu.");
-      if (targetAmount <= 0) throw new Error("Số tiền mục tiêu phải lớn hơn 0.");
+      if (!isValidMoneyAmount(targetAmount)) throw new Error("Số tiền mục tiêu phải lớn hơn 0 và nằm trong giới hạn cho phép.");
+      if (!isValidMoneyAmount(initialDeposit, true) || initialDeposit > targetAmount) throw new Error("Khoản gửi ban đầu không hợp lệ.");
       const existingGoal = modal?.kind === "goal" ? modal.item : undefined;
       if (existingGoal) {
         const { error } = await supabase.from("savings_goals").update({ title, target_amount: targetAmount, deadline, color }).eq("id", existingGoal.id);
@@ -1229,16 +1144,11 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
             throw new Error(`Ví “${sourceWallet?.name ?? "Ví"}” không đủ số dư khả dụng (${money(avail)}) để gửi ${money(initialDeposit)} vào mục tiêu.`);
           }
         }
-        const { data, error } = await supabase.from("savings_goals").insert({
-          user_id: user.id, title, target_amount: targetAmount, current_amount: 0, reserved_in_wallet: 0,
-          source_wallet_id: walletId || null, deadline, color,
-        }).select("id").single();
+        const { error } = await supabase.rpc("create_goal_with_allocation", {
+          p_title: title, p_target_amount: targetAmount, p_initial_deposit: initialDeposit,
+          p_wallet_id: walletId || null, p_deadline: deadline, p_color: color,
+        });
         if (error) throw error;
-        if (initialDeposit > 0 && walletId) {
-          const { data: freshGoals } = await supabase.from("savings_goals").select("id,user_id,title,target_amount,current_amount,reserved_in_wallet,source_wallet_id,deadline,color").order("deadline", { ascending: true });
-          setGoals((freshGoals ?? []).map((r: any) => mapGoal(r as Record<string, unknown>)));
-          await allocateToGoal(walletId, data.id, initialDeposit);
-        }
       }
       setModal(null); showNotice("Đã lưu mục tiêu."); await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể lưu mục tiêu."); }
@@ -1251,7 +1161,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     try {
       const amount = Number(form.get("amount") || 0);
       const walletId = String(form.get("walletId") || goal.source_wallet_id || "");
-      if (amount <= 0) throw new Error("Số tiền phải lớn hơn 0.");
+      if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       await allocateToGoal(walletId, goal.id, amount);
       setModal(null); showNotice(`Đã gửi ${money(amount)} vào mục tiêu.`); await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể nạp tiền."); }
@@ -1263,7 +1173,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const form = new FormData(event.currentTarget);
     try {
       const amount = Number(form.get("amount") || 0);
-      if (amount <= 0) throw new Error("Số tiền phải lớn hơn 0.");
+      if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       await returnGoalToWallet(goal, amount);
       setModal(null); showNotice(`Đã rút ${money(amount)} về ví.`); await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể rút tiền."); }
@@ -1278,6 +1188,10 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (kind === "wallet") { table = "wallets"; payload = { ...payload, name: String(form.get("name") || "").trim(), type: form.get("type"), balance: Number(form.get("balance")), currency: profile.currency, color: form.get("color"), icon: form.get("icon") }; }
       if (kind === "category") { table = "categories"; payload = { ...payload, name: String(form.get("name") || "").trim(), kind: form.get("type"), parent_id: form.get("parentId") || null, icon: form.get("icon"), color: form.get("color"), is_default: false }; }
       if (kind === "recurring") { table = "recurring_transactions"; payload = { ...payload, title: String(form.get("title") || "").trim(), amount: Number(form.get("amount")), type: recurringType, wallet_id: form.get("walletId") || null, category_id: form.get("categoryId") || null, frequency: form.get("frequency"), next_run_at: new Date(String(form.get("nextRun"))).toISOString(), active: form.get("active") === "on", auto_create: form.get("autoCreate") === "on", note: String(form.get("note") || "").trim() }; }
+      const label = String(payload.name ?? payload.title ?? "").trim();
+      if (!label || label.length > 120) throw new Error("Tên phải có từ 1 đến 120 ký tự.");
+      if (kind === "wallet" && !isValidMoneyAmount(Number(payload.balance), true)) throw new Error("Số dư ví không hợp lệ.");
+      if (kind === "recurring" && !isValidMoneyAmount(Number(payload.amount))) throw new Error("Số tiền định kỳ không hợp lệ.");
       const current = modal && (modal.kind === kind) ? (modal as { kind: string; item?: Record<string, unknown> }).item : undefined;
       const result = current ? await supabase.from(table).update(payload).eq("id", (current as { id: string }).id) : await supabase.from(table).insert(payload);
       if (result.error) throw result.error;
@@ -1293,7 +1207,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const amount = Number(form.get("amount"));
     try {
       if (from === to) throw new Error("Ví nhận phải khác ví chuyển.");
-      if (amount <= 0 || isNaN(amount)) throw new Error("Số tiền chuyển phải lớn hơn 0.");
+      if (!isValidMoneyAmount(amount)) throw new Error("Số tiền chuyển phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       const fromWallet = wallets.find(w => w.id === from);
       const avail = availableBalances.get(from) ?? 0;
       if (amount > avail) {
@@ -1330,49 +1244,15 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       confirmMsg += `\n\nHành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa?`;
       if (!window.confirm(confirmMsg)) return;
 
-      // An toàn: Gỡ liên kết wallet_id trên các giao dịch thay vì làm mất lịch sử
-      if (walletTxs.length > 0) {
-        await supabase.from("transactions").update({ wallet_id: null }).eq("wallet_id", id);
+      if (walletTxs.length > 0 || walletTransfers.length > 0 || walletBudgets.length > 0 || walletGoals.length > 0) {
+        showNotice("Không thể xóa ví đang có lịch sử hoặc liên kết tài chính. Hãy giữ ví để bảo toàn sổ sách.");
+        return;
       }
     } else {
       if (!window.confirm(`Xóa ${label}? Thao tác này không thể hoàn tác.`)) return;
     }
 
-    if (table === "categories") await supabase.from("categories").update({ parent_id: null }).eq("parent_id", id);
-
-    if (table === "transactions") {
-      const tx = transactions.find(t => t.id === id);
-      if (tx && tx.payment_source_type === "budget" && tx.budget_id) {
-        const budget = budgets.find(b => b.id === tx.budget_id);
-        if (budget) {
-          await supabase.from("budgets").update({
-            spent_amount: Math.max(0, budget.spent_amount - tx.amount),
-            remaining_amount: budget.remaining_amount + tx.amount,
-          }).eq("id", budget.id);
-          if (budget.source_wallet_id) {
-            const wallet = wallets.find(w => w.id === budget.source_wallet_id);
-            if (wallet) {
-              await supabase.from("wallets").update({
-                reserved_amount: wallet.reserved_amount + tx.amount
-              }).eq("id", wallet.id);
-            }
-          }
-        }
-      }
-    }
-
-    if (table === "budgets") {
-      const budget = budgets.find(b => b.id === id);
-      if (budget && budget.source_wallet_id) {
-        const wallet = wallets.find(w => w.id === budget.source_wallet_id);
-        if (wallet) {
-          await supabase.from("wallets").update({
-            reserved_amount: Math.max(0, wallet.reserved_amount - budget.remaining_amount)
-          }).eq("id", wallet.id);
-        }
-      }
-    }
-
+    // Database triggers restore budget funds and release reservations atomically.
     const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) return showNotice(error.message);
     if (receiptPath) await supabase.storage.from("receipts").remove([receiptPath]);
@@ -1401,21 +1281,12 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         return;
       }
     }
-    const category = categoryById.get(item.category_id ?? "");
-    const { error } = await supabase.from("transactions").insert({
-      user_id: user.id,
-      title: item.title,
-      amount: item.amount,
-      type: item.type,
-      category: category?.name ?? (item.type === "income" ? "Thu khác" : "Khác"),
-      category_id: item.category_id,
-      wallet_id: item.wallet_id,
-      occurred_at: new Date().toISOString(),
-      note: item.note,
-      recurrence_id: item.id
+    const { error } = await supabase.rpc("record_recurring_transaction", {
+      p_recurring_id: item.id,
+      p_occurred_at: item.next_run_at,
+      p_next_run_at: advanceRecurring(item.next_run_at, item.frequency),
     });
     if (error) return showNotice(error.message);
-    await supabase.from("recurring_transactions").update({ next_run_at: advanceRecurring(item.next_run_at, item.frequency) }).eq("id", item.id);
     showNotice(`Đã ghi nhận giao dịch "${item.title}" (${money(item.amount)}).`);
     await loadData(false);
   }
@@ -1451,7 +1322,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       // 1. Storage receipts files
       const { data: files } = await supabase.storage.from("receipts").list(user.id, { limit: 1000 });
       if (files?.length) {
-        await supabase.storage.from("receipts").remove(files.map((file: any) => `${user.id}/${file.name}`));
+        await supabase.storage.from("receipts").remove(files.map((file) => `${user.id}/${file.name}`));
       }
 
       // 2. Clear parent_id in custom categories first to avoid FK constraint issues
@@ -1796,7 +1667,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   </div>
                   <div className="budget-stack">
                     {budgets.length ? budgets.slice(0, 3).map(budget => {
-                      const totalCapacity = Math.max(budget.amount, budget.allocated_amount + budget.spent_amount);
+                      const totalCapacity = Math.max(budget.amount, budget.allocated_amount);
                       const withdrawnAmount = Math.max(0, totalCapacity - budget.remaining_amount - budget.spent_amount);
                       const totalUsed = budget.spent_amount + withdrawnAmount;
                       const pct = totalCapacity > 0 ? Math.min(100, Math.round((totalUsed / totalCapacity) * 100)) : 0;
@@ -1954,7 +1825,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   <div className="panel-head"><div><p>{t("budgets.title", undefined, language).toUpperCase()}</p><h3>{language === "vi" ? "Ngân sách đang theo dõi" : "Active budgets"}</h3></div></div>
                   <div className="plan-list">
                     {budgets.map(budget => {
-                      const totalCapacity = Math.max(budget.amount, budget.allocated_amount + budget.spent_amount);
+                      const totalCapacity = Math.max(budget.amount, budget.allocated_amount);
                       const withdrawnAmount = Math.max(0, totalCapacity - budget.remaining_amount - budget.spent_amount);
                       const totalUsed = budget.spent_amount + withdrawnAmount;
                       const pct = totalCapacity > 0 ? Math.min(100, Math.round((totalUsed / totalCapacity) * 100)) : 0;
@@ -2021,7 +1892,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                             <button type="button" onClick={() => openModal({ kind: "goal-topup", goal })}>{language === "vi" ? "Gửi tiền" : "Deposit"}</button>
                             <button type="button" onClick={() => openModal({ kind: "goal-return", goal })} disabled={goal.current_amount <= 0}>{language === "vi" ? "Rút tiền" : "Withdraw"}</button>
                             <button type="button" onClick={() => openModal({ kind: "goal", item: goal })}>{t("common.edit", undefined, language)}</button>
-                            <button type="button" onClick={() => { if (window.confirm(`${t("common.confirmDelete", undefined, language)} "${goal.title}"?`)) { if (goal.current_amount > 0 && goal.source_wallet_id) { returnGoalToWallet(goal, goal.current_amount).then(() => remove("savings_goals", goal.id, goal.title)).catch(e => showNotice(e.message)); } else { remove("savings_goals", goal.id, goal.title); } } }}>{t("common.delete", undefined, language)}</button>
+                            <button type="button" onClick={() => void remove("savings_goals", goal.id, goal.title)}>{t("common.delete", undefined, language)}</button>
                           </footer>
                         </div>
                       );
@@ -2899,13 +2770,6 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   );
 }
 
-const WALLET_PRESET_COLORS = [
-  "#D9F45F", "#22C55E", "#10B981", "#06B6D4", "#3B82F6",
-  "#6366F1", "#8B5CF6", "#EC4899", "#F97316", "#EF4444", "#64748B"
-];
-
-
-
 const CURATED_PRESET_COLORS = [
   "#D9F45F", // Neon Lime (Mặc định)
   "#10B981", // Emerald Mint
@@ -2985,20 +2849,13 @@ function ModernColorPicker({
   label?: string;
   presets?: string[];
 }) {
-  const [selectedColor, setSelectedColor] = useState<string>(() => value || defaultValue || "#D9F45F");
+  const [internalColor, setInternalColor] = useState<string>(() => value || defaultValue || "#D9F45F");
   const [hexInput, setHexInput] = useState(() => (value || defaultValue || "#D9F45F").toUpperCase());
-
-  useEffect(() => {
-    if (value && value !== selectedColor) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedColor(value);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setHexInput(value.toUpperCase());
-    }
-  }, [value, selectedColor]);
+  const selectedColor = value ?? internalColor;
+  const visibleHexInput = value && value !== internalColor ? value.toUpperCase() : hexInput;
 
   function handleColorChange(newColor: string) {
-    setSelectedColor(newColor);
+    setInternalColor(newColor);
     setHexInput(newColor.toUpperCase());
     onChange?.(newColor);
   }
@@ -3008,7 +2865,7 @@ function ModernColorPicker({
     if (!val.startsWith("#")) val = "#" + val;
     setHexInput(val);
     if (/^#[0-9A-F]{6}$/i.test(val)) {
-      setSelectedColor(val);
+      setInternalColor(val);
       onChange?.(val);
     }
   }
@@ -3060,7 +2917,7 @@ function ModernColorPicker({
             <span className="hex-prefix">#</span>
             <input
               type="text"
-              value={hexInput.replace(/^#/, "")}
+              value={visibleHexInput.replace(/^#/, "")}
               onChange={handleHexInputChange}
               maxLength={6}
               placeholder="D9F45F"

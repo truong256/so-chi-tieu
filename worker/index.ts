@@ -3,12 +3,18 @@ import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } fr
 import handler from "vinext/server/app-router-entry";
 import { processChat } from "../backend/src/services/ai-chat.service";
 import type { AiChatRequest } from "../backend/src/types/ai.types";
+import { asRecord, HttpInputError, readJsonBody } from "../backend/src/services/http-input.service";
+import {
+  AuthenticationError,
+  extractBearerToken,
+  verifySupabaseAccessToken,
+} from "../backend/src/services/supabase-auth.service";
 
 import { getExchangeRates } from "../backend/src/services/exchange-rate.service";
 
 // Bổ sung type nội bộ do project không cài @cloudflare/workers-types
 type Fetcher = { fetch: typeof fetch };
-type D1Database = any;
+type D1Database = object;
 
 interface Env {
   ASSETS: Fetcher;
@@ -36,7 +42,7 @@ const worker = {
 
     if (url.pathname === "/api/client-error" && request.method === "POST") {
       try {
-        const payload = await request.json() as { message?: unknown; digest?: unknown };
+        const payload = asRecord(await readJsonBody(request, 4 * 1024));
         console.error("Client runtime error", {
           message: typeof payload.message === "string" ? payload.message.slice(0, 500) : "Unknown client error",
           digest: typeof payload.digest === "string" ? payload.digest.slice(0, 200) : undefined,
@@ -83,20 +89,20 @@ const worker = {
       try {
         const geminiApiKey = (env.GEMINI_API_KEY || (typeof process !== "undefined" ? process.env.GEMINI_API_KEY : ""))?.trim() ?? "";
 
-        // Verify Supabase session from Authorization header
-        const authHeader = request.headers.get("Authorization");
-        if (!authHeader?.startsWith("Bearer ")) {
-          return Response.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        const token = extractBearerToken(request);
+        await verifySupabaseAccessToken(token, {
+          supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+          supabasePublishableKey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
+        });
 
-        const body = (await request.json()) as Partial<AiChatRequest>;
+        const body = asRecord(await readJsonBody(request, 64 * 1024));
 
         const reqPayload: AiChatRequest = {
-          message: body.message ?? "",
-          history: body.history ?? [],
-          financialContext: body.financialContext ?? null,
-          currentPage: body.currentPage,
-          clientTime: body.clientTime,
+          message: typeof body.message === "string" ? body.message : "",
+          history: Array.isArray(body.history) ? body.history as AiChatRequest["history"] : [],
+          financialContext: body.financialContext as AiChatRequest["financialContext"] ?? null,
+          currentPage: typeof body.currentPage === "string" ? body.currentPage : undefined,
+          clientTime: typeof body.clientTime === "string" ? body.clientTime : undefined,
         };
 
         const result = await processChat(geminiApiKey, reqPayload);
@@ -107,6 +113,9 @@ const worker = {
 
         return Response.json({ reply: result.reply }, { headers: { "Cache-Control": "no-store" } });
       } catch (err) {
+        if (err instanceof AuthenticationError || err instanceof HttpInputError) {
+          return Response.json({ error: err.message }, { status: err.status });
+        }
         if (err instanceof Error && err.name === "TimeoutError") {
           return Response.json(
             { error: "Phản hồi đang mất nhiều thời gian hơn dự kiến. Vui lòng thử lại." },

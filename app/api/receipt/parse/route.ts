@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { parseReceiptWithAI } from "@/backend/src/services/receipt-parser.service";
+import { asRecord, HttpInputError, readJsonBody } from "@/backend/src/services/http-input.service";
+import {
+  AuthenticationError,
+  extractBearerToken,
+  verifySupabaseAccessToken,
+} from "@/backend/src/services/supabase-auth.service";
 
 export const maxDuration = 35; // Allow up to 35 seconds for image analysis
 
@@ -18,10 +25,14 @@ export async function POST(request: Request) {
   try {
     const geminiApiKey = process.env.GEMINI_API_KEY?.trim() ?? "";
 
-    // Authenticate user header
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Yêu cầu đăng nhập để sử dụng tính năng này." }, { status: 401 });
+    const token = extractBearerToken(request);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+    const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
+    const verifiedUser = await verifySupabaseAccessToken(token, { supabaseUrl, supabasePublishableKey });
+
+    const declaredLength = Number(request.headers.get("content-length") ?? 0);
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_IMAGE_BYTES + 128 * 1024) {
+      return NextResponse.json({ error: "Dữ liệu ảnh vượt quá giới hạn cho phép." }, { status: 413 });
     }
 
     let mimeType = "image/jpeg";
@@ -32,6 +43,9 @@ export async function POST(request: Request) {
     const contentType = request.headers.get("content-type") || "";
 
     if (contentType.includes("multipart/form-data")) {
+      if (!declaredLength) {
+        return NextResponse.json({ error: "Yêu cầu tải ảnh phải có Content-Length." }, { status: 411 });
+      }
       const formData = await request.formData();
       const file = formData.get("file") || formData.get("image");
 
@@ -55,43 +69,21 @@ export async function POST(request: Request) {
       const arrayBuffer = await file.arrayBuffer();
       base64Data = Buffer.from(arrayBuffer).toString("base64");
 
-      const catsRaw = formData.get("categories");
-      if (typeof catsRaw === "string") {
-        try {
-          categoriesList = JSON.parse(catsRaw);
-        } catch {
-          categoriesList = [];
-        }
-      }
-
-      const walletsRaw = formData.get("wallets");
-      if (typeof walletsRaw === "string") {
-        try {
-          walletsList = JSON.parse(walletsRaw);
-        } catch {
-          walletsList = [];
-        }
-      }
     } else if (contentType.includes("application/json")) {
-      const body = (await request.json()) as {
-        imageBase64?: string;
-        mimeType?: string;
-        categories?: string[];
-        wallets?: string[];
-      };
+      const body = asRecord(await readJsonBody(request, 14 * 1024 * 1024));
 
-      if (!body.imageBase64) {
+      if (typeof body.imageBase64 !== "string" || !body.imageBase64) {
         return NextResponse.json({ error: "Không tìm thấy dữ liệu hình ảnh." }, { status: 400 });
       }
 
-      let rawBase64 = body.imageBase64;
+      const rawBase64 = body.imageBase64;
       const dataUrlMatch = rawBase64.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
       if (dataUrlMatch) {
         mimeType = dataUrlMatch[1];
         base64Data = dataUrlMatch[2];
       } else {
         base64Data = rawBase64;
-        if (body.mimeType) mimeType = body.mimeType;
+        if (typeof body.mimeType === "string") mimeType = body.mimeType;
       }
 
       if (!ALLOWED_MIME_TYPES.has(mimeType.toLowerCase())) {
@@ -103,11 +95,23 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 10 MB." }, { status: 413 });
       }
 
-      if (Array.isArray(body.categories)) categoriesList = body.categories;
-      if (Array.isArray(body.wallets)) walletsList = body.wallets;
     } else {
       return NextResponse.json({ error: "Content-Type không được hỗ trợ." }, { status: 400 });
     }
+
+    const supabase = createSupabaseClient(supabaseUrl, supabasePublishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const [categoriesResult, walletsResult] = await Promise.all([
+      supabase.from("categories").select("name").eq("user_id", verifiedUser.id).order("name"),
+      supabase.from("wallets").select("name").eq("user_id", verifiedUser.id).order("name"),
+    ]);
+    if (categoriesResult.error || walletsResult.error) {
+      return NextResponse.json({ error: "Không thể tải danh mục và ví của tài khoản." }, { status: 503 });
+    }
+    categoriesList = (categoriesResult.data ?? []).map((item) => item.name).filter((name): name is string => typeof name === "string").slice(0, 100);
+    walletsList = (walletsResult.data ?? []).map((item) => item.name).filter((name): name is string => typeof name === "string").slice(0, 50);
 
     const result = await parseReceiptWithAI({
       geminiApiKey,
@@ -132,6 +136,9 @@ export async function POST(request: Request) {
       }
     );
   } catch (err) {
+    if (err instanceof AuthenticationError || err instanceof HttpInputError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     if (err instanceof Error && err.name === "TimeoutError") {
       return NextResponse.json(
         { error: "Thời gian xử lý ảnh quá lâu (Timeout). Vui lòng thử lại với ảnh dung lượng nhỏ hơn." },
