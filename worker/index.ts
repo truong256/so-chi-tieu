@@ -4,6 +4,7 @@ import handler from "vinext/server/app-router-entry";
 import { processChat } from "../backend/src/services/ai-chat.service";
 import type { AiChatRequest } from "../backend/src/types/ai.types";
 import { asRecord, HttpInputError, readJsonBody } from "../backend/src/services/http-input.service";
+import { normalizeClientErrorReport } from "../backend/src/services/client-error.service";
 import {
   AuthenticationError,
   extractBearerToken,
@@ -43,10 +44,7 @@ const worker = {
     if (url.pathname === "/api/client-error" && request.method === "POST") {
       try {
         const payload = asRecord(await readJsonBody(request, 4 * 1024));
-        console.error("Client runtime error", {
-          message: typeof payload.message === "string" ? payload.message.slice(0, 500) : "Unknown client error",
-          digest: typeof payload.digest === "string" ? payload.digest.slice(0, 200) : undefined,
-        });
+        console.error("Client runtime error", normalizeClientErrorReport(payload));
       } catch {
         console.error("Client runtime error report could not be parsed");
       }

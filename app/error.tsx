@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const loadingTexts = [
   "Đang chuẩn bị dữ liệu...",
@@ -12,13 +12,16 @@ const loadingTexts = [
 export default function AppError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const [textIndex, setTextIndex] = useState(0);
   const [isReloading, setIsReloading] = useState(false);
+  const resetTimerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    console.error(error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error(error);
+    }
     void fetch("/api/client-error", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: error.message, digest: error.digest }),
+      body: JSON.stringify({ name: error.name, digest: error.digest }),
       keepalive: true,
     }).catch(() => undefined);
   }, [error]);
@@ -27,13 +30,24 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
     const interval = setInterval(() => {
       setTextIndex((prev) => (prev + 1) % loadingTexts.length);
     }, 2500);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (resetTimerRef.current !== undefined) {
+        window.clearTimeout(resetTimerRef.current);
+      }
+    };
   }, []);
 
   const handleReset = () => {
     setIsReloading(true);
     reset();
-    setTimeout(() => setIsReloading(false), 2000);
+    if (resetTimerRef.current !== undefined) {
+      window.clearTimeout(resetTimerRef.current);
+    }
+    resetTimerRef.current = window.setTimeout(() => {
+      setIsReloading(false);
+      resetTimerRef.current = undefined;
+    }, 2000);
   };
 
   return (

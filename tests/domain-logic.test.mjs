@@ -2,11 +2,18 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { strFromU8, unzipSync } from "fflate";
 
-import { advanceRecurring } from "../frontend/utils/finance.utils.ts";
+import { advanceRecurring, periodBounds } from "../frontend/utils/finance.utils.ts";
+import {
+  calculateAvailableBalances,
+  calculateReservedByWallet,
+  calculateTransactionTotals,
+  calculateWalletBalances,
+} from "../frontend/utils/finance-calculations.ts";
 import { buildXlsxFile } from "../frontend/services/xlsx-writer.ts";
 import { cleanMoneyAmount, normalizeIsoDate } from "../backend/src/services/ai-output-validation.service.ts";
 import { extractBearerToken } from "../backend/src/services/supabase-auth.service.ts";
 import { readJsonBody } from "../backend/src/services/http-input.service.ts";
+import { normalizeClientErrorReport } from "../backend/src/services/client-error.service.ts";
 import { parseSmartTransaction, parseVietnameseAmount } from "../frontend/utils/smart-parser.ts";
 
 const categories = [
@@ -44,6 +51,71 @@ test("recurring dates clamp month and leap-year boundaries", () => {
   assert.equal(advanceRecurring("2026-01-31T08:00:00.000Z", "monthly", 1, "next_month"), "2026-03-01T08:00:00.000Z");
 });
 
+test("period boundaries remain local and exclusive across month and year changes", () => {
+  const reference = new Date(2026, 11, 31, 23, 59, 59);
+  const day = periodBounds("day", 0, reference);
+  const month = periodBounds("month", 0, reference);
+  const year = periodBounds("year", 0, reference);
+
+  assert.deepEqual(
+    [day.start.getFullYear(), day.start.getMonth(), day.start.getDate()],
+    [2026, 11, 31],
+  );
+  assert.deepEqual(
+    [day.end.getFullYear(), day.end.getMonth(), day.end.getDate()],
+    [2027, 0, 1],
+  );
+  assert.deepEqual(
+    [month.end.getFullYear(), month.end.getMonth(), month.end.getDate()],
+    [2027, 0, 1],
+  );
+  assert.deepEqual(
+    [year.end.getFullYear(), year.end.getMonth(), year.end.getDate()],
+    [2027, 0, 1],
+  );
+});
+
+test("financial calculations include budget-backed expenses and reservations once", () => {
+  const walletRows = [
+    { id: "w1", balance: 1_000_000 },
+    { id: "w2", balance: 200_000 },
+  ];
+  const budgetRows = [
+    { id: "b1", source_wallet_id: "w1", remaining_amount: 300_000, status: "active" },
+  ];
+  const goalRows = [
+    { source_wallet_id: "w1", reserved_in_wallet: 100_000 },
+  ];
+  const transactionRows = [
+    { wallet_id: "w1", budget_id: null, payment_source_type: "wallet", type: "income", amount: 200_000, occurred_at: "2026-09-01T00:00:00.000Z" },
+    { wallet_id: "w1", budget_id: null, payment_source_type: "wallet", type: "expense", amount: 100_000, occurred_at: "2026-09-15T12:00:00.000Z" },
+    { wallet_id: null, budget_id: "b1", payment_source_type: "budget", type: "expense", amount: 50_000, occurred_at: "2026-09-30T23:59:59.000Z" },
+  ];
+  const transferRows = [
+    { from_wallet_id: "w1", to_wallet_id: "w2", amount: 100_000 },
+  ];
+
+  const balances = calculateWalletBalances(
+    walletRows,
+    transactionRows,
+    transferRows,
+    budgetRows,
+  );
+  const reserved = calculateReservedByWallet(walletRows, budgetRows, goalRows);
+  const available = calculateAvailableBalances(balances, reserved);
+  const totals = calculateTransactionTotals(
+    transactionRows,
+    new Date("2026-09-01T00:00:00.000Z"),
+    new Date("2026-10-01T00:00:00.000Z"),
+  );
+
+  assert.equal(balances.get("w1"), 950_000);
+  assert.equal(balances.get("w2"), 300_000);
+  assert.equal(reserved.get("w1"), 400_000);
+  assert.equal(available.get("w1"), 550_000);
+  assert.deepEqual(totals, { income: 200_000, expense: 150_000 });
+});
+
 test("browser auth remains explicitly session-only", async () => {
   const source = await import("node:fs/promises").then(({ readFile }) => readFile(new URL("../config/supabase.ts", import.meta.url), "utf8"));
   assert.match(source, /storage:\s*typeof window[^\n]+window\.sessionStorage/);
@@ -73,5 +145,23 @@ test("HTTP helpers enforce exact bearer syntax and JSON body limits", async () =
   await assert.rejects(
     readJsonBody(new Request("https://example.test", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ long: "abcdef" }) }), 8),
     (error) => error?.status === 413,
+  );
+});
+
+test("client error reports cannot inject arbitrary or sensitive log messages", () => {
+  assert.deepEqual(
+    normalizeClientErrorReport({
+      name: "TypeError",
+      digest: "safe_digest-123",
+      message: "token=should-not-be-logged",
+    }),
+    { name: "TypeError", digest: "safe_digest-123" },
+  );
+  assert.deepEqual(
+    normalizeClientErrorReport({
+      name: "Bad\nforged log",
+      digest: "not allowed!",
+    }),
+    { name: "ClientError" },
   );
 });
