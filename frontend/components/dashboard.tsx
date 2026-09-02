@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/config/supabase";
 import type {
   AITransactionParseResult,
@@ -16,14 +16,23 @@ import type {
   Wallet,
 } from "@/frontend/types/finance.types";
 import { advanceRecurring, formatDate, inRange, localDateTime, periodBounds, toNumber } from "@/frontend/utils/finance.utils";
+import {
+  calculateAvailableBalances,
+  calculateReservedByWallet,
+  calculateTransactionTotals,
+  calculateWalletBalances,
+} from "@/frontend/utils/finance-calculations";
 import { parseSmartTransaction, type SmartTransactionResult } from "@/frontend/utils/smart-parser";
-import AiChatView from "@/frontend/features/ai/ai-chat";
 import { AiChatProvider } from "@/frontend/features/ai/ai-chat-context";
 import AiFloatingChat from "@/frontend/features/ai/ai-floating-chat";
-import ReceiptScannerModal, { FormattedMoneyInput } from "@/frontend/components/receipt-scanner-modal";
-import { exportFinancialDataToExcel } from "@/frontend/services/excel-export";
+import FormattedMoneyInput from "@/frontend/components/formatted-money-input";
 import { t, setAppLanguage, type Language } from "@/frontend/services/i18n.service";
 import { getExchangeRates, formatMoney, DEFAULT_FALLBACK_RATES } from "@/frontend/services/currency.service";
+
+const AiChatView = lazy(() => import("@/frontend/features/ai/ai-chat"));
+const ReceiptScannerModal = lazy(
+  () => import("@/frontend/components/receipt-scanner-modal"),
+);
 
 type View = "overview" | "transactions" | "wallets" | "categories" | "planning" | "recurring" | "reports" | "settings" | "ai-assistant";
 type UserInfo = { id: string; name: string; email: string };
@@ -142,6 +151,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const [highlightWalletSelect, setHighlightWalletSelect] = useState(false);
   const [focusAmountInput, setFocusAmountInput] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const noticeTimerRef = useRef<number | undefined>(undefined);
   const [appAccentColor, setAppAccentColor] = useState<string>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("app_accent_color") || "#D2F544";
@@ -150,9 +160,24 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   });
 
   const showNotice = useCallback((message: string) => {
+    if (noticeTimerRef.current !== undefined) {
+      window.clearTimeout(noticeTimerRef.current);
+    }
     setNotice(message);
-    window.setTimeout(() => setNotice(""), 3200);
+    noticeTimerRef.current = window.setTimeout(() => {
+      setNotice("");
+      noticeTimerRef.current = undefined;
+    }, 3200);
   }, []);
+
+  useEffect(
+    () => () => {
+      if (noticeTimerRef.current !== undefined) {
+        window.clearTimeout(noticeTimerRef.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -241,34 +266,19 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         let automated = false;
         let skippedDueToBalance = 0;
 
-        const getDynamicAvail = (wId: string) => {
-          const w = loadedWallets.find(x => x.id === wId);
-          if (!w) return 0;
-          let bal = w.balance;
-          loadedTransactions.forEach(t => {
-            let act = t.wallet_id;
-            if (!act && t.payment_source_type === "budget" && t.budget_id) {
-              act = loadedBudgets.find(b => b.id === t.budget_id)?.source_wallet_id ?? null;
-            }
-            if (act === wId) bal += (t.type === "income" ? t.amount : -t.amount);
-          });
-          loadedTransfers.forEach(t => {
-            if (t.from_wallet_id === wId) bal -= t.amount;
-            if (t.to_wallet_id === wId) bal += t.amount;
-          });
-          let res = 0;
-          loadedBudgets.forEach(b => {
-            if (b.source_wallet_id === wId && b.remaining_amount > 0 && b.status === "active") res += b.remaining_amount;
-          });
-          loadedGoals.forEach(g => {
-            if (g.source_wallet_id === wId && g.reserved_in_wallet > 0) res += g.reserved_in_wallet;
-          });
-          return bal - res;
-        };
+        const projectedAvailable = calculateAvailableBalances(
+          calculateWalletBalances(
+            loadedWallets,
+            loadedTransactions,
+            loadedTransfers,
+            loadedBudgets,
+          ),
+          calculateReservedByWallet(loadedWallets, loadedBudgets, loadedGoals),
+        );
 
         for (const schedule of loadedRecurring.filter((item) => item.active && item.auto_create && new Date(item.next_run_at) <= new Date())) {
           if (schedule.type === "expense" && schedule.wallet_id) {
-            const avail = getDynamicAvail(schedule.wallet_id);
+            const avail = projectedAvailable.get(schedule.wallet_id) ?? 0;
             if (avail < schedule.amount) {
               skippedDueToBalance++;
               continue;
@@ -282,6 +292,12 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           });
           if (!error) {
             automated = true;
+            if (schedule.type === "expense" && schedule.wallet_id) {
+              projectedAvailable.set(
+                schedule.wallet_id,
+                (projectedAvailable.get(schedule.wallet_id) ?? 0) - schedule.amount,
+              );
+            }
           }
         }
         if (automated) {
@@ -341,65 +357,35 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const categoryById = useMemo(() => new Map(categories.map(item => [item.id, item])), [categories]);
   const walletById = useMemo(() => new Map(wallets.map(item => [item.id, item])), [wallets]);
 
-  const walletBalances = useMemo(() => {
-    // Base balance + income transactions - all expense transactions (including budget-sourced)
-    const values = new Map(wallets.map(item => [item.id, item.balance]));
-    transactions.forEach(item => {
-      let actualWalletId = item.wallet_id;
-      // Backward compatibility: if transaction is budget-sourced but lacks wallet_id, resolve it via budget
-      if (!actualWalletId && item.payment_source_type === "budget" && item.budget_id) {
-        actualWalletId = budgets.find(b => b.id === item.budget_id)?.source_wallet_id ?? null;
-      }
-      if (!actualWalletId) return;
-
-      if (item.type === "income") {
-        values.set(actualWalletId, (values.get(actualWalletId) ?? 0) + item.amount);
-      } else {
-        // All expenses subtract from the physical wallet
-        values.set(actualWalletId, (values.get(actualWalletId) ?? 0) - item.amount);
-      }
-    });
-    transfers.forEach(item => {
-      values.set(item.from_wallet_id, (values.get(item.from_wallet_id) ?? 0) - item.amount);
-      values.set(item.to_wallet_id, (values.get(item.to_wallet_id) ?? 0) + item.amount);
-    });
-    return values;
-  }, [transactions, transfers, wallets, budgets]);
-
-  // Dynamically compute reserved amounts per wallet based on ACTIVE budgets and goals
-  const walletReservedMap = useMemo(() => {
-    const map = new Map<string, number>();
-    wallets.forEach(w => map.set(w.id, 0));
-    budgets.forEach(b => {
-      if (b.source_wallet_id && b.remaining_amount > 0 && b.status === "active") {
-        map.set(b.source_wallet_id, (map.get(b.source_wallet_id) ?? 0) + b.remaining_amount);
-      }
-    });
-    goals.forEach(g => {
-      if (g.source_wallet_id && g.reserved_in_wallet > 0) {
-        map.set(g.source_wallet_id, (map.get(g.source_wallet_id) ?? 0) + g.reserved_in_wallet);
-      }
-    });
-    return map;
-  }, [wallets, budgets, goals]);
-
-  // Available balance = total balance - reserved (locked in budgets/goals)
-  const availableBalances = useMemo(() => {
-    const avail = new Map(walletBalances);
-    wallets.forEach(w => {
-      const reserved = walletReservedMap.get(w.id) ?? 0;
-      avail.set(w.id, (avail.get(w.id) ?? 0) - reserved);
-    });
-    return avail;
-  }, [walletBalances, wallets, walletReservedMap]);
+  const walletBalances = useMemo(
+    () => calculateWalletBalances(wallets, transactions, transfers, budgets),
+    [budgets, transactions, transfers, wallets],
+  );
+  const walletReservedMap = useMemo(
+    () => calculateReservedByWallet(wallets, budgets, goals),
+    [budgets, goals, wallets],
+  );
+  const availableBalances = useMemo(
+    () => calculateAvailableBalances(walletBalances, walletReservedMap),
+    [walletBalances, walletReservedMap],
+  );
 
   const totalBalance = useMemo(() => [...walletBalances.values()].reduce((sum, v) => sum + v, 0), [walletBalances]);
   const totalReserved = useMemo(() => [...walletReservedMap.values()].reduce((sum, v) => sum + v, 0), [walletReservedMap]);
-  const totalAvailable = useMemo(() => totalBalance - totalReserved, [totalBalance, totalReserved]);
+  const totalAvailable = totalBalance - totalReserved;
   const totalAssets = totalBalance; // walletBalances already includes all money (available + reserved)
-  const currentMonth = periodBounds("month");
+  const now = new Date();
+  const currentMonthKey = now.getFullYear() * 12 + now.getMonth();
+  const currentMonth = useMemo(() => {
+    const year = Math.floor(currentMonthKey / 12);
+    const month = currentMonthKey % 12;
+    return periodBounds("month", 0, new Date(year, month, 1));
+  }, [currentMonthKey]);
   const monthTransactions = useMemo(() => transactions.filter(item => inRange(item, currentMonth.start, currentMonth.end)), [currentMonth.end, currentMonth.start, transactions]);
-  const monthTotals = useMemo(() => monthTransactions.reduce((total, item) => ({ ...total, [item.type]: total[item.type] + item.amount }), { income: 0, expense: 0 }), [monthTransactions]);
+  const monthTotals = useMemo(
+    () => calculateTransactionTotals(transactions, currentMonth.start, currentMonth.end),
+    [currentMonth.end, currentMonth.start, transactions],
+  );
 
   const filteredTransactions = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("vi");
@@ -1369,6 +1355,9 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     setIsExporting(true);
     try {
       showNotice("Đang thu thập và chuẩn bị dữ liệu xuất Excel…");
+      const { exportFinancialDataToExcel } = await import(
+        "@/frontend/services/excel-export"
+      );
       const fileName = await exportFinancialDataToExcel({
         user,
         profile,
@@ -2161,17 +2150,19 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
             )}
 
             {view === "ai-assistant" && (
-              <AiChatView
-                financialContext={{
-                  totalBalance,
-                  monthlyIncome: monthTotals.income,
-                  monthlyExpense: monthTotals.expense,
-                  wallets,
-                  transactions,
-                  budgets,
-                  savingsGoals: goals,
-                }}
-              />
+              <Suspense fallback={<Empty text={language === "vi" ? "Đang tải trợ lý AI…" : "Loading AI assistant…"} />}>
+                <AiChatView
+                  financialContext={{
+                    totalBalance,
+                    monthlyIncome: monthTotals.income,
+                    monthlyExpense: monthTotals.expense,
+                    wallets,
+                    transactions,
+                    budgets,
+                    savingsGoals: goals,
+                  }}
+                />
+              </Suspense>
             )}
 
             {view === "settings" && (
@@ -2655,17 +2646,19 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         {modal?.kind === "recurring" && <Modal title={modal.item ? t("recurring.editTitle", undefined, language) : t("recurring.addTitle", undefined, language)} eyebrow={t("recurring.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={event => saveSimple(event, "recurring")}><div className="type-toggle"><button type="button" className={recurringType === "expense" ? "active" : ""} onClick={() => setRecurringType("expense")}>{t("transactions.expense", undefined, language)}</button><button type="button" className={recurringType === "income" ? "active" : ""} onClick={() => setRecurringType("income")}>{t("transactions.income", undefined, language)}</button></div><label>{t("transactions.title", undefined, language)}<input name="title" defaultValue={modal.item?.title} required /></label><label>{t("transactions.amount", undefined, language)}<FormattedMoneyInput name="amount" defaultValue={modal.item?.amount} required /></label><div className="form-grid"><label>{t("transactions.category", undefined, language)}<select name="categoryId" defaultValue={modal.item?.category_id ?? categories.find(item => item.kind === recurringType)?.id}>{categories.filter(item => item.kind === recurringType).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label>{t("transactions.wallet", undefined, language)}<select name="walletId" defaultValue={modal.item?.wallet_id ?? wallets[0]?.id}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><div className="form-grid"><label>{t("recurring.frequency", undefined, language)}<select name="frequency" defaultValue={modal.item?.frequency ?? "monthly"}><option value="daily">{t("recurring.daily", undefined, language)}</option><option value="weekly">{t("recurring.weekly", undefined, language)}</option><option value="monthly">{t("recurring.monthly", undefined, language)}</option><option value="yearly">{t("recurring.yearly", undefined, language)}</option></select></label><label>{t("recurring.nextRun", undefined, language)}<input name="nextRun" type="datetime-local" defaultValue={localDateTime(modal.item?.next_run_at ?? new Date())} required /></label></div><label>{t("common.note", undefined, language)}<textarea name="note" defaultValue={modal.item?.note} /></label><div className="check-grid"><label><input name="active" type="checkbox" defaultChecked={modal.item?.active ?? true} /> {t("recurring.active", undefined, language)}</label><label><input name="autoCreate" type="checkbox" defaultChecked={modal.item?.auto_create ?? false} /> {t("recurring.autoCreate", undefined, language)}</label></div><button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : t("common.save", undefined, language)}</button></form></Modal>}
 
         {modal?.kind === "receipt-scan" && (
-          <ReceiptScannerModal
-            categories={categories}
-            wallets={wallets}
-            budgets={budgets}
-            availableBalances={availableBalances}
-            onClose={() => setModal(null)}
-            onSwitchToManual={() => openModal({ kind: "transaction" })}
-            onConfirmTransaction={handleConfirmReceiptTransaction}
-            saving={saving}
-            money={money}
-          />
+          <Suspense fallback={<Modal title="Quét hóa đơn" eyebrow="ĐANG TẢI" onClose={() => setModal(null)}><p>Đang tải trình quét hóa đơn…</p></Modal>}>
+            <ReceiptScannerModal
+              categories={categories}
+              wallets={wallets}
+              budgets={budgets}
+              availableBalances={availableBalances}
+              onClose={() => setModal(null)}
+              onSwitchToManual={() => openModal({ kind: "transaction" })}
+              onConfirmTransaction={handleConfirmReceiptTransaction}
+              saving={saving}
+              money={money}
+            />
+          </Suspense>
         )}
 
         {insufficientBalanceAlert && (

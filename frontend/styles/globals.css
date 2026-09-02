@@ -3769,6 +3769,10 @@ input:focus, select:focus, textarea:focus {
 .auth-brand {
   display: flex;
   align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
   gap: 12px;
   font-size: 15px;
   font-weight: 800;

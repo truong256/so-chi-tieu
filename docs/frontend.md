@@ -12,12 +12,14 @@ frontend/
 │   ├── auth-screen.tsx              # Giao diện Đăng nhập / Đăng ký / Quên mật khẩu
 │   ├── dashboard.tsx                # Giao diện Dashboard quản lý chi tiêu chính
 │   ├── finance-app.tsx              # Component Root quản lý phiên làm việc & Auth State
+│   ├── formatted-money-input.tsx    # Input tiền dùng chung, không kéo scanner vào bundle đầu
 │   └── receipt-scanner-modal.tsx    # Modal chụp và quét hóa đơn thông minh
 │
 ├── features/                        # Các module tính năng chuyên sâu
 │   └── ai/                          # Tính năng AI Financial Copilot
 │       ├── ai-chat-context.tsx      # React Context quản lý tin nhắn, loading & state chat
 │       ├── ai-chat.tsx              # Giao diện Chat AI toàn màn hình
+│       ├── ai-message-content.tsx   # Renderer nội dung dùng chung
 │       └── ai-floating-chat.tsx     # Nút bóng nổi (Floating Bubble) Chat AI
 │
 ├── services/                        # Các dịch vụ xử lý dữ liệu phía Frontend
@@ -30,7 +32,8 @@ frontend/
 │   └── finance.types.ts             # Wallet, Transaction, Budget, SavingsGoal, Profile...
 │
 └── utils/                           # Hàm tiện ích tính toán và phân tích
-    ├── finance.utils.ts             # Định dạng tiền tệ, ngày tháng, tính chu kỳ
+    ├── finance-calculations.ts      # Phép tính số dư/tổng hợp thu chi có regression test
+    ├── finance.utils.ts             # Ngày tháng và tính chu kỳ
     └── smart-parser.ts              # Parser offline nhận diện cú pháp nhanh
 ```
 
@@ -44,3 +47,5 @@ import { formatMoney } from "@frontend/utils/finance.utils";
 import type { Wallet } from "@frontend/types/finance.types";
 import { createClient } from "@config/supabase";
 ```
+
+Dashboard, trình quét hóa đơn, màn hình AI đầy đủ và module xuất Excel được code-split. Excel chỉ tải khi người dùng bấm xuất; không import tĩnh lại các module này vào entry component.

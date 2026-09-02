@@ -78,8 +78,12 @@ export function advanceRecurring(value: string, frequency: Frequency, interval =
 }
 
 
-export function periodBounds(period: "day" | "week" | "month" | "year", offset = 0) {
-  const now = new Date();
+export function periodBounds(
+  period: "day" | "week" | "month" | "year",
+  offset = 0,
+  referenceDate: Date = new Date(),
+) {
+  const now = new Date(referenceDate);
   let start = new Date(now);
   let end = new Date(now);
   if (period === "day") {

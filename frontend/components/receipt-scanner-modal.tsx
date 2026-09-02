@@ -11,6 +11,7 @@ import type {
   Wallet,
 } from "@/frontend/types/finance.types";
 import { localDateTime } from "@/frontend/utils/finance.utils";
+import FormattedMoneyInput from "./formatted-money-input";
 
 interface ReceiptScannerModalProps {
   categories: Category[];
@@ -33,87 +34,6 @@ interface ReceiptScannerModalProps {
   }) => Promise<void>;
   saving: boolean;
   money: (amount: number) => string;
-}
-
-export function FormattedMoneyInput({
-  name,
-  value,
-  defaultValue,
-  onChangeValue,
-  placeholder,
-  required,
-  autoFocus,
-}: {
-  name?: string;
-  value?: string | number;
-  defaultValue?: string | number;
-  onChangeValue?: (val: string) => void;
-  placeholder?: string;
-  required?: boolean;
-  autoFocus?: boolean;
-}) {
-  const [display, setDisplay] = useState<string>(() => {
-    const init = value !== undefined ? value : defaultValue;
-    if (init === undefined || init === null || String(init) === "") return "";
-    const parsed = parseInt(String(init).replace(/\D/g, ""), 10);
-    return isNaN(parsed) ? "" : new Intl.NumberFormat("vi-VN").format(parsed);
-  });
-
-  const controlledDisplay = (() => {
-    if (value === undefined) return undefined;
-    if (String(value) === "") return "";
-    const parsed = parseInt(String(value).replace(/\D/g, ""), 10);
-    return Number.isNaN(parsed) ? "" : new Intl.NumberFormat("vi-VN").format(parsed);
-  })();
-  const visibleDisplay = controlledDisplay ?? display;
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const inputVal = e.target.value;
-    const digitsOnly = inputVal.replace(/\D/g, "");
-    if (!digitsOnly) {
-      setDisplay("");
-      onChangeValue?.("");
-      return;
-    }
-    const parsed = parseInt(digitsOnly, 10);
-    if (isNaN(parsed)) return;
-    setDisplay(new Intl.NumberFormat("vi-VN").format(parsed));
-    onChangeValue?.(String(parsed));
-  }
-
-  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
-    e.preventDefault();
-    const pastedText = e.clipboardData.getData("text");
-    const digitsOnly = pastedText.replace(/\D/g, "");
-    if (!digitsOnly) {
-      setDisplay("");
-      onChangeValue?.("");
-      return;
-    }
-    const parsed = parseInt(digitsOnly, 10);
-    if (isNaN(parsed)) return;
-    setDisplay(new Intl.NumberFormat("vi-VN").format(parsed));
-    onChangeValue?.(String(parsed));
-  }
-
-  const rawValue = visibleDisplay ? visibleDisplay.replace(/\D/g, "") : "";
-
-  return (
-    <div className="amount-input-wrapper">
-      <input
-        type="text"
-        inputMode="numeric"
-        value={visibleDisplay}
-        onChange={handleChange}
-        onPaste={handlePaste}
-        placeholder={placeholder ?? "0"}
-        required={required}
-        autoFocus={autoFocus}
-      />
-      <span className="amount-currency-badge">₫</span>
-      {name && <input name={name} type="hidden" value={rawValue} />}
-    </div>
-  );
 }
 
 export default function ReceiptScannerModal({

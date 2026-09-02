@@ -21,13 +21,6 @@ function PasswordField({
   disabled?: boolean;
   onToggle: () => void;
 }) {
-  function handleToggleClick(e: React.MouseEvent<HTMLButtonElement>) {
-    const btn = e.currentTarget;
-    btn.style.transform = "scale(0.92)";
-    setTimeout(() => { btn.style.transform = ""; }, 150);
-    onToggle();
-  }
-
   return (
     <label className="auth-input-group">
       <span className="sr-only">{placeholder}</span>
@@ -45,7 +38,7 @@ function PasswordField({
         className="password-toggle"
         type="button"
         disabled={disabled}
-        onClick={handleToggleClick}
+        onClick={onToggle}
         aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
         aria-pressed={visible}
         style={{ fontSize: "12px", fontWeight: 600, color: "#546366" }}
@@ -77,9 +70,19 @@ export default function AuthScreen() {
   // Slogan popover
   const [showSlogan, setShowSlogan] = useState(false);
   const sloganTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   // Title animation
   const [titleVisible, setTitleVisible] = useState(true);
+
+  function schedule(callback: () => void, delay: number) {
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
+      callback();
+    }, delay);
+    timersRef.current.add(timer);
+    return timer;
+  }
 
   function changeMode(
     nextMode: Mode,
@@ -104,12 +107,12 @@ export default function AuthScreen() {
     setTransitioning(true);
     setTitleVisible(false);
 
-    setTimeout(() => {
+    schedule(() => {
       setMode(nextMode);
       setDisplayMode(nextMode);
       setTransitioning(false);
       if (nextMessage) setMessage(nextMessage);
-      setTimeout(() => setTitleVisible(true), 40);
+      schedule(() => setTitleVisible(true), 40);
     }, 380);
   }
 
@@ -117,16 +120,19 @@ export default function AuthScreen() {
   function handleLogoClick() {
     if (sloganTimerRef.current) clearTimeout(sloganTimerRef.current);
     setShowSlogan(false);
-    setTimeout(() => {
+    schedule(() => {
       setShowSlogan(true);
-      sloganTimerRef.current = setTimeout(() => setShowSlogan(false), 2800);
+      sloganTimerRef.current = schedule(() => setShowSlogan(false), 2800);
     }, 30);
   }
 
   // Cleanup timer on unmount
   useEffect(() => {
+    const timers = timersRef.current;
     return () => {
       if (sloganTimerRef.current) clearTimeout(sloganTimerRef.current);
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
     };
   }, []);
 
@@ -273,15 +279,15 @@ export default function AuthScreen() {
       >
         {/* Logo with click-slogan effect */}
         <div className="auth-brand-wrapper">
-          <a
+          <button
+            type="button"
             className="auth-brand"
-            href="#"
             aria-label="Sổ Chi Tiêu - trang đăng nhập"
-            onClick={(e) => { e.preventDefault(); handleLogoClick(); }}
+            onClick={handleLogoClick}
           >
             <span className="brand-mark"><i /><i /><i /></span>
             <span>{authLang === "vi" ? "SỔ CHI TIÊU" : "EXPENSE BOOK"}</span>
-          </a>
+          </button>
 
           {/* Slogan popover */}
           <div className={`auth-slogan-popover ${showSlogan ? "auth-slogan-popover--visible" : ""}`} aria-live="polite">

@@ -1,10 +1,11 @@
 "use client";
 
 import type { Session, User } from "@supabase/supabase-js";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, lazy, Suspense, useEffect, useState } from "react";
 import { configureClient, createClient, type SupabaseBrowserConfig } from "@/config/supabase";
 import AuthScreen from "./auth-screen";
-import Dashboard from "./dashboard";
+
+const Dashboard = lazy(() => import("./dashboard"));
 
 export default function FinanceApp() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -116,7 +117,11 @@ export default function FinanceApp() {
     setUser(null);
   }
 
-  return <Dashboard user={{ id: user.id, name, email }} onSignOut={signOut} />;
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <Dashboard user={{ id: user.id, name, email }} onSignOut={signOut} />
+    </Suspense>
+  );
 }
 
 function ResetPassword({ onDone }: { onDone: () => void }) {
