@@ -3,6 +3,14 @@
  */
 
 import type { ParsedReceiptResult, ReceiptItem, TransactionType } from "@/frontend/types/finance.types";
+import {
+  cleanMoneyAmount,
+  cleanText,
+  normalizeIsoDate,
+  normalizeTime,
+  parseAiJsonObject,
+} from "./ai-output-validation.service";
+import { GEMINI_VISION_MODELS } from "./gemini-models";
 
 export interface ParseReceiptOptions {
   geminiApiKey: string;
@@ -79,15 +87,6 @@ BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON HỢP LỆ VỚI
   ]
 }`;
 
-const CANDIDATE_MODELS = [
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-flash-latest",
-  "gemini-2.5-flash-lite",
-  "gemini-3.1-flash-lite",
-];
-
 export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<ParseReceiptResult> {
   const { geminiApiKey, base64Data, mimeType, categoriesList = [], walletsList = [] } = options;
 
@@ -106,14 +105,26 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
       status: 400,
     };
   }
+  if (base64Data.length > 14_000_000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(base64Data)) {
+    return { success: false, error: "Dữ liệu hình ảnh không hợp lệ hoặc vượt quá giới hạn.", status: 413 };
+  }
 
   // Build context instruction with User Categories & Wallets
-  const categoriesPromptText = categoriesList.length > 0
-    ? `\nUSER_CATEGORIES (Danh mục người dùng hiện có trong hệ thống):\n${JSON.stringify(categoriesList, null, 2)}\nHãy chọn 1 danh mục chính xác từ danh sách trên nếu phù hợp, hoặc trả về null nếu không chắc chắn.`
+  const safeCategories = categoriesList.flatMap((item) => {
+    const text = cleanText(item, 100);
+    return text ? [text] : [];
+  }).slice(0, 100);
+  const safeWallets = walletsList.flatMap((item) => {
+    const text = cleanText(item, 100);
+    return text ? [text] : [];
+  }).slice(0, 50);
+
+  const categoriesPromptText = safeCategories.length > 0
+    ? `\nUSER_CATEGORIES (Danh mục người dùng hiện có trong hệ thống):\n${JSON.stringify(safeCategories, null, 2)}\nHãy chọn 1 danh mục chính xác từ danh sách trên nếu phù hợp, hoặc trả về null nếu không chắc chắn.`
     : "\nKhông có danh mục nào được cung cấp. Hãy trả về null cho trường category.";
 
-  const walletsPromptText = walletsList.length > 0
-    ? `\nUSER_WALLETS (Danh sách ví của người dùng):\n${JSON.stringify(walletsList, null, 2)}`
+  const walletsPromptText = safeWallets.length > 0
+    ? `\nUSER_WALLETS (Danh sách ví của người dùng):\n${JSON.stringify(safeWallets, null, 2)}`
     : "";
 
   const userPromptText = `Hãy phân tích hình ảnh hóa đơn/biên lai được đính kèm và trích xuất dữ liệu theo đúng định dạng JSON yêu cầu.${categoriesPromptText}${walletsPromptText}\n\nChỉ trả về JSON thuần túy (không kèm giải thích hay văn bản phụ).`;
@@ -122,7 +133,7 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
   let lastErrorText = "";
   let usedModel = "";
 
-  for (const modelName of CANDIDATE_MODELS) {
+  for (const modelName of GEMINI_VISION_MODELS) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`;
 
@@ -130,6 +141,7 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          system_instruction: { parts: [{ text: RECEIPT_SYSTEM_PROMPT }] },
           contents: [
             {
               role: "user",
@@ -141,22 +153,15 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
                   },
                 },
                 {
-                  text: `${RECEIPT_SYSTEM_PROMPT}\n\n${userPromptText}`,
+                  text: userPromptText,
                 },
               ],
             },
           ],
           generationConfig: {
-            temperature: 0.1,
             responseMimeType: "application/json",
-            maxOutputTokens: 8192,
+            maxOutputTokens: 2048,
           },
-          safetySettings: [
-            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-          ],
         }),
         signal: AbortSignal.timeout(30000),
       });
@@ -168,7 +173,7 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
       }
 
       const errBody = await res.text().catch(() => "");
-      console.error(`Gemini OCR error for model ${modelName}:`, res.status, errBody);
+      console.error(`Gemini OCR error for model ${modelName}:`, res.status);
       lastErrorText = errBody;
 
       if (res.status !== 404 && res.status !== 400) {
@@ -214,19 +219,9 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
     };
   }
 
-  let jsonStr = rawReply;
-  if (jsonStr.startsWith("```json")) {
-    jsonStr = jsonStr.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-  } else if (jsonStr.startsWith("```")) {
-    jsonStr = jsonStr.replace(/^```\s*/, "").replace(/\s*```$/, "");
-  }
-  jsonStr = jsonStr.trim();
-
-  let parsed: any;
-  try {
-    parsed = JSON.parse(jsonStr);
-  } catch (parseError) {
-    console.error("JSON parse error from Gemini receipt output:", jsonStr, parseError);
+  const parsed = parseAiJsonObject(rawReply);
+  if (!parsed) {
+    console.error("Gemini receipt parser returned invalid JSON.");
     return {
       success: false,
       error: "Dữ liệu AI trả về không đúng cấu trúc. Vui lòng thử lại hoặc chọn ảnh khác.",
@@ -235,61 +230,31 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
   }
 
   const isReceipt = parsed.is_receipt === true || parsed.document_type === "receipt" || parsed.document_type === "invoice";
-  const documentType = ["receipt", "invoice", "other", "unknown"].includes(parsed.document_type)
-    ? parsed.document_type
-    : (isReceipt ? "receipt" : "other");
+  const allowedDocumentTypes = new Set<ParsedReceiptResult["document_type"]>(["receipt", "invoice", "other", "unknown"]);
+  const documentType: ParsedReceiptResult["document_type"] =
+    typeof parsed.document_type === "string" && allowedDocumentTypes.has(parsed.document_type as ParsedReceiptResult["document_type"])
+      ? parsed.document_type as ParsedReceiptResult["document_type"]
+      : (isReceipt ? "receipt" : "other");
 
-  const cleanNumber = (val: any): number | null => {
-    if (val === null || val === undefined || val === "") return null;
-    if (typeof val === "number" && !isNaN(val) && isFinite(val) && val >= 0) return Math.round(val);
-    if (typeof val === "string") {
-      const digitsOnly = val.replace(/[^0-9]/g, "");
-      if (!digitsOnly) return null;
-      const num = parseInt(digitsOnly, 10);
-      return !isNaN(num) && isFinite(num) && num >= 0 ? num : null;
-    }
-    return null;
-  };
-
-  const total = cleanNumber(parsed.total);
-  const subtotal = cleanNumber(parsed.subtotal);
-  const discount = cleanNumber(parsed.discount);
-  const tax = cleanNumber(parsed.tax);
-
-  let date: string | null = null;
-  if (typeof parsed.date === "string" && parsed.date.trim()) {
-    const dStr = parsed.date.trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
-      date = dStr;
-    } else {
-      const dMatch = dStr.match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
-      if (dMatch) {
-        const day = dMatch[1].padStart(2, "0");
-        const month = dMatch[2].padStart(2, "0");
-        const year = dMatch[3];
-        date = `${year}-${month}-${day}`;
-      }
-    }
-  }
-
-  let time: string | null = null;
-  if (typeof parsed.time === "string" && parsed.time.trim()) {
-    const tStr = parsed.time.trim();
-    const tMatch = tStr.match(/(\d{1,2}):(\d{2})/);
-    if (tMatch) {
-      time = `${tMatch[1].padStart(2, "0")}:${tMatch[2]}`;
-    }
-  }
+  const total = cleanMoneyAmount(parsed.total, false);
+  const subtotal = cleanMoneyAmount(parsed.subtotal);
+  const discount = cleanMoneyAmount(parsed.discount);
+  const tax = cleanMoneyAmount(parsed.tax);
+  const date = normalizeIsoDate(parsed.date);
+  const time = normalizeTime(parsed.time);
 
   const items: ReceiptItem[] = [];
   if (Array.isArray(parsed.items)) {
-    for (const rawItem of parsed.items) {
-      if (rawItem && typeof rawItem.name === "string" && rawItem.name.trim()) {
+    for (const rawItem of parsed.items.slice(0, 100)) {
+      if (rawItem && typeof rawItem === "object" && !Array.isArray(rawItem)) {
+        const item = rawItem as Record<string, unknown>;
+        const name = cleanText(item.name, 200);
+        if (!name) continue;
         items.push({
-          name: rawItem.name.trim(),
-          quantity: cleanNumber(rawItem.quantity),
-          unit_price: cleanNumber(rawItem.unit_price),
-          total_price: cleanNumber(rawItem.total_price),
+          name,
+          quantity: cleanMoneyAmount(item.quantity),
+          unit_price: cleanMoneyAmount(item.unit_price),
+          total_price: cleanMoneyAmount(item.total_price),
         });
       }
     }
@@ -298,7 +263,7 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
   let category: string | null = null;
   if (typeof parsed.category === "string" && parsed.category.trim()) {
     const rawCat = parsed.category.trim().toLowerCase();
-    const matched = categoriesList.find(
+    const matched = safeCategories.find(
       (c) => c.toLowerCase() === rawCat || c.toLowerCase().includes(rawCat) || rawCat.includes(c.toLowerCase())
     );
     if (matched) category = matched;
@@ -321,8 +286,8 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
   const result: ParsedReceiptResult = {
     document_type: documentType,
     is_receipt: isReceipt,
-    merchant: typeof parsed.merchant === "string" ? parsed.merchant.trim() : null,
-    merchant_address: typeof parsed.merchant_address === "string" ? parsed.merchant_address.trim() : null,
+    merchant: cleanText(parsed.merchant, 200),
+    merchant_address: cleanText(parsed.merchant_address, 300),
     transaction_type: (parsed.transaction_type === "income" ? "income" : "expense") as TransactionType,
     date,
     time,
@@ -331,9 +296,9 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
     discount,
     tax,
     total,
-    payment_method: typeof parsed.payment_method === "string" ? parsed.payment_method.trim() : null,
+    payment_method: cleanText(parsed.payment_method, 100),
     category,
-    description: typeof parsed.description === "string" ? parsed.description.trim() : null,
+    description: cleanText(parsed.description, 300),
     items,
     warnings,
   };

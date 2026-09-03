@@ -9,7 +9,7 @@ export type Language = "vi" | "en";
 
 export type TranslationDict = typeof viTranslations;
 
-const DICTIONARIES: Record<Language, any> = {
+const DICTIONARIES: Record<Language, Record<string, unknown>> = {
   vi: viTranslations,
   en: enTranslations,
 };
@@ -25,7 +25,9 @@ export function setAppLanguage(lang: Language) {
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("app_language", lang);
-      } catch {}
+      } catch {
+        // Language preference remains available in memory when storage is blocked.
+      }
     }
   }
 }
@@ -40,7 +42,9 @@ export function getAppLanguage(): Language {
       if (saved === "vi" || saved === "en") {
         currentLanguage = saved;
       }
-    } catch {}
+    } catch {
+      // Keep the in-memory language when storage is unavailable.
+    }
   }
   return currentLanguage;
 }
@@ -57,16 +61,16 @@ export function t(
   const dict = DICTIONARIES[lang] || DICTIONARIES.vi;
   const parts = key.split(".");
 
-  let val: any = dict;
+  let val: unknown = dict;
   for (const part of parts) {
-    if (val && typeof val === "object" && part in val) {
-      val = val[part];
+    if (val && typeof val === "object" && !Array.isArray(val) && part in val) {
+      val = (val as Record<string, unknown>)[part];
     } else {
       // Fallback to Vietnamese dictionary if key missing in target lang
-      let fallbackVal: any = DICTIONARIES.vi;
+      let fallbackVal: unknown = DICTIONARIES.vi;
       for (const fallbackPart of parts) {
-        if (fallbackVal && typeof fallbackVal === "object" && fallbackPart in fallbackVal) {
-          fallbackVal = fallbackVal[fallbackPart];
+        if (fallbackVal && typeof fallbackVal === "object" && !Array.isArray(fallbackVal) && fallbackPart in fallbackVal) {
+          fallbackVal = (fallbackVal as Record<string, unknown>)[fallbackPart];
         } else {
           fallbackVal = key;
           break;

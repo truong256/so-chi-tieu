@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useAiChat } from "./ai-chat-context";
 import type { FinancialContext } from "./ai-chat-context";
-import { MessageContent } from "./ai-chat";
+import AiMessageContent from "./ai-message-content";
 
 interface Props {
   view: string;
@@ -81,7 +81,8 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
   useEffect(() => {
     if (isOpen && !isMinimized && textareaRef.current) {
       // Small timeout to allow transition
-      setTimeout(() => textareaRef.current?.focus(), 300);
+      const focusTimer = window.setTimeout(() => textareaRef.current?.focus(), 300);
+      return () => window.clearTimeout(focusTimer);
     }
   }, [isOpen, isMinimized]);
 
@@ -178,7 +179,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
                 <div key={msg.id} className={`ai-message-row ${msg.role}`}>
                   {msg.role === "ai" && <div className="ai-avatar">AI</div>}
                   <div className={`ai-bubble ${msg.role} ${msg.isError ? "error" : ""}`}>
-                    <MessageContent text={msg.text} />
+              <AiMessageContent text={msg.text} />
                   </div>
                 </div>
               ))}

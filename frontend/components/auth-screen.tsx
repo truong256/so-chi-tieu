@@ -21,13 +21,6 @@ function PasswordField({
   disabled?: boolean;
   onToggle: () => void;
 }) {
-  function handleToggleClick(e: React.MouseEvent<HTMLButtonElement>) {
-    const btn = e.currentTarget;
-    btn.style.transform = "scale(0.92)";
-    setTimeout(() => { btn.style.transform = ""; }, 150);
-    onToggle();
-  }
-
   return (
     <label className="auth-input-group">
       <span className="sr-only">{placeholder}</span>
@@ -45,7 +38,7 @@ function PasswordField({
         className="password-toggle"
         type="button"
         disabled={disabled}
-        onClick={handleToggleClick}
+        onClick={onToggle}
         aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
         aria-pressed={visible}
         style={{ fontSize: "12px", fontWeight: 600, color: "#546366" }}
@@ -65,7 +58,7 @@ export default function AuthScreen() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
-  const [lastIdentifier, setLastIdentifier] = useState("");
+  const [lastEmail, setLastEmail] = useState("");
   const [showQuickLoginBtn, setShowQuickLoginBtn] = useState(false);
 
   // Transition states
@@ -77,12 +70,26 @@ export default function AuthScreen() {
   // Slogan popover
   const [showSlogan, setShowSlogan] = useState(false);
   const sloganTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   // Title animation
   const [titleVisible, setTitleVisible] = useState(true);
 
-  function changeMode(nextMode: Mode, presetIdentifier?: string) {
-    if (nextMode === mode && !presetIdentifier) return;
+  function schedule(callback: () => void, delay: number) {
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
+      callback();
+    }, delay);
+    timersRef.current.add(timer);
+    return timer;
+  }
+
+  function changeMode(
+    nextMode: Mode,
+    presetEmail?: string,
+    nextMessage?: { type: "error" | "success"; text: string },
+  ) {
+    if (nextMode === mode && !presetEmail) return;
     if (transitioning) return;
     formRef.current?.reset();
     setMessage(null);
@@ -90,8 +97,8 @@ export default function AuthScreen() {
     setShowConfirmation(false);
     setShowQuickLoginBtn(false);
 
-    if (presetIdentifier) {
-      setLastIdentifier(presetIdentifier);
+    if (presetEmail) {
+      setLastEmail(presetEmail);
     }
 
     // Determine slide direction
@@ -100,11 +107,12 @@ export default function AuthScreen() {
     setTransitioning(true);
     setTitleVisible(false);
 
-    setTimeout(() => {
+    schedule(() => {
       setMode(nextMode);
       setDisplayMode(nextMode);
       setTransitioning(false);
-      setTimeout(() => setTitleVisible(true), 40);
+      if (nextMessage) setMessage(nextMessage);
+      schedule(() => setTitleVisible(true), 40);
     }, 380);
   }
 
@@ -112,16 +120,19 @@ export default function AuthScreen() {
   function handleLogoClick() {
     if (sloganTimerRef.current) clearTimeout(sloganTimerRef.current);
     setShowSlogan(false);
-    setTimeout(() => {
+    schedule(() => {
       setShowSlogan(true);
-      sloganTimerRef.current = setTimeout(() => setShowSlogan(false), 2800);
+      sloganTimerRef.current = schedule(() => setShowSlogan(false), 2800);
     }, 30);
   }
 
   // Cleanup timer on unmount
   useEffect(() => {
+    const timers = timersRef.current;
     return () => {
       if (sloganTimerRef.current) clearTimeout(sloganTimerRef.current);
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
     };
   }, []);
 
@@ -152,26 +163,12 @@ export default function AuthScreen() {
       }
 
       if (mode === "login") {
-        const identifier = String(form.get("identifier") || "").trim();
-        if (!identifier) throw new Error("Vui lòng nhập tên tài khoản hoặc email.");
+        if (!email) throw new Error("Vui lòng nhập địa chỉ email.");
+        if (!emailRegex.test(email)) throw new Error("Địa chỉ email không đúng định dạng.");
         if (!password) throw new Error("Vui lòng nhập mật khẩu.");
+        setLastEmail(email);
 
-        setLastIdentifier(identifier);
-        let targetEmail = identifier.toLowerCase();
-
-        // If identifier is not an email (no @), look up email via RPC get_email_by_username
-        if (!targetEmail.includes("@")) {
-          try {
-            const { data: rpcEmail, error: rpcError } = await supabase.rpc("get_email_by_username", { p_username: targetEmail });
-            if (!rpcError && rpcEmail && typeof rpcEmail === "string") {
-              targetEmail = rpcEmail.trim().toLowerCase();
-            }
-          } catch {
-            // RPC might not exist; proceed with direct attempt
-          }
-        }
-
-        const { error } = await supabase.auth.signInWithPassword({ email: targetEmail, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           throw error;
         }
@@ -182,7 +179,7 @@ export default function AuthScreen() {
       const username = String(form.get("username") || "").trim().toLowerCase();
       const fullName = String(form.get("fullName") || "").trim();
       const confirmPassword = String(form.get("confirmPassword") || "");
-      setLastIdentifier(username || email);
+      setLastEmail(email);
 
       if (!username) throw new Error("Vui lòng nhập tên tài khoản.");
       if (!/^[a-z0-9_]{3,24}$/.test(username)) {
@@ -217,24 +214,25 @@ export default function AuthScreen() {
 
       // Registration successful: do NOT auto-login to Dashboard.
       // Explicitly sign out any session auto-created by Supabase during signUp
-      try {
-        await supabase.auth.signOut();
-      } catch {
-        // ignore sign out error
+      if (data.session) {
+        const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
+        if (signOutError) {
+          throw new Error("Không thể kết thúc phiên đăng ký an toàn. Vui lòng tải lại trang rồi đăng nhập.");
+        }
       }
 
-      // Transition to Login mode and inform user to sign in
-      setMessage({
+      changeMode("login", email, {
         type: "success",
-        text: "Tạo tài khoản thành công! Vui lòng đăng nhập để bắt đầu sử dụng.",
+        text: data.user?.confirmed_at
+          ? "Tạo tài khoản thành công! Vui lòng đăng nhập để bắt đầu sử dụng."
+          : "Tạo tài khoản thành công! Hãy kiểm tra email xác nhận trước khi đăng nhập.",
       });
-      changeMode("login", username || email);
     } catch (error) {
       const raw = error instanceof Error ? error.message : "Có lỗi xảy ra. Vui lòng thử lại.";
       const lower = raw.toLowerCase();
       const code = (error as { code?: string })?.code ?? "";
 
-      let text = raw;
+      let text = "Không thể hoàn tất yêu cầu. Vui lòng kiểm tra thông tin và thử lại.";
       if (raw === "EMAIL_ALREADY_EXISTS" || lower.includes("user already registered") || code === "user_already_exists") {
         text = "Email này đã được sử dụng. Bạn có thể đăng nhập ngay hoặc lấy lại mật khẩu.";
         setShowQuickLoginBtn(true);
@@ -281,15 +279,15 @@ export default function AuthScreen() {
       >
         {/* Logo with click-slogan effect */}
         <div className="auth-brand-wrapper">
-          <a
+          <button
+            type="button"
             className="auth-brand"
-            href="#"
             aria-label="Sổ Chi Tiêu - trang đăng nhập"
-            onClick={(e) => { e.preventDefault(); handleLogoClick(); }}
+            onClick={handleLogoClick}
           >
             <span className="brand-mark"><i /><i /><i /></span>
             <span>{authLang === "vi" ? "SỔ CHI TIÊU" : "EXPENSE BOOK"}</span>
-          </a>
+          </button>
 
           {/* Slogan popover */}
           <div className={`auth-slogan-popover ${showSlogan ? "auth-slogan-popover--visible" : ""}`} aria-live="polite">
@@ -304,9 +302,9 @@ export default function AuthScreen() {
         </div>
 
         <div className="auth-hero-proof" aria-label="Lợi ích chính">
-          <div tabIndex={0} role="button"><b>01</b><span>{authLang === "vi" ? <>Dữ liệu riêng<br />theo tài khoản</> : <>Private data<br />isolation</>}</span></div>
-          <div tabIndex={0} role="button"><b>02</b><span>{authLang === "vi" ? <>Theo dõi tiền<br />thời gian thực</> : <>Real-time<br />cash tracking</>}</span></div>
-          <div tabIndex={0} role="button"><b>03</b><span>{authLang === "vi" ? <>Báo cáo rõ ràng<br />mọi thiết bị</> : <>Visual reports<br />on all devices</>}</span></div>
+          <div><b>01</b><span>{authLang === "vi" ? <>Dữ liệu riêng<br />theo tài khoản</> : <>Private data<br />isolation</>}</span></div>
+          <div><b>02</b><span>{authLang === "vi" ? <>Theo dõi tiền<br />thời gian thực</> : <>Real-time<br />cash tracking</>}</span></div>
+          <div><b>03</b><span>{authLang === "vi" ? <>Báo cáo rõ ràng<br />mọi thiết bị</> : <>Visual reports<br />on all devices</>}</span></div>
         </div>
       </section>
 
@@ -398,36 +396,20 @@ export default function AuthScreen() {
                 </label>
               </>}
 
-              {mode === "login" ? (
-                <label className="auth-input-group">
-                  <span className="sr-only">{t("auth.usernameOrEmail", undefined, authLang)}</span>
-                  <input
-                    name="identifier"
-                    key={`id-${lastIdentifier}`}
-                    defaultValue={lastIdentifier}
-                    required
-                    disabled={loading}
-                    autoCapitalize="none"
-                    autoComplete="username"
-                    placeholder={t("auth.usernameOrEmail", undefined, authLang)}
-                  />
-                </label>
-              ) : (
-                <label className="auth-input-group">
-                  <span className="sr-only">{t("auth.email", undefined, authLang)}</span>
-                  <input
-                    name="email"
-                    type="email"
-                    key={`email-${lastIdentifier}`}
-                    defaultValue={lastIdentifier.includes("@") ? lastIdentifier : ""}
-                    required
-                    disabled={loading}
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    placeholder={t("auth.email", undefined, authLang)}
-                  />
-                </label>
-              )}
+              <label className="auth-input-group">
+                <span className="sr-only">{t("auth.email", undefined, authLang)}</span>
+                <input
+                  name="email"
+                  type="email"
+                  key={`email-${lastEmail}`}
+                  defaultValue={lastEmail}
+                  required
+                  disabled={loading}
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  placeholder={t("auth.email", undefined, authLang)}
+                />
+              </label>
 
               {mode !== "forgot" && (
                 <PasswordField
@@ -463,7 +445,7 @@ export default function AuthScreen() {
                 <div className="quick-switch-box" style={{ marginTop: 8 }}>
                   <button
                     type="button"
-                    onClick={() => changeMode("login", lastIdentifier)}
+                    onClick={() => changeMode("login", lastEmail)}
                     className="ghost-action"
                     style={{ width: "100%", fontSize: "13px", height: "38px", fontWeight: 700, borderColor: "var(--lime-accent)" }}
                   >

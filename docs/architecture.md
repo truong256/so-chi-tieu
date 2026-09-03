@@ -32,8 +32,8 @@ so-chi-tieu/
 | **Styling** | TailwindCSS v4 + Vanilla CSS | Giao diện hiện đại, Dark/Light theme, Animations |
 | **Backend / Edge Runtime** | Cloudflare Workers + Vinext (Vite 8) | Edge API handling, Serverless execution, Image optimization |
 | **Database & Auth** | Supabase (PostgreSQL + Supabase Auth) | Lưu trữ dữ liệu tài chính, phân quyền RLS, quản lý phiên đăng nhập |
-| **AI Copilot** | Google Gemini API (2.5-flash / Pro) | Xử lý ngôn ngữ tự nhiên (NLP), chatbot tài chính, trích xuất hóa đơn (OCR) |
-| **Data Export** | SheetJS (xlsx) | Xuất báo cáo tài chính ra định dạng Excel |
+| **AI Copilot** | Google Gemini API (Flash model fallback) | Xử lý ngôn ngữ tự nhiên (NLP), chatbot tài chính, trích xuất hóa đơn (OCR) |
+| **Data Export** | OOXML writer + fflate | Xuất báo cáo tài chính ra định dạng Excel mà không cần parser bảng tính phía client |
 | **Language & Tooling** | TypeScript 5.9 + ESLint 9 | Type-safety toàn diện từ frontend tới backend |
 
 ---
@@ -73,4 +73,4 @@ Trả về kết quả có cấu trúc cho Frontend
 1. **Separation of Concerns**: Phân tách triệt để UI (`frontend/`), Business Logic (`backend/`), Database (`database/`) và Config (`config/`).
 2. **Thin Adapter Routing**: Thư mục `app/` chỉ đóng vai trò adapter định tuyến cho Next.js App Router, toàn bộ logic cốt lõi nằm trong `frontend/` và `backend/`.
 3. **Type Safety**: Chia sẻ types rõ ràng qua `@frontend/types` và `@backend/src/types`.
-4. **Resilience & Fallback**: Các dịch vụ AI hỗ trợ multi-model fallback (Gemini 2.5-flash → 1.5-flash → 2.0-flash → 3.6-flash → 2.5-pro) đảm bảo tính sẵn sàng cao khi gặp rate limit hoặc model deprecation.
+4. **Resilience & Fallback**: Các dịch vụ AI dùng chung danh sách Flash model trong `gemini-models.ts`, ưu tiên Gemini 3.7 Flash và alias `gemini-flash-latest`; lỗi model/quota được xử lý mà không làm hỏng dashboard.

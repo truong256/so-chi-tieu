@@ -1,10 +1,11 @@
 "use client";
 
 import type { Session, User } from "@supabase/supabase-js";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, lazy, Suspense, useEffect, useState } from "react";
 import { configureClient, createClient, type SupabaseBrowserConfig } from "@/config/supabase";
 import AuthScreen from "./auth-screen";
-import Dashboard from "./dashboard";
+
+const Dashboard = lazy(() => import("./dashboard"));
 
 export default function FinanceApp() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -109,12 +110,18 @@ export default function FinanceApp() {
     if (typeof window !== "undefined") {
       try {
         window.sessionStorage.clear();
-      } catch {}
+      } catch {
+        // The in-memory auth state below still completes local sign-out.
+      }
     }
     setUser(null);
   }
 
-  return <Dashboard user={{ id: user.id, name, email }} onSignOut={signOut} />;
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <Dashboard user={{ id: user.id, name, email }} onSignOut={signOut} />
+    </Suspense>
+  );
 }
 
 function ResetPassword({ onDone }: { onDone: () => void }) {
@@ -131,10 +138,18 @@ function ResetPassword({ onDone }: { onDone: () => void }) {
       setMessage(password.length < 8 ? "Mật khẩu cần có ít nhất 8 ký tự." : "Hai mật khẩu chưa trùng khớp.");
       setLoading(false); return;
     }
-    const { error } = await createClient().auth.updateUser({ password });
-    setLoading(false);
-    if (error) return setMessage(error.message);
-    onDone();
+    try {
+      const { error } = await createClient().auth.updateUser({ password });
+      if (error) {
+        setMessage("Không thể cập nhật mật khẩu. Liên kết có thể đã hết hạn.");
+        return;
+      }
+      onDone();
+    } catch {
+      setMessage("Không thể kết nối đến máy chủ. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return <main className="recovery-page"><form className="recovery-card" onSubmit={submit}><span className="brand-mark"><i /><i /><i /></span><p className="section-index">BẢO MẬT TÀI KHOẢN</p><h1>Đặt mật khẩu mới.</h1><p>Mật khẩu nên dài ít nhất 8 ký tự và không dùng lại ở dịch vụ khác.</p><label>Mật khẩu mới<input name="password" type="password" minLength={8} required autoComplete="new-password" /></label><label>Nhập lại mật khẩu<input name="confirmation" type="password" minLength={8} required autoComplete="new-password" /></label>{message && <p className="auth-message error">{message}</p>}<button className="primary-auth" disabled={loading}><span>{loading ? "Đang cập nhật…" : "Cập nhật mật khẩu"}</span></button></form></main>;

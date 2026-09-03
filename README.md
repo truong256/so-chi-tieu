@@ -27,8 +27,8 @@
 | **Backend / Services** | TypeScript Services, Next.js Route Handlers |
 | **Runtime & Edge Deployment** | Cloudflare Workers, Vinext (Vite 8) |
 | **Database & Authentication** | Supabase (PostgreSQL, Row-Level Security, Supabase Auth) |
-| **AI / NLP / Vision** | Google Gemini API (`gemini-2.5-flash`, `gemini-2.5-pro`...) |
-| **Data Export** | SheetJS (`xlsx`) |
+| **AI / NLP / Vision** | Google Gemini API (ưu tiên Gemini 3.7 Flash, có fallback tương thích) |
+| **Data Export** | Trình ghi OOXML nội bộ + `fflate` |
 | **Testing** | Node.js Test Runner (`node --test`) |
 
 ---
@@ -55,11 +55,14 @@ so-chi-tieu/
 │
 ├── database/                         # [Database & Migrations Layer]
 │   ├── migrations/                   # SQL migrations theo thứ tự đánh số
+│   │   ├── 000_base_schema.sql
 │   │   ├── 001_initial_schema.sql
 │   │   ├── 002_insufficient_balance_check.sql
 │   │   ├── 003_recurring_transactions_v2.sql
 │   │   ├── 004_reserved_money.sql
-│   │   └── 005_true_balances_rpc.sql
+│   │   ├── 005_true_balances_rpc.sql
+│   │   ├── 006_finance_integrity_and_security.sql
+│   │   └── 007_query_performance_indexes.sql
 │   ├── fixes/                        # SQL fixes cho môi trường production
 │   │   └── production_fix.sql
 │   └── README.md                     # Hướng dẫn chi tiết migration
@@ -99,9 +102,6 @@ so-chi-tieu/
 │
 ├── public/                           # Static assets (images, icons)
 ├── tests/                            # Automated integration tests
-├── drizzle/                          # Drizzle migration metadata (optional D1)
-├── examples/                         # Cloudflare D1 example references
-│
 ├── .env.example                      # Biến môi trường mẫu
 ├── .gitignore                        # Cấu hình Git ignore
 ├── package.json                      # Danh sách dependencies & scripts
@@ -130,7 +130,7 @@ cd so-chi-tieu
 
 ### 2. Cài đặt thư viện phụ thuộc
 ```bash
-npm install
+npm ci
 ```
 
 ### 3. Thiết lập biến môi trường
@@ -146,7 +146,7 @@ GEMINI_API_KEY=your-gemini-api-key
 ```
 
 ### 4. Thiết lập Cơ sở dữ liệu
-Chạy các tệp SQL trong `database/migrations/` theo thứ tự từ `001` đến `005` trên **Supabase SQL Editor**. Chi tiết xem tại [`docs/database.md`](./docs/database.md).
+Chạy tất cả tệp SQL trong `database/migrations/` theo thứ tự từ `000` đến `007` trên **Supabase SQL Editor**. Migration `006` bắt buộc cho xác thực API và các nghiệp vụ tài chính nguyên tử; migration `007` bổ sung index cho các truy vấn dashboard. Chi tiết xem tại [`docs/database.md`](./docs/database.md).
 
 ---
 
@@ -176,6 +176,13 @@ npm test
 ### Chạy Linter
 ```bash
 npm run lint
+```
+
+### Kiểm tra artifact và dependency production
+
+```bash
+npm run validate:artifact
+npm audit --omit=dev
 ```
 
 ---

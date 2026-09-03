@@ -41,7 +41,9 @@ export async function getExchangeRates(): Promise<ExchangeRates> {
           return inMemoryRates;
         }
       }
-    } catch {}
+    } catch {
+      // Ignore malformed or unavailable session cache and fetch fresh rates.
+    }
   }
 
   try {
@@ -65,7 +67,9 @@ export async function getExchangeRates(): Promise<ExchangeRates> {
         if (typeof window !== "undefined") {
           try {
             window.sessionStorage.setItem("app_exchange_rates", JSON.stringify(inMemoryRates));
-          } catch {}
+          } catch {
+            // Rates remain available in memory when session storage is blocked.
+          }
         }
         return inMemoryRates;
       }

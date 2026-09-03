@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { useAiChat, ChatMessage } from "./ai-chat-context";
+import { useAiChat } from "./ai-chat-context";
 import type { FinancialContext } from "./ai-chat-context";
+import AiMessageContent from "./ai-message-content";
 
 // ─── Suggested questions ─────────────────────────────────────────────────────
 const SUGGESTED_QUESTIONS = [
@@ -103,7 +104,7 @@ export default function AiChatView({ financialContext }: Props) {
               <div className="ai-avatar">AI</div>
             )}
             <div className={`ai-bubble ${msg.role} ${msg.isError ? "error" : ""}`}>
-              <MessageContent text={msg.text} />
+              <AiMessageContent text={msg.text} />
             </div>
           </div>
         ))}
@@ -159,38 +160,4 @@ export default function AiChatView({ financialContext }: Props) {
       </div>
     </div>
   );
-}
-
-// ─── MessageContent ──────────────────────────────────────────────────────────
-
-export function MessageContent({ text }: { text: string }) {
-  const lines = text.split("\n");
-
-  return (
-    <div className="ai-message-content">
-      {lines.map((line, i) => {
-        if (!line.trim()) return <br key={i} />;
-
-        const isBullet = /^[-•*]\s/.test(line);
-        const isNumbered = /^\d+\.\s/.test(line);
-
-        const rendered = renderInline(line);
-
-        if (isBullet || isNumbered) {
-          return <div key={i} className="ai-list-item">{rendered}</div>;
-        }
-        return <div key={i}>{rendered}</div>;
-      })}
-    </div>
-  );
-}
-
-function renderInline(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
-    }
-    return <span key={i}>{part}</span>;
-  });
 }
