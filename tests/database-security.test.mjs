@@ -20,6 +20,13 @@ const indexMigration = await readFile(
   ),
   "utf8",
 );
+const transactionIntegrityMigration = await readFile(
+  new URL(
+    "../database/migrations/008_transactions_transfers_integrity_and_indexes.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 test("core financial tables keep row-level security enabled", () => {
   for (const table of [
@@ -82,4 +89,30 @@ test("dashboard access patterns have user-scoped indexes", () => {
   ]) {
     assert.ok(indexMigration.includes(fragment), `Missing index for ${fragment}`);
   }
+  for (const fragment of [
+    "transactions (user_id, occurred_at DESC)",
+    "transactions (user_id, wallet_id)",
+    "transfers (user_id, occurred_at DESC)",
+    "transfers (user_id, from_wallet_id, to_wallet_id)",
+  ]) {
+    assert.ok(transactionIntegrityMigration.includes(fragment), `Missing index for ${fragment}`);
+  }
+});
+
+test("transactions and transfers deletion triggers protect against negative balance drift", () => {
+  assert.match(
+    transactionIntegrityMigration,
+    /BEFORE DELETE ON public\.transactions/i,
+    "Missing BEFORE DELETE trigger on transactions",
+  );
+  assert.match(
+    transactionIntegrityMigration,
+    /BEFORE DELETE ON public\.transfers/i,
+    "Missing BEFORE DELETE trigger on transfers",
+  );
+  assert.match(
+    transactionIntegrityMigration,
+    /check_wallet_available_balance/i,
+    "Must verify available balance before deleting income or transfer",
+  );
 });
