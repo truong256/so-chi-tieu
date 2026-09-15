@@ -27,7 +27,7 @@
 | **Backend / Services** | TypeScript Services, Next.js Route Handlers |
 | **Runtime & Edge Deployment** | Cloudflare Workers, Vinext (Vite 8) |
 | **Database & Authentication** | Supabase (PostgreSQL, Row-Level Security, Supabase Auth) |
-| **AI / NLP / Vision** | Google Gemini API (ưu tiên Gemini 3.7 Flash, có fallback tương thích) |
+| **AI / NLP / Vision** | Google Gemini API (ưu tiên Gemini 3.8 Flash, có fallback tương thích) |
 | **Data Export** | Trình ghi OOXML nội bộ + `fflate` |
 | **Testing** | Node.js Test Runner (`node --test`) |
 

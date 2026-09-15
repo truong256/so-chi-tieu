@@ -207,11 +207,12 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
       }
 
       const errBody = await res.text().catch(() => "");
-      console.error(`Gemini Text Parse error for model ${modelName}:`, res.status);
+      console.error(`Gemini Text Parse error for model ${modelName}: ${res.status}`, errBody ? errBody.slice(0, 300) : "");
       lastErrorText = errBody;
+      geminiRes = res;
 
-      if (res.status !== 404 && res.status !== 400 && res.status !== 503) {
-        geminiRes = res;
+      // Stop trying only if API key is invalid
+      if (errBody.includes("API_KEY_INVALID") || errBody.includes("API key not valid")) {
         break;
       }
     } catch (err) {
@@ -225,6 +226,8 @@ Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
       userErrorMsg = "Cấu hình API Key AI không hợp lệ. Vui lòng liên hệ quản trị viên.";
     } else if (geminiRes?.status === 429 || lastErrorText.includes("quota") || lastErrorText.includes("RESOURCE_EXHAUSTED")) {
       userErrorMsg = "Dịch vụ AI đang quá tải hạn mức (Quota exceeded). Vui lòng thử lại sau giây lát hoặc nhập thủ công.";
+    } else if (geminiRes?.status === 503 || lastErrorText.includes("overloaded") || lastErrorText.includes("high demand") || lastErrorText.includes("UNAVAILABLE")) {
+      userErrorMsg = "Hệ thống AI hiện đang quá tải lượt truy cập (503 High Demand). Vui lòng thử lại sau giây lát.";
     }
 
     return {

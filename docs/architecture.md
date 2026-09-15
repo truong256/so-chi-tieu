@@ -73,4 +73,4 @@ Trả về kết quả có cấu trúc cho Frontend
 1. **Separation of Concerns**: Phân tách triệt để UI (`frontend/`), Business Logic (`backend/`), Database (`database/`) và Config (`config/`).
 2. **Thin Adapter Routing**: Thư mục `app/` chỉ đóng vai trò adapter định tuyến cho Next.js App Router, toàn bộ logic cốt lõi nằm trong `frontend/` và `backend/`.
 3. **Type Safety**: Chia sẻ types rõ ràng qua `@frontend/types` và `@backend/src/types`.
-4. **Resilience & Fallback**: Các dịch vụ AI dùng chung danh sách Flash model trong `gemini-models.ts`, ưu tiên Gemini 3.7 Flash và alias `gemini-flash-latest`; lỗi model/quota được xử lý mà không làm hỏng dashboard.
+4. **Resilience & Fallback**: Các dịch vụ AI dùng chung danh sách Flash model trong `gemini-models.ts`, ưu tiên Gemini 3.8 Flash và alias `gemini-flash-latest`; lỗi model/quota được xử lý mà không làm hỏng dashboard.
