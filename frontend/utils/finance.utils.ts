@@ -21,6 +21,15 @@ export function formatDate(value: string, language: "vi" | "en" = "vi") {
   }).format(new Date(value));
 }
 
+export function formatDateOnly(value: string, language: "vi" | "en" = "vi") {
+  return new Intl.DateTimeFormat(language === "vi" ? "vi-VN" : "en-SG", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+
 // Helper to determine the last day of a given month/year
 function getLastDayOfMonth(year: number, month: number) {
   return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
@@ -128,7 +137,7 @@ export function getRelativeTime(dateString: string, language: "vi" | "en" = "vi"
   if (diffDays === -1) return language === "vi" ? "Hôm qua" : "Yesterday";
   
   if (diffDays > 1 && diffDays <= 7) return language === "vi" ? `Còn ${diffDays} ngày` : `In ${diffDays} days`;
-  if (diffDays < -1) return language === "vi" ? `Quá hạn ${Math.abs(diffDays)} ngày` : `Overdue ${Math.abs(diffDays)} days`;
+  if (diffDays >= -7 && diffDays < -1) return language === "vi" ? `Quá hạn ${Math.abs(diffDays)} ngày` : `Overdue ${Math.abs(diffDays)} days`;
   
-  return formatDate(dateString, language).split(" ")[0]; // just return date part if > 7 days
+  return formatDateOnly(dateString, language);
 }
