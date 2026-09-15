@@ -180,6 +180,8 @@ export type ModalState =
   | { kind: "goal-topup"; goal: SavingsGoal }
   | { kind: "goal-return"; goal: SavingsGoal }
   | { kind: "recurring"; item?: RecurringTransaction }
+  | { kind: "import-csv" }
+  | { kind: "monthly-review" }
   | null;
 
 export type ReceiptItem = {
