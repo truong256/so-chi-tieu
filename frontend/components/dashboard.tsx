@@ -28,6 +28,17 @@ import AiFloatingChat from "@/frontend/features/ai/ai-floating-chat";
 import FormattedMoneyInput from "@/frontend/components/formatted-money-input";
 import { t, setAppLanguage, type Language } from "@/frontend/services/i18n.service";
 import { getExchangeRates, formatMoney, DEFAULT_FALLBACK_RATES } from "@/frontend/services/currency.service";
+import ImportModal from "@/frontend/components/import-modal";
+import MonthlyReviewModal from "@/frontend/components/monthly-review-modal";
+import { calculateFinancialInsights } from "@/frontend/services/financial-insights.service";
+import {
+  generateSmartAlerts,
+  getStoredReadAlertIds,
+  saveStoredReadAlertIds,
+} from "@/frontend/services/smart-alerts.service";
+import {
+  detectDuplicateTransaction,
+} from "@/frontend/services/duplicate-detection.service";
 
 const AiChatView = lazy(() => import("@/frontend/features/ai/ai-chat"));
 const ReceiptScannerModal = lazy(
@@ -135,6 +146,15 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const [recurringType, setRecurringType] = useState<TransactionType>("expense");
   const [transactionDraft, setTransactionDraft] = useState({ title: "", amount: "", type: "expense" as TransactionType, categoryId: "", walletId: "", budgetId: "", paymentSourceType: "wallet" as "wallet" | "budget", occurredAt: localDateTime(), note: "" });
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [readAlertIds, setReadAlertIds] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      return getStoredReadAlertIds();
+    }
+    return new Set<string>();
+  });
+  const [authoritativeWalletBalances, setAuthoritativeWalletBalances] = useState<Map<string, number>>(new Map());
   const [insufficientBalanceAlert, setInsufficientBalanceAlert] = useState<{
     type: "wallet" | "budget";
     id: string;
@@ -227,6 +247,20 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       const loadedBudgets: Budget[] = budgetResult.status === "fulfilled" && !budgetResult.value.error ? ((budgetResult.value.data ?? []).map((row: Record<string, unknown>) => mapBudget(row))) : [];
       const loadedGoals: SavingsGoal[] = goalResult.status === "fulfilled" && !goalResult.value.error ? ((goalResult.value.data ?? []).map((row: Record<string, unknown>) => mapGoal(row))) : [];
       let loadedRecurring: RecurringTransaction[] = recurringResult.status === "fulfilled" && !recurringResult.value.error ? ((recurringResult.value.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row))) : [];
+
+      // Try to fetch true authoritative wallet balances via RPC (migration 005/006)
+      try {
+        const { data: rpcBalances, error: rpcError } = await supabase.rpc("get_true_wallet_balances");
+        if (!rpcError && Array.isArray(rpcBalances)) {
+          const authMap = new Map<string, number>();
+          rpcBalances.forEach((row: { wallet_id: string; true_balance: number | string }) => {
+            authMap.set(row.wallet_id, toNumber(row.true_balance));
+          });
+          setAuthoritativeWalletBalances(authMap);
+        }
+      } catch {
+        // Fallback gracefully to client-side transaction calculation
+      }
 
       // Auto-provision profile if missing
       if (!loadedProfile) {
@@ -357,10 +391,17 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const categoryById = useMemo(() => new Map(categories.map(item => [item.id, item])), [categories]);
   const walletById = useMemo(() => new Map(wallets.map(item => [item.id, item])), [wallets]);
 
-  const walletBalances = useMemo(
-    () => calculateWalletBalances(wallets, transactions, transfers, budgets),
-    [budgets, transactions, transfers, wallets],
-  );
+  const walletBalances = useMemo(() => {
+    const calc = calculateWalletBalances(wallets, transactions, transfers, budgets);
+    if (authoritativeWalletBalances.size > 0) {
+      wallets.forEach(w => {
+        if (authoritativeWalletBalances.has(w.id)) {
+          calc.set(w.id, authoritativeWalletBalances.get(w.id)!);
+        }
+      });
+    }
+    return calc;
+  }, [authoritativeWalletBalances, budgets, transactions, transfers, wallets]);
   const walletReservedMap = useMemo(
     () => calculateReservedByWallet(wallets, budgets, goals),
     [budgets, goals, wallets],
@@ -432,28 +473,62 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     return { current: totals(current), previous: totals(old), categories: categoryRows, buckets };
   }, [categoryById, reportPeriod, transactions]);
 
-  const budgetAlerts = useMemo(() => {
-    const alerts: Array<{ id: string; kind: "over" | "near" | "done"; title: string; body: string }> = [];
-    budgets.forEach(budget => {
-      const bounds = periodBounds(budget.period === "weekly" ? "week" : budget.period === "yearly" ? "year" : "month");
-      const spent = transactions.filter(item =>
-        item.type === "expense" && inRange(item, bounds.start, bounds.end) &&
-        (!budget.category_id || item.category_id === budget.category_id)
-      ).reduce((sum, item) => sum + item.amount, 0);
-      const percent = Math.round(spent / budget.amount * 100);
-      if (percent >= 100) {
-        alerts.push({ id: budget.id, kind: "over", title: `Vượt ngân sách: ${budget.name}`, body: `Đã chi ${percent}% — vượt ${money(spent - budget.amount)}` });
-      } else if (percent >= budget.alert_percent) {
-        alerts.push({ id: budget.id, kind: "near", title: `Sắp đạt hạn mức: ${budget.name}`, body: `Đã chi ${percent}% / ${money(budget.amount)}` });
-      }
+  const smartAlerts = useMemo(() => {
+    const generated = generateSmartAlerts({
+      budgets,
+      goals,
+      recurring,
+      wallets,
+      transactions,
+      availableBalances,
+      formatMoney: money,
     });
-    goals.forEach(goal => {
-      if (goal.target_amount > 0 && goal.current_amount >= goal.target_amount) {
-        alerts.push({ id: goal.id, kind: "done", title: `Mục tiêu hoàn thành: ${goal.title}`, body: `Đã tích lũy đủ ${money(goal.target_amount)}` });
-      }
+    return generated.map(a => ({
+      ...a,
+      isRead: readAlertIds.has(a.id),
+    }));
+  }, [availableBalances, budgets, goals, money, readAlertIds, recurring, transactions, wallets]);
+
+  const unreadAlertsCount = useMemo(() => {
+    return smartAlerts.filter(a => !a.isRead).length;
+  }, [smartAlerts]);
+
+  const handleMarkAllAlertsRead = useCallback(() => {
+    const allIds = new Set(smartAlerts.map(a => a.id));
+    setReadAlertIds(allIds);
+    saveStoredReadAlertIds(allIds);
+  }, [smartAlerts]);
+
+  const handleDismissAlert = useCallback((id: string) => {
+    setReadAlertIds(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      saveStoredReadAlertIds(next);
+      return next;
     });
-    return alerts;
-  }, [budgets, goals, transactions, money]);
+  }, []);
+
+  const financialInsights = useMemo(() => {
+    return calculateFinancialInsights(transactions, categories, budgets, goals);
+  }, [budgets, categories, goals, transactions]);
+
+  const duplicateWarning = useMemo(() => {
+    if (!modal || modal.kind !== "transaction") return null;
+    const rawTitle = transactionDraft.title.trim();
+    const rawAmt = Number(transactionDraft.amount);
+    if (!rawTitle || !rawAmt || rawAmt <= 0) return null;
+    return detectDuplicateTransaction(
+      {
+        id: modal.item ? modal.item.id : undefined,
+        title: rawTitle,
+        amount: rawAmt,
+        type: transactionDraft.type,
+        walletId: transactionDraft.walletId || null,
+        occurredAt: transactionDraft.occurredAt ? new Date(transactionDraft.occurredAt).toISOString() : new Date().toISOString(),
+      },
+      transactions,
+    );
+  }, [modal, transactionDraft.amount, transactionDraft.occurredAt, transactionDraft.title, transactionDraft.type, transactionDraft.walletId, transactions]);
 
   function openModal(next: NonNullable<ModalState>) {
     setModal(next);
@@ -828,7 +903,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         }
 
         const oldReceipt = modal.item!.receipt_path;
-        const { error } = await supabase.from("transactions").update(payload).eq("id", modal.item!.id);
+        const { error } = await supabase.from("transactions").update(payload).eq("id", modal.item!.id).eq("user_id", user.id);
         if (error) throw error;
         if (uploadedPath && oldReceipt) await supabase.storage.from("receipts").remove([oldReceipt]);
       } else {
@@ -1030,7 +1105,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         // Editing: just update metadata, don't change allocation
         const { error } = await supabase.from("budgets").update({
           name, category_id: categoryId, period, period_start: periodStart, alert_percent: alertPercent,
-        }).eq("id", existingBudget.id);
+        }).eq("id", existingBudget.id).eq("user_id", user.id);
         if (error) throw error;
       } else {
         const { error } = await supabase.rpc("create_budget_with_allocation", {
@@ -1120,7 +1195,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (!isValidMoneyAmount(initialDeposit, true) || initialDeposit > targetAmount) throw new Error("Khoản gửi ban đầu không hợp lệ.");
       const existingGoal = modal?.kind === "goal" ? modal.item : undefined;
       if (existingGoal) {
-        const { error } = await supabase.from("savings_goals").update({ title, target_amount: targetAmount, deadline, color }).eq("id", existingGoal.id);
+        const { error } = await supabase.from("savings_goals").update({ title, target_amount: targetAmount, deadline, color }).eq("id", existingGoal.id).eq("user_id", user.id);
         if (error) throw error;
       } else {
         if (initialDeposit > 0 && walletId) {
@@ -1179,7 +1254,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (kind === "wallet" && !isValidMoneyAmount(Number(payload.balance), true)) throw new Error("Số dư ví không hợp lệ.");
       if (kind === "recurring" && !isValidMoneyAmount(Number(payload.amount))) throw new Error("Số tiền định kỳ không hợp lệ.");
       const current = modal && (modal.kind === kind) ? (modal as { kind: string; item?: Record<string, unknown> }).item : undefined;
-      const result = current ? await supabase.from(table).update(payload).eq("id", (current as { id: string }).id) : await supabase.from(table).insert(payload);
+      const result = current ? await supabase.from(table).update(payload).eq("id", (current as { id: string }).id).eq("user_id", user.id) : await supabase.from(table).insert(payload);
       if (result.error) throw result.error;
       setModal(null); showNotice("Đã lưu thay đổi."); await loadData(false);
     } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể lưu dữ liệu."); }
@@ -1239,7 +1314,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     }
 
     // Database triggers restore budget funds and release reservations atomically.
-    const { error } = await supabase.from(table).delete().eq("id", id);
+    const { error } = await supabase.from(table).delete().eq("id", id).eq("user_id", user.id);
     if (error) return showNotice(error.message);
     if (receiptPath) await supabase.storage.from("receipts").remove([receiptPath]);
     showNotice("Đã xóa dữ liệu."); await loadData(false);
@@ -1483,18 +1558,55 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 <div className="notification-wrap">
                   <button id="notification-bell" className="notification-bell" onClick={() => setShowNotifications(v => !v)} aria-label="Notifications" aria-expanded={showNotifications}>
                     <span>Thông báo</span>
-                    {budgetAlerts.length > 0 && <span className="notif-badge">{budgetAlerts.length}</span>}
+                    {unreadAlertsCount > 0 && <span className="notif-badge">{unreadAlertsCount}</span>}
                   </button>
                   {showNotifications && <>
                     <button className="notif-backdrop" onClick={() => setShowNotifications(false)} aria-label={t("common.close", undefined, language)} />
                     <div className="notification-panel" role="dialog" aria-labelledby="notif-panel-title">
-                      <div className="notif-panel-head"><p>{t("common.status", undefined, language).toUpperCase()}</p><h3 id="notif-panel-title">{t("dashboard.planningOverview", undefined, language)}</h3></div>
-                      {budgetAlerts.length ? budgetAlerts.map(alert => (
-                        <div key={alert.id} className={`notif-item ${alert.kind}`}>
-
-                          <div><b>{alert.title}</b><p>{alert.body}</p></div>
+                      <div className="notif-panel-head">
+                        <div>
+                          <p>{t("common.status", undefined, language).toUpperCase()}</p>
+                          <h3 id="notif-panel-title">Trung tâm thông báo ({smartAlerts.length})</h3>
                         </div>
-                      )) : <div className="notif-empty"><p>{t("common.noData", undefined, language)}</p></div>}
+                        {unreadAlertsCount > 0 && (
+                          <button
+                            type="button"
+                            className="notif-mark-read-btn"
+                            onClick={handleMarkAllAlertsRead}
+                          >
+                            Đánh dấu đã đọc
+                          </button>
+                        )}
+                      </div>
+                      {smartAlerts.length ? (
+                        <div className="notif-list">
+                          {smartAlerts.map(alert => (
+                            <div
+                              key={alert.id}
+                              className={`notif-item ${alert.severity} ${alert.isRead ? "read" : "unread"}`}
+                              onClick={() => {
+                                handleDismissAlert(alert.id);
+                                if (alert.actionView) {
+                                  setView(alert.actionView as View);
+                                  setShowNotifications(false);
+                                }
+                              }}
+                            >
+                              <div className="notif-item-body">
+                                <div className="notif-item-title-row">
+                                  <b>{alert.title}</b>
+                                  {!alert.isRead && <span className="notif-unread-dot" />}
+                                </div>
+                                <p>{alert.body}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="notif-empty">
+                          <p>🎉 Không có cảnh báo hay thông báo nào cần xử lý!</p>
+                        </div>
+                      )}
                     </div>
                   </>}
                 </div>
@@ -1506,6 +1618,14 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 )}
                 {(view === "overview" || view === "transactions") && (
                   <div className="tx-action-btn-group">
+                    <button
+                      type="button"
+                      className="ghost-action import-excel-btn"
+                      onClick={() => setShowImportModal(true)}
+                      title="Nhập dữ liệu giao dịch từ Excel (.xlsx) hoặc CSV"
+                    >
+                      📥 Nhập Excel / CSV
+                    </button>
                     <button
                       type="button"
                       className="ghost-action ai-scan-quick-btn"
@@ -1565,6 +1685,62 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
             {loading && <div className="loading-banner"><i /> Đang đồng bộ dữ liệu an toàn…</div>}
 
             {view === "overview" && <>
+              {/* Smart Financial Insights Banner */}
+              <section className="financial-insights-banner">
+                <div className="insights-banner-content">
+                  <div className="insights-badge-row">
+                    <span className="insights-pill">
+                      ✨ Phân tích tài chính thông minh
+                    </span>
+                    <span className={`insights-health-tag ${financialInsights.savingsRate >= 20 ? "good" : financialInsights.savingsRate >= 0 ? "neutral" : "bad"}`}>
+                      Tỷ lệ tích lũy: {financialInsights.savingsRate}%
+                    </span>
+                  </div>
+                  <div className="insights-highlights-grid">
+                    <div className="insights-highlight-item">
+                      <span className="highlight-label">Dòng tiền ròng tháng này</span>
+                      <strong style={{ color: financialInsights.netCashFlow >= 0 ? "var(--income-green-text)" : "var(--expense-red-text)" }}>
+                        {money(financialInsights.netCashFlow)}
+                      </strong>
+                    </div>
+                    {financialInsights.topCategories.length > 0 && (
+                      <div className="insights-highlight-item">
+                        <span className="highlight-label">Khoản chi lớn nhất</span>
+                        <strong>{financialInsights.topCategories[0].name} ({money(financialInsights.topCategories[0].amount)})</strong>
+                      </div>
+                    )}
+                    <div className="insights-highlight-item">
+                      <span className="highlight-label">So với tháng trước</span>
+                      <strong>
+                        {financialInsights.expenseChangePercent > 0 ? `+${financialInsights.expenseChangePercent}% chi tiêu` : financialInsights.expenseChangePercent < 0 ? `${financialInsights.expenseChangePercent}% chi tiêu` : "Tương đương"}
+                      </strong>
+                    </div>
+                  </div>
+                  {financialInsights.anomalies.length > 0 && (
+                    <div className="insights-warning-notice">
+                      ⚠️ {financialInsights.anomalies[0].title}: {financialInsights.anomalies[0].description}
+                    </div>
+                  )}
+                </div>
+                <div className="insights-banner-actions">
+                  <button
+                    type="button"
+                    className="insights-review-btn"
+                    onClick={() => setShowReviewModal(true)}
+                  >
+                    📊 Đánh giá tài chính tháng
+                  </button>
+                  <button
+                    type="button"
+                    className="insights-export-btn"
+                    onClick={downloadData}
+                    disabled={isExporting}
+                  >
+                    {isExporting ? "Đang xuất..." : "📥 Xuất Excel toàn bộ"}
+                  </button>
+                </div>
+              </section>
+
               <section className="summary-grid">
                 <article className="balance-card">
                   <div className="card-top-row">
@@ -2460,6 +2636,17 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 <button type="button" className={transactionDraft.type === "expense" ? "active" : ""} onClick={() => setTransactionDraft(current => ({ ...current, type: "expense", categoryId: categories.find(item => item.kind === "expense")?.id ?? "", paymentSourceType: "wallet", budgetId: "" }))}>{t("transactions.expense", undefined, language)}</button>
                 <button type="button" className={transactionDraft.type === "income" ? "active" : ""} onClick={() => setTransactionDraft(current => ({ ...current, type: "income", categoryId: categories.find(item => item.kind === "income")?.id ?? "", paymentSourceType: "wallet", budgetId: "" }))}>{t("transactions.income", undefined, language)}</button>
               </div>
+
+              {duplicateWarning && duplicateWarning.isDuplicate && duplicateWarning.matchedTransaction && (
+                <div className={`duplicate-warning-banner ${duplicateWarning.confidence >= 0.9 ? "exact" : "potential"}`} role="alert">
+                  <div className="duplicate-warning-icon">⚠️</div>
+                  <div className="duplicate-warning-content">
+                    <strong>{duplicateWarning.confidence >= 0.9 ? "Cảnh báo giao dịch có thể bị trùng lặp" : "Phát hiện giao dịch tương tự"}</strong>
+                    <p>{duplicateWarning.reason}</p>
+                    <small>Đã có: &ldquo;{duplicateWarning.matchedTransaction.title}&rdquo; ({money(duplicateWarning.matchedTransaction.amount)}) lúc {formatDate(duplicateWarning.matchedTransaction.occurred_at, language)}</small>
+                  </div>
+                </div>
+              )}
               <label>{t("transactions.title", undefined, language)}<input required autoFocus value={transactionDraft.title} onChange={event => setTransactionDraft(current => ({ ...current, title: event.target.value }))} placeholder={language === "vi" ? "Ví dụ: Ăn trưa, Đổ xăng…" : "E.g. Lunch, Gas…"} /></label>
               <label>{t("transactions.amount", undefined, language)}<FormattedMoneyInput required autoFocus={focusAmountInput} value={transactionDraft.amount} onChangeValue={val => setTransactionDraft(current => ({ ...current, amount: val }))} /></label>
               <label>{t("transactions.category", undefined, language)}<select required value={transactionDraft.categoryId} onChange={event => setTransactionDraft(current => ({ ...current, categoryId: event.target.value, budgetId: "", paymentSourceType: "wallet" }))}>{categories.filter(item => item.kind === transactionDraft.type).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
@@ -2758,6 +2945,48 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
             savingsGoals: goals,
           }}
         />
+
+        {showImportModal && (
+          <ImportModal
+            categories={categories}
+            wallets={wallets}
+            existingTransactions={transactions}
+            onClose={() => setShowImportModal(false)}
+            onSuccess={async (importedCount) => {
+              showNotice(`Đã nhập thành công ${importedCount} giao dịch.`);
+              await loadData(false);
+            }}
+            showNotice={showNotice}
+            supabase={supabase}
+            userId={user.id}
+          />
+        )}
+
+        {showReviewModal && (
+          <MonthlyReviewModal
+            transactions={transactions}
+            categories={categories}
+            wallets={wallets}
+            onClose={() => setShowReviewModal(false)}
+            formatMoney={money}
+            showNotice={showNotice}
+            exportPayload={{
+              wallets,
+              transactions,
+              transfers,
+              budgets,
+              goals,
+              categories,
+              walletBalances,
+              availableBalances,
+              walletReservedMap,
+              totalBalance,
+              totalAvailable,
+              totalReserved,
+              monthTotals,
+            }}
+          />
+        )}
       </main>
     </AiChatProvider>
   );
