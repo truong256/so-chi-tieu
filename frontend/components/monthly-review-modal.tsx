@@ -115,7 +115,7 @@ export default function MonthlyReviewModal({
             disabled={downloading}
             onClick={handleDownloadMonthlyExcel}
           >
-            {downloading ? "Đang xuất..." : "📊 Tải Excel tháng này"}
+            {downloading ? "Đang xuất..." : "Tải Excel tháng này"}
           </button>
         </div>
 
@@ -154,12 +154,12 @@ export default function MonthlyReviewModal({
             <h3 className="metric-value">{insights.savingsRate}%</h3>
             <span className={`metric-sub ${insights.savingsRate >= 20 ? "green" : "orange"}`}>
               {insights.savingsRate >= 30
-                ? "🌟 Xuất sắc"
+                ? "Xuất sắc"
                 : insights.savingsRate >= 20
-                ? "✓ Đạt chuẩn"
+                ? "Đạt chuẩn"
                 : insights.savingsRate > 0
                 ? "Cần cải thiện"
-                : "⚠️ Bội chi"}
+                : "Bội chi"}
             </span>
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function MonthlyReviewModal({
                     <div className="cmp-header">
                       <b>{cmp.categoryName}</b>
                       <span className={`cmp-badge ${cmp.percentChange > 0 ? "up" : "down"}`}>
-                        {cmp.percentChange > 0 ? "▲ +" : "▼ "}
+                        {cmp.percentChange > 0 ? "+" : ""}
                         {cmp.percentChange}%
                       </span>
                     </div>
@@ -235,7 +235,7 @@ export default function MonthlyReviewModal({
         {/* Anomalies if any */}
         {insights.anomalies.length > 0 && (
           <div className="review-section warning-box">
-            <h4>⚠️ Cảnh báo chi tiêu đáng chú ý</h4>
+            <h4>Cảnh báo chi tiêu đáng chú ý</h4>
             {insights.anomalies.map((a) => (
               <div key={a.id} className="review-anomaly-item">
                 <b>{a.title}:</b> {a.description}

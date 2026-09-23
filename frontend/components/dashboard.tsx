@@ -1624,7 +1624,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                       onClick={() => setShowImportModal(true)}
                       title="Nhập dữ liệu giao dịch từ Excel (.xlsx) hoặc CSV"
                     >
-                      📥 Nhập Excel / CSV
+                      Nhập Excel / CSV
                     </button>
                     <button
                       type="button"
@@ -1687,58 +1687,126 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
             {view === "overview" && <>
               {/* Smart Financial Insights Banner */}
               <section className="financial-insights-banner">
-                <div className="insights-banner-content">
+                <div className="insights-banner-header">
                   <div className="insights-badge-row">
                     <span className="insights-pill">
-                      ✨ Phân tích tài chính thông minh
+                      Phân tích tài chính thông minh
                     </span>
                     <span className={`insights-health-tag ${financialInsights.savingsRate >= 20 ? "good" : financialInsights.savingsRate >= 0 ? "neutral" : "bad"}`}>
-                      Tỷ lệ tích lũy: {financialInsights.savingsRate}%
+                      {financialInsights.savingsRate >= 20
+                        ? `Tích lũy tốt: ${financialInsights.savingsRate}%`
+                        : financialInsights.savingsRate >= 0
+                        ? `Tích lũy: ${financialInsights.savingsRate}%`
+                        : `Bội chi: ${Math.abs(financialInsights.savingsRate)}%`}
                     </span>
                   </div>
-                  <div className="insights-highlights-grid">
-                    <div className="insights-highlight-item">
-                      <span className="highlight-label">Dòng tiền ròng tháng này</span>
-                      <strong style={{ color: financialInsights.netCashFlow >= 0 ? "var(--income-green-text)" : "var(--expense-red-text)" }}>
-                        {money(financialInsights.netCashFlow)}
-                      </strong>
-                    </div>
-                    {financialInsights.topCategories.length > 0 && (
-                      <div className="insights-highlight-item">
-                        <span className="highlight-label">Khoản chi lớn nhất</span>
-                        <strong>{financialInsights.topCategories[0].name} ({money(financialInsights.topCategories[0].amount)})</strong>
-                      </div>
-                    )}
-                    <div className="insights-highlight-item">
-                      <span className="highlight-label">So với tháng trước</span>
-                      <strong>
-                        {financialInsights.expenseChangePercent > 0 ? `+${financialInsights.expenseChangePercent}% chi tiêu` : financialInsights.expenseChangePercent < 0 ? `${financialInsights.expenseChangePercent}% chi tiêu` : "Tương đương"}
-                      </strong>
+
+                  <div className="insights-banner-actions">
+                    <button
+                      type="button"
+                      className="insights-review-btn"
+                      onClick={() => setShowReviewModal(true)}
+                    >
+                      Đánh giá tài chính tháng
+                    </button>
+                    <button
+                      type="button"
+                      className="insights-export-btn"
+                      onClick={downloadData}
+                      disabled={isExporting}
+                    >
+                      {isExporting ? "Đang xuất..." : "Xuất Excel toàn bộ"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="insights-highlights-grid">
+                  <div className="insights-highlight-item">
+                    <span className="highlight-label">Dòng tiền ròng tháng này</span>
+                    <strong
+                      className="highlight-value"
+                      style={{
+                        color:
+                          financialInsights.netCashFlow > 0
+                            ? "var(--income-green-text)"
+                            : financialInsights.netCashFlow < 0
+                            ? "var(--expense-red-text)"
+                            : "var(--text-dark)",
+                      }}
+                    >
+                      {money(financialInsights.netCashFlow)}
+                    </strong>
+                    <div className="highlight-sub">
+                      {financialInsights.netCashFlow > 0 ? (
+                        <span className="trend-tag positive">+ Thặng dư</span>
+                      ) : financialInsights.netCashFlow < 0 ? (
+                        <span className="trend-tag negative">- Thâm hụt</span>
+                      ) : (
+                        <span className="trend-tag neutral">Cân bằng</span>
+                      )}
                     </div>
                   </div>
-                  {financialInsights.anomalies.length > 0 && (
-                    <div className="insights-warning-notice">
-                      ⚠️ {financialInsights.anomalies[0].title}: {financialInsights.anomalies[0].description}
+
+                  <div className="insights-highlight-item">
+                    <span className="highlight-label">Khoản chi lớn nhất</span>
+                    {financialInsights.topCategories.length > 0 ? (
+                      <>
+                        <strong className="highlight-value text-ellipsis" title={financialInsights.topCategories[0].name}>
+                          {financialInsights.topCategories[0].name}
+                        </strong>
+                        <div className="highlight-sub">
+                          <span className="cat-chip" style={{ borderLeftColor: financialInsights.topCategories[0].color }}>
+                            {money(financialInsights.topCategories[0].amount)} ({financialInsights.topCategories[0].percentage}%)
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <strong className="highlight-value muted-val">Chưa có chi tiêu</strong>
+                        <div className="highlight-sub">
+                          <span className="trend-tag neutral">Tháng này chưa có chi tiêu</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="insights-highlight-item">
+                    <span className="highlight-label">So với tháng trước</span>
+                    <strong className="highlight-value">
+                      {financialInsights.expenseChangePercent > 0
+                        ? `+${financialInsights.expenseChangePercent}%`
+                        : financialInsights.expenseChangePercent < 0
+                        ? `${financialInsights.expenseChangePercent}%`
+                        : "Tương đương"}
+                    </strong>
+                    <div className="highlight-sub">
+                      {financialInsights.expenseChangePercent > 0 ? (
+                        <span className="trend-tag negative">Tăng chi tiêu</span>
+                      ) : financialInsights.expenseChangePercent < 0 ? (
+                        <span className="trend-tag positive">Tiết kiệm chi tiêu</span>
+                      ) : (
+                        <span className="trend-tag neutral">Duy trì mức ổn định</span>
+                      )}
                     </div>
-                  )}
+                  </div>
+
+                  <div className="insights-highlight-item ai-bullet-item">
+                    <span className="highlight-label">Nhận định hệ thống</span>
+                    <p className="ai-bullet-text">
+                      {financialInsights.insightBullets.length > 0
+                        ? financialInsights.insightBullets[0]
+                        : "Tài chính tháng này đang ở mức an toàn, chưa có biến động bất thường."}
+                    </p>
+                  </div>
                 </div>
-                <div className="insights-banner-actions">
-                  <button
-                    type="button"
-                    className="insights-review-btn"
-                    onClick={() => setShowReviewModal(true)}
-                  >
-                    📊 Đánh giá tài chính tháng
-                  </button>
-                  <button
-                    type="button"
-                    className="insights-export-btn"
-                    onClick={downloadData}
-                    disabled={isExporting}
-                  >
-                    {isExporting ? "Đang xuất..." : "📥 Xuất Excel toàn bộ"}
-                  </button>
-                </div>
+
+                {financialInsights.anomalies.length > 0 && (
+                  <div className="insights-warning-notice">
+                    <div className="warning-content">
+                      <strong>{financialInsights.anomalies[0].title}:</strong> {financialInsights.anomalies[0].description}
+                    </div>
+                  </div>
+                )}
               </section>
 
               <section className="summary-grid">

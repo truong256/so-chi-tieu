@@ -68,9 +68,62 @@ Trả về kết quả có cấu trúc cho Frontend
 
 ---
 
-## 4. Nguyên tắc thiết kế (Design Principles)
+---
+
+## 4. Mô hình Phân quyền Đa Tác nhân (Actor & RBAC Architecture)
+
+Hệ thống hỗ trợ 2 Actor độc lập với vai trò và không gian hoạt động tách biệt:
+
+1. **User (Người dùng cá nhân)**:
+   - Quản lý tài chính cá nhân: ví, giao dịch, ngân sách, mục tiêu tiết kiệm, giao dịch định kỳ.
+   - Sử dụng các tính năng thông minh: Trợ lý AI hội thoại, phân tích câu nói tự nhiên, quét hóa đơn OCR.
+   - Được bảo vệ bởi Row Level Security (RLS): chỉ truy cập và thao tác trên dữ liệu thuộc sở hữu của chính mình (`auth.uid() = user_id`).
+
+2. **Admin (Quản trị viên hệ thống)**:
+   - Theo dõi tổng quan quy mô hệ thống, số lượng tài khoản, tình trạng dịch vụ.
+   - Quản lý người dùng: tra cứu, tạm khóa (suspend), mở khóa (restore), gửi liên kết đặt lại mật khẩu.
+   - Giám sát AI: đo lường lượng request, tỷ lệ thành công, mã lỗi và độ trễ phản hồi.
+   - Quản trị cấu hình: bật/tắt cờ tính năng (Feature Flags).
+   - Truy vết kiểm toán (Audit Trail): ghi nhận và tra cứu toàn bộ các thao tác quản trị.
+   - **Quyền riêng tư**: Quản trị viên chỉ truy cập số liệu tổng hợp (aggregate), tuyệt đối không được cấp quyền đọc dữ liệu tài chính chi tiết của từng cá nhân.
+
+### Sơ đồ Luồng Phân quyền (Authentication & Role Routing)
+
+```text
+               Supabase Authentication
+                         │
+                         ▼
+                   Role Routing
+                  (public.user_roles)
+                   ┌─────┴─────┐
+                   │           │
+           role = 'user'   role = 'admin'
+                   │           │
+                   ▼           ▼
+             User Dashboard  Admin App
+                   │           │
+                   ▼           ▼
+              User-scoped   Guarded Admin APIs
+                 RLS        (/api/admin/*)
+                               │
+                               ▼
+                         Admin Services
+                     ┌─────────┼─────────┐
+                     ▼         ▼         ▼
+                   Users   AI Usage   Settings
+                     │
+                     ▼
+                 Audit Log
+```
+
+---
+
+## 5. Nguyên tắc thiết kế (Design Principles)
 
 1. **Separation of Concerns**: Phân tách triệt để UI (`frontend/`), Business Logic (`backend/`), Database (`database/`) và Config (`config/`).
 2. **Thin Adapter Routing**: Thư mục `app/` chỉ đóng vai trò adapter định tuyến cho Next.js App Router, toàn bộ logic cốt lõi nằm trong `frontend/` và `backend/`.
 3. **Type Safety**: Chia sẻ types rõ ràng qua `@frontend/types` và `@backend/src/types`.
 4. **Resilience & Fallback**: Các dịch vụ AI dùng chung danh sách Flash model trong `gemini-models.ts`, ưu tiên Gemini 3.8 Flash và alias `gemini-flash-latest`; lỗi model/quota được xử lý mà không làm hỏng dashboard.
+5. **Anti-Self-Escalation**: Bảng `user_roles` áp dụng RLS nghiêm ngặt, chỉ cho phép đọc vai trò của chính mình. Người dùng không thể tự nâng cấp quyền qua API, Supabase REST hay metadata.
+6. **Financial Data Privacy**: Dữ liệu tài chính người dùng được cô lập tuyệt đối; giao diện Admin chỉ đọc số liệu tổng hợp.
+7. **Unified Minimalist UI**: Giao diện Admin đồng bộ toàn diện với Design System của User, loại bỏ tối đa các icon trang trí không cần thiết, ưu tiên typography và khoảng trắng.
