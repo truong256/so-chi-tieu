@@ -1,0 +1,138 @@
+Hệ thống quản lý bán hàng có tích hợp AI - Nhóm XX
+ĐẶC TẢ YÊU CẦU ỨNG DỤNG – V1.0
+
+### [TOCHeading] NỘI DUNG
+
+1.GIỚI THIỆU CHUNG2
+1.1Mục đích2
+1.2Phạm vi2
+1.3Các định nghĩa, thuật ngữ, từ viết tắt2
+1.4Tài liệu tham khảo2
+2.MÔ TẢ TỔNG QUAN ỨNG DỤNG3
+2.1Mô hình Use case3
+2.2Danh sách các tác nhân và mô tả3
+2.3Danh sách Use case và mô tả3
+2.4Các điều kiện phụ thuộc3
+3.ĐẶC TẢ CÁC YÊU CẦU CHỨC NĂNG (FUNCTIONAL)4
+3.1UC001_Tên use case4
+3.1.1Mô tả use case UC0014
+3.1.2Biểu đồ4
+3.2UC002_Tên use case5
+3.2.1Mô tả use case UC0025
+3.2.2Biểu đồ5
+4.CÁC THÔNG TIN HỖ TRỢ KHÁC6
+
+### [Heading1] GIỚI THIỆU CHUNG
+
+
+### [Heading2] Mục đích
+
+&lt;Mục đích của tài liệu SRS: Tài liệu mô tả một cách đầy đủ, toàn diện các yêu cầu của ứng dụng – đó là  các yêu cầu chức năng, phi chức năng, các ràng buộc về mặt thiết kế...&gt;
+
+### [Heading2] Phạm vi
+
+&lt;Mô tả ngắn gọn đặc điểm của ứng dụng; phạm vi, đối tượng phục vụ của ứng dụng; nhóm các hệ thống con&gt;
+[Chỉ ra được tài liệu này dùng cho đối tượng nào?]
+
+### [Heading2] Các định nghĩa, thuật ngữ, từ viết tắt
+
+&lt;Giải thích cho các  thuật ngữ và từ viết tắt dùng trong tài liệu, các định nghĩa sử dụng trong tài liệu&gt;.
+STT
+Thuật ngữ, từ viết tắt
+Giải thích
+Ghi chú
+
+### [Heading2] Tài liệu tham khảo
+
+STT
+Tên tài liệu
+Ghi chú
+
+### [Heading1] MÔ TẢ TỔNG QUAN ỨNG DỤNG
+
+
+### [Heading2] Mô hình Use case
+
+&lt;Mô hình Use case ở mức tổng quát&gt;.
+
+### [Heading2] Danh sách các tác nhân và mô tả
+
+&lt;Liệt kê các tác nhân của hệ thống&gt;.
+Tác nhân
+Mô tả tác nhân
+Ghi chú
+
+### [Heading2] Danh sách Use case và mô tả
+
+&lt;Liệt kê các use case theo mô hình use case. Các use case tương ứng với các chức năng đã mô tả trong tài liệu thu thập, làm rõ yêu cầu. Phải mapping use case và chức năng tương ứng&gt;.
+ID
+Tên Use case
+Mô tả ngắn gọn Use case
+Chức năng
+Ghi chú
+UC001
+Tên use case
+Mô tả ngắn gọn Use case
+Trong đó: UC: Quy cách đánh số Use case và 001, 002…: là số thứ tự của use case
+
+### [Heading2] Các điều kiện phụ thuộc
+
+&lt;Trình bày các điều kiện về mặt kỹ thuật cần thiết để phát triển ứng dụng, ví dụ: cấu hình phần cứng, cấu hình mạng, các phần mềm, hệ quản trị cơ sở dữ liệu khác có liên quan, các công cụ sử dụng để phát triển ứng dụng. Các yêu cầu khác...&gt;.
+
+### [Heading1] ĐẶC TẢ CÁC YÊU CẦU CHỨC NĂNG (FUNCTIONAL)
+
+&lt;Phần này mô tả một cách chi tiết từng yêu cầu cụ thể, cho phép các thành viên tham gia dự án căn cứ vào đó để xây dựng một phần mềm có chất lượng tốt nhất. Với cách tiếp cận theo mô hình Use case (UC), các yêu cầu phần mềm  được mô tả theo các UC và trong các đặc tả bổ sung&gt;.
+
+### [Heading2] UC001_Tên use case
+
+
+### [Heading3] Mô tả use case UC001
+
+Use case: {Mã use case_Tên use case}
+Mục đích:
+&lt;Kết quả cần đạt được của Use case&gt;.
+Mô tả:
+&lt;Mô tả chi tiết use case, vai trò của Use case&gt;
+Tác nhân:
+&lt;Các tác nhân tác động đến Use case&gt;
+Điều kiện trước:
+&lt;Các điều kiện cần phải thực hiện trước khi thực hiện Use Case&gt;.
+Điều kiện sau:
+&lt;Kết quả thu được sau khi thực hiện đúng &amp;  kết thúc Use case&gt;.
+Luồng sự kiện chính (Basic flows)
+&lt;Các luồng sự kiện chính, thành công của Use case theo trình tự thời gian&gt;
+Luồng sự kiện phụ (Alternative Flows):
+&lt;Các luồng sự kiện ngoại lệ, không thành công của Use case theo trình tự thời gian&gt;
+
+### [Heading3] Biểu đồ
+
+&lt;Biểu đồ (diagram) chi tiết: Activity và Sequence Diagram&gt;
+
+### [Heading2] UC002_Tên use case
+
+
+### [Heading3] Mô tả use case UC002
+
+Use case: {Mã use case_Tên use case}
+Mục đích:
+&lt;Kết quả cần đạt được của Use case&gt;.
+Mô tả:
+&lt;Mô tả chi tiết use case, vai trò của Use case&gt;
+Tác nhân:
+&lt;Các tác nhân tác động đến Use case&gt;
+Điều kiện trước:
+&lt;Các điều kiện cần phải thực hiện trước khi thực hiện Use Case&gt;.
+Điều kiện sau:
+&lt;Kết quả thu được sau khi thực hiện đúng &amp;  kết thúc Use case&gt;.
+Luồng sự kiện chính (Basic flows)
+&lt;Các luồng sự kiện chính, thành công của Use case theo trình tự thời gian&gt;
+Luồng sự kiện phụ (Alternative Flows):
+&lt;Các luồng sự kiện ngoại lệ, không thành công của Use case theo trình tự thời gian&gt;
+
+### [Heading3] Biểu đồ
+
+&lt;Biểu đồ (diagram) chi tiết&gt;.
+
+### [Heading1] CÁC THÔNG TIN HỖ TRỢ KHÁC
+
+&lt;Các thông tin hỗ trợ có vai trò làm cho tài liệu đặc tả yêu cầu ứng dụng …&gt;.

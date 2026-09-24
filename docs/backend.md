@@ -9,12 +9,20 @@ Tài liệu mô tả chi tiết tổ chức mã nguồn backend và dịch vụ 
 ```text
 backend/
 └── src/
-    ├── services/                     # Business Logic Services
-    │   ├── ai-chat.service.ts        # Logic xử lý Financial Copilot, system prompt, context building
-    │   ├── ai-parser.service.ts      # Logic phân tích ngôn ngữ tự nhiên thành giao dịch (NLP)
-    │   └── receipt-parser.service.ts # Logic trích xuất dữ liệu hóa đơn đa phương thức (OCR)
-    └── types/                        # Server-side & shared AI Types
-        └── ai.types.ts               # ChatMessage, FinancialContext, Request/Result interfaces
+    ├── services/                         # Business Logic Services
+    │   ├── ai-chat.service.ts            # Logic xử lý Financial Copilot, system prompt, context building
+    │   ├── ai-parser.service.ts          # Logic phân tích ngôn ngữ tự nhiên thành giao dịch (NLP)
+    │   ├── receipt-parser.service.ts     # Logic trích xuất dữ liệu hóa đơn đa phương thức (OCR)
+    │   ├── supabase-auth.service.ts      # Xác thực Bearer Token phía máy chủ
+    │   ├── admin-auth.service.ts         # Guard phân quyền Admin, server-only Supabase client
+    │   ├── admin-users.service.ts        # Quản lý tài khoản: danh sách, tạm khóa, mở khóa, reset password
+    │   ├── admin-metrics.service.ts      # Tính toán số liệu tổng quan hệ thống ẩn danh
+    │   ├── admin-ai.service.ts           # Ghi nhận và thống kê đo lường AI telemetry
+    │   ├── admin-settings.service.ts     # Quản lý cờ tính năng Feature Flags và bảo vệ secrets
+    │   ├── admin-audit.service.ts        # Ghi nhận nhật ký kiểm toán hành động quản trị
+    │   └── admin-notifications.service.ts # Phát thông báo hệ thống và lọc mã HTML độc hại
+    └── types/                            # Server-side & shared AI Types
+        └── ai.types.ts                   # ChatMessage, FinancialContext, Request/Result interfaces
 ```
 
 ---

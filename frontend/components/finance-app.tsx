@@ -6,9 +6,11 @@ import { configureClient, createClient, type SupabaseBrowserConfig } from "@/con
 import AuthScreen from "./auth-screen";
 
 const Dashboard = lazy(() => import("./dashboard"));
+const AdminApp = lazy(() => import("@/frontend/features/admin/admin-app"));
 
 export default function FinanceApp() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [userRole, setUserRole] = useState<"loading" | "user" | "admin" | "error">("loading");
   const [recovering, setRecovering] = useState(false);
   const [startupError, setStartupError] = useState(false);
 
@@ -45,6 +47,7 @@ export default function FinanceApp() {
             }
             if (event === "SIGNED_OUT") {
               setUser(null);
+              setUserRole("loading");
             } else if (session?.user) {
               setUser(session.user);
             } else if (event === "INITIAL_SESSION") {
@@ -85,6 +88,64 @@ export default function FinanceApp() {
     };
   }, []);
 
+  // Fetch role whenever authenticated user is confirmed
+  useEffect(() => {
+    let active = true;
+
+    async function resolveRole() {
+      if (!user) {
+        setUserRole("loading");
+        return;
+      }
+
+      try {
+        setUserRole("loading");
+        const supabase = createClient();
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+
+        if (token) {
+          try {
+            const res = await fetch("/api/user/role", {
+              headers: { Authorization: `Bearer ${token}` },
+              cache: "no-store",
+            });
+            if (res.ok) {
+              const body = (await res.json()) as { role?: string };
+              if (active) {
+                setUserRole(body.role === "admin" ? "admin" : "user");
+                return;
+              }
+            }
+          } catch {
+            // Fallback to client query if network endpoint fails
+          }
+        }
+
+        // Direct database query fallback
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (active) {
+          setUserRole(roleData?.role === "admin" ? "admin" : "user");
+        }
+      } catch (err) {
+        console.error("Role resolution error:", err);
+        // Fallback safely to standard user
+        if (active) setUserRole("user");
+      }
+    }
+
+    void resolveRole();
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
   if (startupError) {
     return <StartupErrorScreen />;
   }
@@ -96,6 +157,10 @@ export default function FinanceApp() {
   if (!user) return <AuthScreen />;
 
   if (recovering) return <ResetPassword onDone={() => setRecovering(false)} />;
+
+  if (userRole === "loading") {
+    return <LoadingScreen />;
+  }
 
   const email = user.email ?? "";
   const fullName = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "";
@@ -115,6 +180,15 @@ export default function FinanceApp() {
       }
     }
     setUser(null);
+    setUserRole("loading");
+  }
+
+  if (userRole === "admin") {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <AdminApp user={{ id: user.id, name, email }} onSignOut={signOut} />
+      </Suspense>
+    );
   }
 
   return (

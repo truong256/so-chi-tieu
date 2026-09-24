@@ -44,3 +44,9 @@ tsconfig.tsbuildinfo
 /work/
 
 # Note: /build/ is NOT ignored — it contains sites-vite-plugin.ts (source code)
+
+# backups
+backups/
+
+# scratch
+scratch/

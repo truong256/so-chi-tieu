@@ -273,11 +273,12 @@ export async function processChat(
       }
 
       const errBody = await res.text().catch(() => "");
-      console.error(`Gemini API error for model ${modelName}:`, res.status);
+      console.error(`Gemini API error for model ${modelName}: ${res.status}`, errBody ? errBody.slice(0, 300) : "");
       lastErrorText = errBody;
+      geminiRes = res;
 
-      if (res.status !== 404) {
-        geminiRes = res;
+      // Stop trying only if API key is invalid
+      if (errBody.includes("API_KEY_INVALID") || errBody.includes("API key not valid")) {
         break;
       }
     } catch (e) {
@@ -291,6 +292,8 @@ export async function processChat(
       userErrorMsg = "API Key không hợp lệ. Vui lòng kiểm tra lại GEMINI_API_KEY trong file .env.local.";
     } else if (geminiRes?.status === 429 || lastErrorText.includes("quota") || lastErrorText.includes("429")) {
       userErrorMsg = "API đã hết hạn mức sử dụng (Quota exceeded). Vui lòng thử lại sau hoặc nâng cấp tài khoản.";
+    } else if (geminiRes?.status === 503 || lastErrorText.includes("overloaded") || lastErrorText.includes("high demand") || lastErrorText.includes("UNAVAILABLE")) {
+      userErrorMsg = "Hệ thống AI hiện đang quá tải lượt truy cập (503 High Demand). Vui lòng thử lại sau giây lát.";
     }
     return { error: userErrorMsg, status: 502 };
   }

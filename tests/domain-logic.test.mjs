@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { strFromU8, unzipSync } from "fflate";
 
-import { advanceRecurring, periodBounds } from "../frontend/utils/finance.utils.ts";
+import { advanceRecurring, formatDateOnly, getRelativeTime, periodBounds } from "../frontend/utils/finance.utils.ts";
 import {
   calculateAvailableBalances,
   calculateReservedByWallet,
@@ -49,6 +49,18 @@ test("recurring dates clamp month and leap-year boundaries", () => {
   assert.equal(advanceRecurring("2024-01-31T08:00:00.000Z", "monthly"), "2024-02-29T08:00:00.000Z");
   assert.equal(advanceRecurring("2024-02-29T08:00:00.000Z", "yearly"), "2025-02-28T08:00:00.000Z");
   assert.equal(advanceRecurring("2026-01-31T08:00:00.000Z", "monthly", 1, "next_month"), "2026-03-01T08:00:00.000Z");
+});
+
+test("relative time formatting outputs valid date strings without time leak", () => {
+  const future = new Date(Date.now() + 10 * 86400000).toISOString();
+  const past = new Date(Date.now() - 10 * 86400000).toISOString();
+  const formattedVi = getRelativeTime(future, "vi");
+  const formattedEn = getRelativeTime(past, "en");
+
+  assert.match(formattedVi, /\d{2}\/\d{2}\/\d{4}/);
+  assert.doesNotMatch(formattedVi, /^\d{2}:\d{2}$/);
+  assert.match(formattedEn, /\d{2}\/\d{2}\/\d{4}/);
+  assert.equal(formatDateOnly("2026-09-15T12:34:56Z", "vi"), "15/09/2026");
 });
 
 test("period boundaries remain local and exclusive across month and year changes", () => {

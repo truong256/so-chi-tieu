@@ -56,6 +56,7 @@ export async function POST(request: Request) {
       icon: c.icon || "",
     }));
 
+    const startTime = Date.now();
     const result = await parseTransactionWithAI({
       geminiApiKey,
       rawText,
@@ -65,6 +66,20 @@ export async function POST(request: Request) {
       clientTime: typeof body.client_time === "string" ? body.client_time : undefined,
       timezone: typeof body.timezone === "string" ? body.timezone : undefined,
     });
+    const latencyMs = Date.now() - startTime;
+
+    import("@/backend/src/services/admin-ai.service")
+      .then(({ recordAiUsageLog }) => {
+        void recordAiUsageLog({
+          userId: user.id,
+          feature: "parse_transaction",
+          model: result.modelUsed || "gemini",
+          success: result.success,
+          latencyMs,
+          errorCode: !result.success ? "PARSE_ERROR" : null,
+        });
+      })
+      .catch(() => {});
 
     if (!result.success && result.error) {
       return NextResponse.json({ error: result.error, success: false }, { status: result.status });

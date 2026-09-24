@@ -12,7 +12,8 @@ export async function POST(request: Request) {
   try {
     const geminiApiKey = process.env.GEMINI_API_KEY?.trim() ?? "";
     const token = extractBearerToken(request);
-    await verifySupabaseAccessToken(token, {
+    const startTime = Date.now();
+    const verifiedUser = await verifySupabaseAccessToken(token, {
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
       supabasePublishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
     });
@@ -28,6 +29,21 @@ export async function POST(request: Request) {
     };
 
     const result = await processChat(geminiApiKey, req);
+    const latencyMs = Date.now() - startTime;
+
+    // Asynchronously log AI telemetry without blocking response
+    import("@/backend/src/services/admin-ai.service")
+      .then(({ recordAiUsageLog }) => {
+        void recordAiUsageLog({
+          userId: verifiedUser.id,
+          feature: "chat",
+          model: "gemini",
+          success: !result.error,
+          latencyMs,
+          errorCode: result.error ? String(result.status) : null,
+        });
+      })
+      .catch(() => {});
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: result.status });

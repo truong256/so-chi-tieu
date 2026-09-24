@@ -113,6 +113,7 @@ export async function POST(request: Request) {
     categoriesList = (categoriesResult.data ?? []).map((item) => item.name).filter((name): name is string => typeof name === "string").slice(0, 100);
     walletsList = (walletsResult.data ?? []).map((item) => item.name).filter((name): name is string => typeof name === "string").slice(0, 50);
 
+    const startTime = Date.now();
     const result = await parseReceiptWithAI({
       geminiApiKey,
       base64Data,
@@ -120,6 +121,20 @@ export async function POST(request: Request) {
       categoriesList,
       walletsList,
     });
+    const latencyMs = Date.now() - startTime;
+
+    import("@/backend/src/services/admin-ai.service")
+      .then(({ recordAiUsageLog }) => {
+        void recordAiUsageLog({
+          userId: verifiedUser.id,
+          feature: "receipt_parse",
+          model: result.modelUsed || "gemini",
+          success: result.success,
+          latencyMs,
+          errorCode: !result.success ? "RECEIPT_ERROR" : null,
+        });
+      })
+      .catch(() => {});
 
     if (!result.success && result.error) {
       return NextResponse.json({ error: result.error, success: false }, { status: result.status });

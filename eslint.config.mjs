@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     "scripts/patches/**",
     "examples/d1/**",
     "next-env.d.ts",
+    "scratch/**",
   ]),
 ]);
 
