@@ -1,4 +1,4 @@
--- Migration 010: Admin System Settings Configuration
+-- Migration 011: Admin System Settings Configuration
 -- Configures dynamic feature flags and operational switches without exposing system secrets.
 
 CREATE TABLE IF NOT EXISTS public.system_settings (

@@ -1,4 +1,4 @@
--- Migration 008: Admin RBAC Schema and Anti Self-Promotion Security
+-- Migration 009: Admin RBAC Schema and Anti Self-Promotion Security
 -- Enforces server-verified roles (user, admin) with database-level RLS.
 
 DO $$

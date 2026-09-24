@@ -16,9 +16,10 @@ database/
 │   ├── 005_true_balances_rpc.sql                   # Hàm RPC tính số dư khả dụng thực tế
 │   ├── 006_finance_integrity_and_security.sql      # RPC nguyên tử, ownership guards và hardening
 │   ├── 007_query_performance_indexes.sql           # Index theo access pattern của dashboard
-│   ├── 008_admin_rbac.sql                           # Phân quyền RBAC, bảng user_roles, chống tự leo quyền
-│   ├── 009_admin_audit_and_ai_usage.sql             # Bảng ai_usage_logs và admin_audit_logs bất biến
-│   └── 010_admin_system_settings.sql                # Bảng cấu hình system_settings & trigger chặn khóa bí mật
+│   ├── 008_transactions_transfers_integrity_and_indexes.sql # Ràng buộc xóa và index transactions/transfers
+│   ├── 009_admin_rbac.sql                           # Phân quyền RBAC, bảng user_roles, chống tự leo quyền
+│   ├── 010_admin_audit_and_ai_usage.sql             # Bảng ai_usage_logs và admin_audit_logs bất biến
+│   └── 011_admin_system_settings.sql                # Bảng cấu hình system_settings & trigger chặn khóa bí mật
 ├── fixes/                                          # Các script vá dữ liệu sản xuất
 │   └── production_fix.sql                          # Hotfix dữ liệu production
 └── README.md                                       # Hướng dẫn thao tác nhanh

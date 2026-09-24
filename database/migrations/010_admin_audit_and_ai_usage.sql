@@ -1,4 +1,4 @@
--- Migration 009: Admin Audit Trail and AI Telemetry Logging
+-- Migration 010: Admin Audit Trail and AI Telemetry Logging
 -- Provides observable system metrics and administrative accountability without logging sensitive user data.
 
 CREATE TABLE IF NOT EXISTS public.ai_usage_logs (

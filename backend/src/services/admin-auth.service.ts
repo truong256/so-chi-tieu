@@ -87,7 +87,7 @@ export async function verifyAdminUser(
 
   // 2. Query user_roles directly using user token or service role client
   const serviceRoleKey = (env?.supabaseServiceRoleKey ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
-  
+
   let role: string | null = null;
 
   if (serviceRoleKey) {

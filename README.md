@@ -66,9 +66,10 @@ so-chi-tieu/
 │   │   ├── 005_true_balances_rpc.sql
 │   │   ├── 006_finance_integrity_and_security.sql
 │   │   ├── 007_query_performance_indexes.sql
-│   │   ├── 008_admin_rbac.sql
-│   │   ├── 009_admin_audit_and_ai_usage.sql
-│   │   └── 010_admin_system_settings.sql
+│   │   ├── 008_transactions_transfers_integrity_and_indexes.sql
+│   │   ├── 009_admin_rbac.sql
+│   │   ├── 010_admin_audit_and_ai_usage.sql
+│   │   └── 011_admin_system_settings.sql
 │   ├── fixes/                        # SQL fixes cho môi trường production
 │   │   └── production_fix.sql
 │   └── README.md                     # Hướng dẫn chi tiết migration
@@ -152,11 +153,12 @@ GEMINI_API_KEY=your-gemini-api-key
 ```
 
 ### 4. Thiết lập Cơ sở dữ liệu
-Chạy tất cả tệp SQL trong `database/migrations/` theo thứ tự từ `000` đến `010` trên **Supabase SQL Editor**:
+Chạy tất cả tệp SQL trong `database/migrations/` theo thứ tự từ `000` đến `011` trên **Supabase SQL Editor**:
 - `000_base_schema.sql` → `007_query_performance_indexes.sql`: Lược đồ dữ liệu tài chính, tính toán số dư nguyên tử và index hiệu năng.
-- `008_admin_rbac.sql`: Bảng phân quyền `user_roles`, trigger tự động cấp quyền `user` khi đăng ký mới và các hàm kiểm tra `is_admin()`, `has_role()`.
-- `009_admin_audit_and_ai_usage.sql`: Bảng giám sát telemetry AI và nhật ký kiểm toán quản trị `admin_audit_logs`.
-- `010_admin_system_settings.sql`: Cấu hình cờ tính năng hệ thống `system_settings` an toàn.
+- `008_transactions_transfers_integrity_and_indexes.sql`: Ràng buộc toàn vẹn xóa giao dịch/chuyển khoản và index tăng tốc truy vấn.
+- `009_admin_rbac.sql`: Bảng phân quyền `user_roles`, trigger tự động cấp quyền `user` khi đăng ký mới và các hàm kiểm tra `is_admin()`, `has_role()`.
+- `010_admin_audit_and_ai_usage.sql`: Bảng giám sát telemetry AI và nhật ký kiểm toán quản trị `admin_audit_logs`.
+- `011_admin_system_settings.sql`: Cấu hình cờ tính năng hệ thống `system_settings` an toàn.
 
 #### Cấp quyền Admin đầu tiên (First Admin Provisioning)
 Hệ thống **không** hardcode email hay UID trong mã nguồn, và **không** cho phép người dùng tự thăng quyền qua API. Để chỉ định tài khoản Admin đầu tiên, sau khi người dùng đăng ký qua giao diện, chạy câu lệnh sau trên Supabase SQL Editor:

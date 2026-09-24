@@ -9,7 +9,7 @@ import {
 import { AuthenticationError } from "../backend/src/services/supabase-auth.service.ts";
 
 const rbacMigration = await readFile(
-  new URL("../database/migrations/008_admin_rbac.sql", import.meta.url),
+  new URL("../database/migrations/009_admin_rbac.sql", import.meta.url),
   "utf8",
 );
 const baseSchema = await readFile(

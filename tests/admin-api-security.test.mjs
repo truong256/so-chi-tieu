@@ -6,11 +6,11 @@ import { sanitizeHtml } from "../backend/src/services/admin-notifications.servic
 import { updateSystemSetting } from "../backend/src/services/admin-settings.service.ts";
 
 const settingsMigration = await readFile(
-  new URL("../database/migrations/010_admin_system_settings.sql", import.meta.url),
+  new URL("../database/migrations/011_admin_system_settings.sql", import.meta.url),
   "utf8",
 );
 const auditMigration = await readFile(
-  new URL("../database/migrations/009_admin_audit_and_ai_usage.sql", import.meta.url),
+  new URL("../database/migrations/010_admin_audit_and_ai_usage.sql", import.meta.url),
   "utf8",
 );
 const runtimeConfigRoute = await readFile(
