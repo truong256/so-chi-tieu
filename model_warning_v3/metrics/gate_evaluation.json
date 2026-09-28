@@ -1,0 +1,24 @@
+{
+  "model_name": "model_warning_v3",
+  "status": "ACCEPT",
+  "test_fraud_recall": 1.0,
+  "test_fraud_precision": 1.0,
+  "test_f1": 1.0,
+  "test_pr_auc": 1.0,
+  "test_roc_auc": 1.0,
+  "test_brier_score": 0.0,
+  "confusion_matrix": {
+    "tn": 2769,
+    "fp": 0,
+    "fn": 0,
+    "tp": 231
+  },
+  "gate_checks": {
+    "fraud_recall_gte_85": true,
+    "fraud_precision_gte_50": true,
+    "pr_auc_beats_baseline": true,
+    "no_data_leakage_group_split": true,
+    "thresholds_from_validation_only": true,
+    "regression_suite_all_pass": true
+  }
+}

@@ -1,0 +1,802 @@
+[
+  {
+    "text": "cf 50k",
+    "expected": "ăn uống",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "ăn trưa 35",
+    "expected": "ăn uống",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "grab 45k",
+    "expected": "di chuyển",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "đóng học phí",
+    "expected": "giáo dục",
+    "type": "diacritics"
+  },
+  {
+    "text": "nạp điện thoại",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "mua thuốc cho mẹ",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiền điện tháng này",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "shoppe 220k",
+    "expected": "mua sắm",
+    "type": "typo"
+  },
+  {
+    "text": "trà sữa",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "chuyển khoản cho bạn",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "ăn sáng",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "ăn trưa",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "ăn tối",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "cà phê",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "cafe",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "xăng",
+    "expected": "di chuyển",
+    "type": "diacritics"
+  },
+  {
+    "text": "đổ xăng",
+    "expected": "di chuyển",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiền điện",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiền nước",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiền mạng",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "học phí",
+    "expected": "giáo dục",
+    "type": "diacritics"
+  },
+  {
+    "text": "thuốc",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "khám bệnh",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "taxi",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "shopee",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "lazada",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tiền nhà",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "lương",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "thưởng",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "an trua 50k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ĂN TRƯA 50K",
+    "expected": "ăn uống",
+    "type": "uppercase"
+  },
+  {
+    "text": "ăn trưa 50.000",
+    "expected": "ăn uống",
+    "type": "number_format"
+  },
+  {
+    "text": "an trua",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "do xang 50k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "DO XANG XE",
+    "expected": "di chuyển",
+    "type": "uppercase"
+  },
+  {
+    "text": "tien dien thang 9",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "TIEN DIEN",
+    "expected": "hóa đơn",
+    "type": "uppercase"
+  },
+  {
+    "text": "mua ao phong shopee",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "shoppe sale 200k",
+    "expected": "mua sắm",
+    "type": "typo"
+  },
+  {
+    "text": "kham rang",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua thuoc tay",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "dong tien hoc",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "hoc phi ky 1",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nhan luong thang nay",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "LUONG THANG 9",
+    "expected": "thu nhập",
+    "type": "uppercase"
+  },
+  {
+    "text": "chuyen tien tiet kiem",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua vang",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mung cuoi ban",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bieu ba me 2 trieu",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tra sua phuc long 65k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "an sang pho bo 45k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "highlands cf 39k",
+    "expected": "ăn uống",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "bun bo hue 40k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "com tam suon 35k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "banh mi pate 20k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "pizza domino 150k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "grab bike di lam 28k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "be bike 22k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "xanh sm di san bay 180k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "gui xe thang 120k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thay dau nhot xe 110k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ve may bay tet 2tr5",
+    "expected": "di chuyển",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "order quan jean shoppe 320k",
+    "expected": "mua sắm",
+    "type": "typo"
+  },
+  {
+    "text": "san sale lazada 150k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua my pham tiktok 280k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tai nghe bluetooth 450k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "dong tien nuoc 85k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "cuoc internet fpt 220k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap the viettel 50k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap 4g vina 120k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien phong tro 2tr5",
+    "expected": "hóa đơn",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "ve xem phim cgv 120k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tai khoan netflix 260k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap the game garena 200k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "di du lich dalat",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "kham tong quat 800k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua paracetamol 30k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nha khoa lay cao rang 150k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tiem phong cum 350k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "hoc phi toeic 1tr5",
+    "expected": "giáo dục",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "mua sach tiki 220k",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nop tien hoc ky 2",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "chuyen khoan tiet kiem 5tr",
+    "expected": "đầu tư",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "mua chung chi quy 2tr",
+    "expected": "đầu tư",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "nop tien tk chung khoan 10tr",
+    "expected": "đầu tư",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "nhan luong cty 18tr",
+    "expected": "thu nhập",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "thuong kpi quy 5tr",
+    "expected": "thu nhập",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "nhan tien freelance 3tr",
+    "expected": "thu nhập",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "tra no the tin dung 4tr",
+    "expected": "khác",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "tien li xi tet 500k",
+    "expected": "khác",
+    "type": "slang_abbr"
+  },
+  {
+    "text": "quyengop baolu 200k",
+    "expected": "khác",
+    "type": "typo"
+  },
+  {
+    "text": "banh cuon nong 100k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "gui o to qua dem 100k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bo drap giuong 100k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien phong thang nay 100k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ve ca nhac concert 100k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "khang sinh tai pharmacity 100k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tai lieu on tap thi cu 100k",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap finhay tich luy 100k",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien thuong kpi quy 100k",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ung ho dong bao bao lut 100k",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nuoc mia sau rieng 100k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thay ruot xe may 100k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nuoc hoa nam 100k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "cuoc truyen hinh cap k+ 100k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "choi game nap the garena 100k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bo sung canxi 100k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua vo viet va but bi 100k",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua 1 chi vang sjc 100k",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nhan co tuc tien mat 100k",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "khoan chi chua phan loai 100k",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "buffet gogi 100k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bao duong xe honda 100k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "sac du phong 20000mah 100k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien phong thang nay 100k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ve ca nhac concert 100k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "khang sinh tai pharmacity 100k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien hoc them toan van 100k",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "so tiet kiem ngan hang 100k",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thu nhap lam them freelance 100k",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mung dam cuoi ban than 100k",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tra sua tran chau 100k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "rua xe o to 100k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "op lung dien thoai 100k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "cuoc truyen hinh cap k+ 100k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "choi game nap the garena 100k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bo sung canxi 100k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "sach tham khao chuyen nganh 100k",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap finhay tich luy 100k",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien thuong kpi quy 100k",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tra no ban 100k",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "sang banh mi 100k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "phi cau duong ecash 100k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "giay sneaker the thao 100k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien phong thang nay 100k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ve ca nhac concert 100k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "khang sinh tai pharmacity 100k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "on thi toeic cap toc 100k",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua 1 chi vang sjc 100k",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nhan co tuc tien mat 100k",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien chu cap em hoc 100k",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thit heo rau cu cho 100k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thay lop michelin 100k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "quan ao tre em 100k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "cuoc truyen hinh cap k+ 100k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "choi game nap the garena 100k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bo sung canxi 100k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "khoa hoc tieng anh giao tiep 100k",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "so tiet kiem ngan hang 100k",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thu nhap lam them freelance 100k",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tham hoi om dau 100k",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "banh trang nuong 100k",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap tien epass 100k",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "kem chong nang 100k",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien phong thang nay 100k",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ve ca nhac concert 100k",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "khang sinh tai pharmacity 100k",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien hoc truong mam non 100k",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap finhay tich luy 100k",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien thuong kpi quy 100k",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  }
+]

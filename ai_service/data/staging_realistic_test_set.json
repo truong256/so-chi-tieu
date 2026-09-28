@@ -1,0 +1,1502 @@
+[
+  {
+    "id": "stg_001",
+    "text": "cà phê sáng 30k",
+    "expected": "ăn uống",
+    "type": "standard_amount"
+  },
+  {
+    "id": "stg_002",
+    "text": "cf sáng",
+    "expected": "ăn uống",
+    "type": "abbrev_no_amount"
+  },
+  {
+    "id": "stg_003",
+    "text": "an trua",
+    "expected": "ăn uống",
+    "type": "no_accent"
+  },
+  {
+    "id": "stg_004",
+    "text": "ăn tối",
+    "expected": "ăn uống",
+    "type": "no_amount"
+  },
+  {
+    "id": "stg_005",
+    "text": "trà sữa",
+    "expected": "ăn uống",
+    "type": "no_amount"
+  },
+  {
+    "id": "stg_006",
+    "text": "tra sua tran chau 45k",
+    "expected": "ăn uống",
+    "type": "no_accent_amount"
+  },
+  {
+    "id": "stg_007",
+    "text": "highland coffee 65k",
+    "expected": "ăn uống",
+    "type": "brand_amount"
+  },
+  {
+    "id": "stg_008",
+    "text": "phở bò tái 55 nghìn",
+    "expected": "ăn uống",
+    "type": "word_amount"
+  },
+  {
+    "id": "stg_009",
+    "text": "bún đậu 40.000",
+    "expected": "ăn uống",
+    "type": "dot_amount"
+  },
+  {
+    "id": "stg_010",
+    "text": "bbq buffet 350k",
+    "expected": "ăn uống",
+    "type": "english_loan"
+  },
+  {
+    "id": "stg_011",
+    "text": "nem nuong nha trang",
+    "expected": "ăn uống",
+    "type": "no_accent"
+  },
+  {
+    "id": "stg_012",
+    "text": "bánh mì que 15k",
+    "expected": "ăn uống",
+    "type": "standard"
+  },
+  {
+    "id": "stg_013",
+    "text": "ăn vặt cùng cty 80k",
+    "expected": "ăn uống",
+    "type": "abbrev"
+  },
+  {
+    "id": "stg_014",
+    "text": "KOI Thé 60k",
+    "expected": "ăn uống",
+    "type": "mixed_case"
+  },
+  {
+    "id": "stg_015",
+    "text": "starbucks cold brew",
+    "expected": "ăn uống",
+    "type": "brand_english"
+  },
+  {
+    "id": "stg_016",
+    "text": "ăn đêm cháo sườn",
+    "expected": "ăn uống",
+    "type": "standard"
+  },
+  {
+    "id": "stg_017",
+    "text": "cơm văn phòng 35k",
+    "expected": "ăn uống",
+    "type": "standard"
+  },
+  {
+    "id": "stg_018",
+    "text": "lẩu haidilao 890k",
+    "expected": "ăn uống",
+    "type": "brand_amount"
+  },
+  {
+    "id": "stg_019",
+    "text": "bánh tráng trộn 25k",
+    "expected": "ăn uống",
+    "type": "street_food"
+  },
+  {
+    "id": "stg_020",
+    "text": "uong cafe voi sep",
+    "expected": "ăn uống",
+    "type": "no_accent"
+  },
+  {
+    "id": "stg_021",
+    "text": "bữa trưa bà ngoại",
+    "expected": "ăn uống",
+    "type": "colloquial"
+  },
+  {
+    "id": "stg_022",
+    "text": "chè sầu riêng 30k",
+    "expected": "ăn uống",
+    "type": "standard"
+  },
+  {
+    "id": "stg_023",
+    "text": "pizza hut combo 199k",
+    "expected": "ăn uống",
+    "type": "brand_amount"
+  },
+  {
+    "id": "stg_024",
+    "text": "trà đào cam sả",
+    "expected": "ăn uống",
+    "type": "drink"
+  },
+  {
+    "id": "stg_025",
+    "text": "🍔 Gà rán kfc 120k 🍟",
+    "expected": "ăn uống",
+    "type": "emoji_brand"
+  },
+  {
+    "id": "stg_026",
+    "text": "grab đi học",
+    "expected": "di chuyển",
+    "type": "app_ride"
+  },
+  {
+    "id": "stg_027",
+    "text": "đổ xăng 70 nghìn",
+    "expected": "di chuyển",
+    "type": "gas_text_amount"
+  },
+  {
+    "id": "stg_028",
+    "text": "do xang 50k",
+    "expected": "di chuyển",
+    "type": "no_accent"
+  },
+  {
+    "id": "stg_029",
+    "text": "xang xe may",
+    "expected": "di chuyển",
+    "type": "no_accent_no_amount"
+  },
+  {
+    "id": "stg_030",
+    "text": "be bike 25k",
+    "expected": "di chuyển",
+    "type": "app_bike"
+  },
+  {
+    "id": "stg_031",
+    "text": "grab car ra san bay 220k",
+    "expected": "di chuyển",
+    "type": "app_car_no_accent"
+  },
+  {
+    "id": "stg_032",
+    "text": "nạp tiền thẻ etc",
+    "expected": "di chuyển",
+    "type": "toll_card"
+  },
+  {
+    "id": "stg_033",
+    "text": "ve xe buyt thang",
+    "expected": "di chuyển",
+    "type": "bus_monthly_no_accent"
+  },
+  {
+    "id": "stg_034",
+    "text": "rửa xe máy 25k",
+    "expected": "di chuyển",
+    "type": "wash_bike"
+  },
+  {
+    "id": "stg_035",
+    "text": "bảo dưỡng xe honda",
+    "expected": "di chuyển",
+    "type": "maintenance"
+  },
+  {
+    "id": "stg_036",
+    "text": "thay nhớt motul 120k",
+    "expected": "di chuyển",
+    "type": "oil_change"
+  },
+  {
+    "id": "stg_037",
+    "text": "gửi xe vincom 10k",
+    "expected": "di chuyển",
+    "type": "parking_mall"
+  },
+  {
+    "id": "stg_038",
+    "text": "tien gui xe thang",
+    "expected": "di chuyển",
+    "type": "parking_no_accent"
+  },
+  {
+    "id": "stg_039",
+    "text": "taxi mai linh 85k",
+    "expected": "di chuyển",
+    "type": "traditional_taxi"
+  },
+  {
+    "id": "stg_040",
+    "text": "xanh sm bike",
+    "expected": "di chuyển",
+    "type": "electric_bike"
+  },
+  {
+    "id": "stg_041",
+    "text": "vé tàu hỏa đi đà nẵng",
+    "expected": "di chuyển",
+    "type": "train_ticket"
+  },
+  {
+    "id": "stg_042",
+    "text": "vé máy bay vietjet 1tr2",
+    "expected": "di chuyển",
+    "type": "flight_tr_amount"
+  },
+  {
+    "id": "stg_043",
+    "text": "vá săm xe 30k",
+    "expected": "di chuyển",
+    "type": "tire_patch"
+  },
+  {
+    "id": "stg_044",
+    "text": "cứu hộ xe máy",
+    "expected": "di chuyển",
+    "type": "rescue"
+  },
+  {
+    "id": "stg_045",
+    "text": "grabcar ve nha",
+    "expected": "di chuyển",
+    "type": "ride_no_accent"
+  },
+  {
+    "id": "stg_046",
+    "text": "phí cầu đường cao tốc",
+    "expected": "di chuyển",
+    "type": "highway_toll"
+  },
+  {
+    "id": "stg_047",
+    "text": "thuê xe tự lái 800k",
+    "expected": "di chuyển",
+    "type": "rental_car"
+  },
+  {
+    "id": "stg_048",
+    "text": "tiền gửi xe qua đêm",
+    "expected": "di chuyển",
+    "type": "overnight_parking"
+  },
+  {
+    "id": "stg_049",
+    "text": "bơm lốp xe 5k",
+    "expected": "di chuyển",
+    "type": "tire_pump"
+  },
+  {
+    "id": "stg_050",
+    "text": "🛵 xe ôm truyền thống 20k",
+    "expected": "di chuyển",
+    "type": "emoji_ride"
+  },
+  {
+    "id": "stg_051",
+    "text": "mua áo",
+    "expected": "mua sắm",
+    "type": "short"
+  },
+  {
+    "id": "stg_052",
+    "text": "shoppe",
+    "expected": "mua sắm",
+    "type": "typo_shopee"
+  },
+  {
+    "id": "stg_053",
+    "text": "shopee",
+    "expected": "mua sắm",
+    "type": "ecommerce_brand"
+  },
+  {
+    "id": "stg_054",
+    "text": "tiki giao nhanh 180k",
+    "expected": "mua sắm",
+    "type": "ecommerce_tiki"
+  },
+  {
+    "id": "stg_055",
+    "text": "lazada don hang 320k",
+    "expected": "mua sắm",
+    "type": "ecommerce_lazada_no_accent"
+  },
+  {
+    "id": "stg_056",
+    "text": "mua giay sneaker",
+    "expected": "mua sắm",
+    "type": "fashion_no_accent"
+  },
+  {
+    "id": "stg_057",
+    "text": "quan jean zara 650k",
+    "expected": "mua sắm",
+    "type": "fashion_brand"
+  },
+  {
+    "id": "stg_058",
+    "text": "mua sắm uniqlo 850k",
+    "expected": "mua sắm",
+    "type": "brand_store"
+  },
+  {
+    "id": "stg_059",
+    "text": "son black rouge",
+    "expected": "mua sắm",
+    "type": "cosmetics"
+  },
+  {
+    "id": "stg_060",
+    "text": "kem chong nang anessa",
+    "expected": "mua sắm",
+    "type": "skincare_no_accent"
+  },
+  {
+    "id": "stg_061",
+    "text": "mua balo di lam",
+    "expected": "mua sắm",
+    "type": "accessory_no_accent"
+  },
+  {
+    "id": "stg_062",
+    "text": "chuột logitech g102",
+    "expected": "mua sắm",
+    "type": "electronics_gadget"
+  },
+  {
+    "id": "stg_063",
+    "text": "bàn phím cơ akko 1tr1",
+    "expected": "mua sắm",
+    "type": "gadget_tr_amount"
+  },
+  {
+    "id": "stg_064",
+    "text": "mua sách tiki 150k",
+    "expected": "mua sắm",
+    "type": "book_ecom"
+  },
+  {
+    "id": "stg_065",
+    "text": "mua ví da nam",
+    "expected": "mua sắm",
+    "type": "fashion_leather"
+  },
+  {
+    "id": "stg_066",
+    "text": "đồng hồ casio",
+    "expected": "mua sắm",
+    "type": "watch_brand"
+  },
+  {
+    "id": "stg_067",
+    "text": "mua kính cận",
+    "expected": "mua sắm",
+    "type": "glasses"
+  },
+  {
+    "id": "stg_068",
+    "text": "áo sơ mi owen",
+    "expected": "mua sắm",
+    "type": "shirt_brand"
+  },
+  {
+    "id": "stg_069",
+    "text": "mua ốp lưng điện thoại 50k",
+    "expected": "mua sắm",
+    "type": "phone_case"
+  },
+  {
+    "id": "stg_070",
+    "text": "tai nghe bluetooth",
+    "expected": "mua sắm",
+    "type": "tech_earbuds"
+  },
+  {
+    "id": "stg_071",
+    "text": "mua quà sinh nhật bạn",
+    "expected": "mua sắm",
+    "type": "gift"
+  },
+  {
+    "id": "stg_072",
+    "text": "order taobao 450k",
+    "expected": "mua sắm",
+    "type": "order_abroad"
+  },
+  {
+    "id": "stg_073",
+    "text": "mua nồi chiên không dầu",
+    "expected": "mua sắm",
+    "type": "home_appliance"
+  },
+  {
+    "id": "stg_074",
+    "text": "túi xách nữ",
+    "expected": "mua sắm",
+    "type": "bag"
+  },
+  {
+    "id": "stg_075",
+    "text": "🛍️ mua đầm dự tiệc 450k",
+    "expected": "mua sắm",
+    "type": "emoji_dress"
+  },
+  {
+    "id": "stg_076",
+    "text": "đóng tiền điện",
+    "expected": "hóa đơn",
+    "type": "electric_bill"
+  },
+  {
+    "id": "stg_077",
+    "text": "tiền mạng tháng này",
+    "expected": "hóa đơn",
+    "type": "internet_bill"
+  },
+  {
+    "id": "stg_078",
+    "text": "nạp data",
+    "expected": "hóa đơn",
+    "type": "mobile_data"
+  },
+  {
+    "id": "stg_079",
+    "text": "tiền trọ",
+    "expected": "hóa đơn",
+    "type": "rent_short"
+  },
+  {
+    "id": "stg_080",
+    "text": "tien nha thang 9",
+    "expected": "hóa đơn",
+    "type": "rent_no_accent"
+  },
+  {
+    "id": "stg_081",
+    "text": "đóng tiền nước 120k",
+    "expected": "hóa đơn",
+    "type": "water_bill"
+  },
+  {
+    "id": "stg_082",
+    "text": "nap card viettel 50k",
+    "expected": "hóa đơn",
+    "type": "topup_no_accent"
+  },
+  {
+    "id": "stg_083",
+    "text": "goi cuoc 4g vinaphone",
+    "expected": "hóa đơn",
+    "type": "carrier_no_accent"
+  },
+  {
+    "id": "stg_084",
+    "text": "hoa don vnpt fiber",
+    "expected": "hóa đơn",
+    "type": "isp_fiber_no_accent"
+  },
+  {
+    "id": "stg_085",
+    "text": "phí quản lý chung cư 450k",
+    "expected": "hóa đơn",
+    "type": "building_fee"
+  },
+  {
+    "id": "stg_086",
+    "text": "đóng tiền rác",
+    "expected": "hóa đơn",
+    "type": "trash_fee"
+  },
+  {
+    "id": "stg_087",
+    "text": "tien cap truyen hinh",
+    "expected": "hóa đơn",
+    "type": "cable_tv_no_accent"
+  },
+  {
+    "id": "stg_088",
+    "text": "nạp thẻ mobi 100k",
+    "expected": "hóa đơn",
+    "type": "mobile_topup"
+  },
+  {
+    "id": "stg_089",
+    "text": "hóa đơn tiền điện evn",
+    "expected": "hóa đơn",
+    "type": "evn_bill"
+  },
+  {
+    "id": "stg_090",
+    "text": "tiền net fpt 220k",
+    "expected": "hóa đơn",
+    "type": "fpt_net"
+  },
+  {
+    "id": "stg_091",
+    "text": "đóng tiền điện nước phòng trọ",
+    "expected": "hóa đơn",
+    "type": "rent_utility"
+  },
+  {
+    "id": "stg_092",
+    "text": "nạp 50k điện thoại mẹ",
+    "expected": "hóa đơn",
+    "type": "family_topup"
+  },
+  {
+    "id": "stg_093",
+    "text": "tiền gửi xe chung cư tháng",
+    "expected": "hóa đơn",
+    "type": "monthly_parking_bill"
+  },
+  {
+    "id": "stg_094",
+    "text": "mua dung lượng icloud 19k",
+    "expected": "hóa đơn",
+    "type": "digital_sub"
+  },
+  {
+    "id": "stg_095",
+    "text": "phí duy trì tài khoản ngân hàng",
+    "expected": "hóa đơn",
+    "type": "bank_maintenance"
+  },
+  {
+    "id": "stg_096",
+    "text": "tiền wifi tháng 9",
+    "expected": "hóa đơn",
+    "type": "wifi_month"
+  },
+  {
+    "id": "stg_097",
+    "text": "đóng tiền trọ tháng này 3tr5",
+    "expected": "hóa đơn",
+    "type": "room_rent_3tr5"
+  },
+  {
+    "id": "stg_098",
+    "text": "nạp viettel 200 nghìn",
+    "expected": "hóa đơn",
+    "type": "topup_text_amount"
+  },
+  {
+    "id": "stg_099",
+    "text": "phi dich vu ve sinh",
+    "expected": "hóa đơn",
+    "type": "cleaning_fee_no_accent"
+  },
+  {
+    "id": "stg_100",
+    "text": "⚡ thanh toan tien dien",
+    "expected": "hóa đơn",
+    "type": "emoji_electric"
+  },
+  {
+    "id": "stg_101",
+    "text": "ve xem phim cgv",
+    "expected": "giải trí",
+    "type": "cinema_cgv_no_accent"
+  },
+  {
+    "id": "stg_102",
+    "text": "xem phim rạp lotte 110k",
+    "expected": "giải trí",
+    "type": "cinema_lotte"
+  },
+  {
+    "id": "stg_103",
+    "text": "netflix goi gia dinh 70k",
+    "expected": "giải trí",
+    "type": "streaming_sub"
+  },
+  {
+    "id": "stg_104",
+    "text": "spotify premium",
+    "expected": "giải trí",
+    "type": "music_sub"
+  },
+  {
+    "id": "stg_105",
+    "text": "nap the garena 100k",
+    "expected": "giải trí",
+    "type": "game_topup"
+  },
+  {
+    "id": "stg_106",
+    "text": "nap game genshin 200k",
+    "expected": "giải trí",
+    "type": "game_genshin"
+  },
+  {
+    "id": "stg_107",
+    "text": "di choi net cyber",
+    "expected": "giải trí",
+    "type": "cyber_cafe_no_accent"
+  },
+  {
+    "id": "stg_108",
+    "text": "hát karaoke với cty",
+    "expected": "giải trí",
+    "type": "karaoke_company"
+  },
+  {
+    "id": "stg_109",
+    "text": "ve concert anh trai say hi",
+    "expected": "giải trí",
+    "type": "concert_ticket"
+  },
+  {
+    "id": "stg_110",
+    "text": "mua boardgame mèo nổ",
+    "expected": "giải trí",
+    "type": "boardgame"
+  },
+  {
+    "id": "stg_111",
+    "text": "mua game steam",
+    "expected": "giải trí",
+    "type": "steam_game"
+  },
+  {
+    "id": "stg_112",
+    "text": "du lịch vũng tàu cuối tuần",
+    "expected": "giải trí",
+    "type": "travel_weekend"
+  },
+  {
+    "id": "stg_113",
+    "text": "vé vào cổng đầm sen",
+    "expected": "giải trí",
+    "type": "amusement_park"
+  },
+  {
+    "id": "stg_114",
+    "text": "chơi bida với bạn 90k",
+    "expected": "giải trí",
+    "type": "billiards"
+  },
+  {
+    "id": "stg_115",
+    "text": "nap the zing 50k",
+    "expected": "giải trí",
+    "type": "zing_card"
+  },
+  {
+    "id": "stg_116",
+    "text": "vé xem kịch sân khấu",
+    "expected": "giải trí",
+    "type": "theater_ticket"
+  },
+  {
+    "id": "stg_117",
+    "text": "camping hồ trị an",
+    "expected": "giải trí",
+    "type": "outdoor_camp"
+  },
+  {
+    "id": "stg_118",
+    "text": "đi bar pub cuối tuần 450k",
+    "expected": "giải trí",
+    "type": "nightlife_bar"
+  },
+  {
+    "id": "stg_119",
+    "text": "mua tài khoản youtube premium",
+    "expected": "giải trí",
+    "type": "youtube_sub"
+  },
+  {
+    "id": "stg_120",
+    "text": "chơi bắn cung 150k",
+    "expected": "giải trí",
+    "type": "archery"
+  },
+  {
+    "id": "stg_121",
+    "text": "vé công viên nước",
+    "expected": "giải trí",
+    "type": "waterpark"
+  },
+  {
+    "id": "stg_122",
+    "text": "di xem trien lam tranh",
+    "expected": "giải trí",
+    "type": "exhibition_no_accent"
+  },
+  {
+    "id": "stg_123",
+    "text": "thuê lều cắm trại 120k",
+    "expected": "giải trí",
+    "type": "tent_rental"
+  },
+  {
+    "id": "stg_124",
+    "text": "vé xem ca nhạc phòng trà",
+    "expected": "giải trí",
+    "type": "acoustic_live"
+  },
+  {
+    "id": "stg_125",
+    "text": "🎮 nap tien mua skin game",
+    "expected": "giải trí",
+    "type": "emoji_game"
+  },
+  {
+    "id": "stg_126",
+    "text": "mua thuốc",
+    "expected": "sức khỏe",
+    "type": "pharmacy_short"
+  },
+  {
+    "id": "stg_127",
+    "text": "khám bệnh",
+    "expected": "sức khỏe",
+    "type": "hospital_short"
+  },
+  {
+    "id": "stg_128",
+    "text": "mua thuoc cho me",
+    "expected": "sức khỏe",
+    "type": "no_accent"
+  },
+  {
+    "id": "stg_129",
+    "text": "long chau mua panadol",
+    "expected": "sức khỏe",
+    "type": "pharmacy_brand"
+  },
+  {
+    "id": "stg_130",
+    "text": "nhà thuốc an khang 85k",
+    "expected": "sức khỏe",
+    "type": "pharmacy_ankhang"
+  },
+  {
+    "id": "stg_131",
+    "text": "khám răng định kỳ",
+    "expected": "sức khỏe",
+    "type": "dental_check"
+  },
+  {
+    "id": "stg_132",
+    "text": "nhổ răng khôn 1tr5",
+    "expected": "sức khỏe",
+    "type": "dental_surgery"
+  },
+  {
+    "id": "stg_133",
+    "text": "mua vitamin c sủi",
+    "expected": "sức khỏe",
+    "type": "supplement"
+  },
+  {
+    "id": "stg_134",
+    "text": "xét nghiệm máu tổng quát",
+    "expected": "sức khỏe",
+    "type": "blood_test"
+  },
+  {
+    "id": "stg_135",
+    "text": "mua khẩu trang y tế 35k",
+    "expected": "sức khỏe",
+    "type": "mask"
+  },
+  {
+    "id": "stg_136",
+    "text": "thuốc nhỏ mắt santen",
+    "expected": "sức khỏe",
+    "type": "eyedrops"
+  },
+  {
+    "id": "stg_137",
+    "text": "đi khám da liễu",
+    "expected": "sức khỏe",
+    "type": "dermatology"
+  },
+  {
+    "id": "stg_138",
+    "text": "mua men tiêu hóa",
+    "expected": "sức khỏe",
+    "type": "digestive_aid"
+  },
+  {
+    "id": "stg_139",
+    "text": "thuốc cảm cúm tiffy",
+    "expected": "sức khỏe",
+    "type": "flu_medicine"
+  },
+  {
+    "id": "stg_140",
+    "text": "mua nước muối sinh lý",
+    "expected": "sức khỏe",
+    "type": "saline"
+  },
+  {
+    "id": "stg_141",
+    "text": "dầu gió xanh",
+    "expected": "sức khỏe",
+    "type": "medicated_oil"
+  },
+  {
+    "id": "stg_142",
+    "text": "khám mắt viện mắt",
+    "expected": "sức khỏe",
+    "type": "eye_exam"
+  },
+  {
+    "id": "stg_143",
+    "text": "tiêm phòng cúm mùa",
+    "expected": "sức khỏe",
+    "type": "vaccine"
+  },
+  {
+    "id": "stg_144",
+    "text": "mua bông gạc y tế",
+    "expected": "sức khỏe",
+    "type": "first_aid"
+  },
+  {
+    "id": "stg_145",
+    "text": "thuốc ho prospan",
+    "expected": "sức khỏe",
+    "type": "cough_syrup"
+  },
+  {
+    "id": "stg_146",
+    "text": "bác sĩ gia đình",
+    "expected": "sức khỏe",
+    "type": "family_doctor"
+  },
+  {
+    "id": "stg_147",
+    "text": "chụp x quang",
+    "expected": "sức khỏe",
+    "type": "xray"
+  },
+  {
+    "id": "stg_148",
+    "text": "mua sữa canxi cho bà",
+    "expected": "sức khỏe",
+    "type": "calcium_milk"
+  },
+  {
+    "id": "stg_149",
+    "text": "điều trị viêm họng",
+    "expected": "sức khỏe",
+    "type": "throat_treatment"
+  },
+  {
+    "id": "stg_150",
+    "text": "💊 mua thuoc ho panadol 45k",
+    "expected": "sức khỏe",
+    "type": "emoji_medicine"
+  },
+  {
+    "id": "stg_151",
+    "text": "học phí",
+    "expected": "giáo dục",
+    "type": "tuition_short"
+  },
+  {
+    "id": "stg_152",
+    "text": "đóng học phí",
+    "expected": "giáo dục",
+    "type": "tuition_verb"
+  },
+  {
+    "id": "stg_153",
+    "text": "tien hoc phi ky 1",
+    "expected": "giáo dục",
+    "type": "semester_fee_no_accent"
+  },
+  {
+    "id": "stg_154",
+    "text": "khoa hoc ielts 4tr",
+    "expected": "giáo dục",
+    "type": "ielts_course"
+  },
+  {
+    "id": "stg_155",
+    "text": "mua sach giao trinh 120k",
+    "expected": "giáo dục",
+    "type": "textbook_no_accent"
+  },
+  {
+    "id": "stg_156",
+    "text": "học tiếng anh elsa speak",
+    "expected": "giáo dục",
+    "type": "app_learning"
+  },
+  {
+    "id": "stg_157",
+    "text": "tien hoc them toan cua con",
+    "expected": "giáo dục",
+    "type": "tutoring_kid_no_accent"
+  },
+  {
+    "id": "stg_158",
+    "text": "khoa hoc udemy python",
+    "expected": "giáo dục",
+    "type": "udemy_online"
+  },
+  {
+    "id": "stg_159",
+    "text": "mua but vo viet",
+    "expected": "giáo dục",
+    "type": "stationery_no_accent"
+  },
+  {
+    "id": "stg_160",
+    "text": "lệ phí thi toeic",
+    "expected": "giáo dục",
+    "type": "toeic_exam_fee"
+  },
+  {
+    "id": "stg_161",
+    "text": "học lái xe b2",
+    "expected": "giáo dục",
+    "type": "driving_license"
+  },
+  {
+    "id": "stg_162",
+    "text": "đóng quỹ lớp 150k",
+    "expected": "giáo dục",
+    "type": "class_fund"
+  },
+  {
+    "id": "stg_163",
+    "text": "mua từ điển oxford",
+    "expected": "giáo dục",
+    "type": "dictionary"
+  },
+  {
+    "id": "stg_164",
+    "text": "học phí mầm non",
+    "expected": "giáo dục",
+    "type": "kindergarten"
+  },
+  {
+    "id": "stg_165",
+    "text": "mua sách ngữ pháp tiếng anh",
+    "expected": "giáo dục",
+    "type": "grammar_book"
+  },
+  {
+    "id": "stg_166",
+    "text": "gia sư dạy kèm",
+    "expected": "giáo dục",
+    "type": "tutor"
+  },
+  {
+    "id": "stg_167",
+    "text": "lệ phí thi hsk 4",
+    "expected": "giáo dục",
+    "type": "hsk_exam"
+  },
+  {
+    "id": "stg_168",
+    "text": "khoá học thiết kế canva",
+    "expected": "giáo dục",
+    "type": "canva_course"
+  },
+  {
+    "id": "stg_169",
+    "text": "mua khoá học coursera",
+    "expected": "giáo dục",
+    "type": "coursera"
+  },
+  {
+    "id": "stg_170",
+    "text": "học bơi cơ bản",
+    "expected": "giáo dục",
+    "type": "swimming_lesson"
+  },
+  {
+    "id": "stg_171",
+    "text": "mua sach luyen thi dai hoc",
+    "expected": "giáo dục",
+    "type": "exam_prep_book"
+  },
+  {
+    "id": "stg_172",
+    "text": "tien hoc dan piano",
+    "expected": "giáo dục",
+    "type": "piano_class"
+  },
+  {
+    "id": "stg_173",
+    "text": "đóng tiền cơ sở vật chất trường",
+    "expected": "giáo dục",
+    "type": "school_facility"
+  },
+  {
+    "id": "stg_174",
+    "text": "mua compa thuoc ke",
+    "expected": "giáo dục",
+    "type": "stationery_tools"
+  },
+  {
+    "id": "stg_175",
+    "text": "📚 dong tien hoc ki 2 3tr8",
+    "expected": "giáo dục",
+    "type": "emoji_semester_fee"
+  },
+  {
+    "id": "stg_176",
+    "text": "mua vang sjc",
+    "expected": "đầu tư",
+    "type": "gold_sjc_no_accent"
+  },
+  {
+    "id": "stg_177",
+    "text": "mua 1 chi vang",
+    "expected": "đầu tư",
+    "type": "gold_1chi"
+  },
+  {
+    "id": "stg_178",
+    "text": "tich luy finhay 1tr",
+    "expected": "đầu tư",
+    "type": "finhay_app"
+  },
+  {
+    "id": "stg_179",
+    "text": "nạp tiền tk chứng khoán vps",
+    "expected": "đầu tư",
+    "type": "stock_vps"
+  },
+  {
+    "id": "stg_180",
+    "text": "mua chung chi quy dcds",
+    "expected": "đầu tư",
+    "type": "fund_certificate"
+  },
+  {
+    "id": "stg_181",
+    "text": "dau tu chung khoan tcbs",
+    "expected": "đầu tư",
+    "type": "stock_tcbs"
+  },
+  {
+    "id": "stg_182",
+    "text": "mua usdt binance",
+    "expected": "đầu tư",
+    "type": "crypto_binance"
+  },
+  {
+    "id": "stg_183",
+    "text": "gửi tiết kiệm online 10tr",
+    "expected": "đầu tư",
+    "type": "online_savings"
+  },
+  {
+    "id": "stg_184",
+    "text": "tích lũy tikop",
+    "expected": "đầu tư",
+    "type": "tikop_app"
+  },
+  {
+    "id": "stg_185",
+    "text": "mua cổ phiếu fpt",
+    "expected": "đầu tư",
+    "type": "buy_stock_fpt"
+  },
+  {
+    "id": "stg_186",
+    "text": "nạp tiền vào ssi",
+    "expected": "đầu tư",
+    "type": "stock_ssi"
+  },
+  {
+    "id": "stg_187",
+    "text": "mở sổ tiết kiệm vietcombank",
+    "expected": "đầu tư",
+    "type": "bank_savings_book"
+  },
+  {
+    "id": "stg_188",
+    "text": "đầu tư quỹ mở vcb",
+    "expected": "đầu tư",
+    "type": "open_fund"
+  },
+  {
+    "id": "stg_189",
+    "text": "mua eth ví metamask",
+    "expected": "đầu tư",
+    "type": "crypto_eth"
+  },
+  {
+    "id": "stg_190",
+    "text": "tích luỹ vàng nhẫn 9999",
+    "expected": "đầu tư",
+    "type": "gold_ring"
+  },
+  {
+    "id": "stg_191",
+    "text": "góp vốn kinh doanh quán cafe",
+    "expected": "đầu tư",
+    "type": "venture_capital"
+  },
+  {
+    "id": "stg_192",
+    "text": "mua chứng chỉ quỹ vfmvf1",
+    "expected": "đầu tư",
+    "type": "fund_vfm"
+  },
+  {
+    "id": "stg_193",
+    "text": "gửi tiền kỳ hạn 6 tháng",
+    "expected": "đầu tư",
+    "type": "term_deposit"
+  },
+  {
+    "id": "stg_194",
+    "text": "mua btc trữ ví lạnh",
+    "expected": "đầu tư",
+    "type": "crypto_cold_wallet"
+  },
+  {
+    "id": "stg_195",
+    "text": "dau tu trai phieu doanh nghiep",
+    "expected": "đầu tư",
+    "type": "bond_no_accent"
+  },
+  {
+    "id": "stg_196",
+    "text": "nạp tiền tài khoản vndirect",
+    "expected": "đầu tư",
+    "type": "stock_vndirect"
+  },
+  {
+    "id": "stg_197",
+    "text": "mua cổ phiếu hòa phát",
+    "expected": "đầu tư",
+    "type": "stock_hpg"
+  },
+  {
+    "id": "stg_198",
+    "text": "trích tiền sang sổ tiết kiệm",
+    "expected": "đầu tư",
+    "type": "transfer_savings"
+  },
+  {
+    "id": "stg_199",
+    "text": "tích lũy cổ tức tái đầu tư",
+    "expected": "đầu tư",
+    "type": "reinvest"
+  },
+  {
+    "id": "stg_200",
+    "text": "📈 nap tien dau tu chung khoan 5tr",
+    "expected": "đầu tư",
+    "type": "emoji_stock"
+  },
+  {
+    "id": "stg_201",
+    "text": "lương tháng 9",
+    "expected": "thu nhập",
+    "type": "salary_month"
+  },
+  {
+    "id": "stg_202",
+    "text": "được thưởng",
+    "expected": "thu nhập",
+    "type": "bonus_short"
+  },
+  {
+    "id": "stg_203",
+    "text": "luong cty chuyen",
+    "expected": "thu nhập",
+    "type": "salary_no_accent"
+  },
+  {
+    "id": "stg_204",
+    "text": "nhận tiền thưởng dự án",
+    "expected": "thu nhập",
+    "type": "project_bonus"
+  },
+  {
+    "id": "stg_205",
+    "text": "thuong kpi quy 3",
+    "expected": "thu nhập",
+    "type": "kpi_bonus"
+  },
+  {
+    "id": "stg_206",
+    "text": "tien lai tiet kiem ngan hang",
+    "expected": "thu nhập",
+    "type": "savings_interest"
+  },
+  {
+    "id": "stg_207",
+    "text": "co tuc tien mat fpt",
+    "expected": "thu nhập",
+    "type": "stock_dividend"
+  },
+  {
+    "id": "stg_208",
+    "text": "nhan tien freelance thiet ke",
+    "expected": "thu nhập",
+    "type": "freelance_income"
+  },
+  {
+    "id": "stg_209",
+    "text": "ban do cu thanh ly",
+    "expected": "thu nhập",
+    "type": "sell_used_items"
+  },
+  {
+    "id": "stg_210",
+    "text": "khach hang thanh toan tien hang",
+    "expected": "thu nhập",
+    "type": "customer_payment"
+  },
+  {
+    "id": "stg_211",
+    "text": "tien tip cua khach",
+    "expected": "thu nhập",
+    "type": "customer_tip"
+  },
+  {
+    "id": "stg_212",
+    "text": "me cho tien sinh hoat",
+    "expected": "thu nhập",
+    "type": "parent_allowance"
+  },
+  {
+    "id": "stg_213",
+    "text": "nhan tien hoan thue tncn",
+    "expected": "thu nhập",
+    "type": "tax_refund"
+  },
+  {
+    "id": "stg_214",
+    "text": "ban co phieu co lai",
+    "expected": "thu nhập",
+    "type": "stock_profit"
+  },
+  {
+    "id": "stg_215",
+    "text": "tien thue nha nguoi ta tra",
+    "expected": "thu nhập",
+    "type": "rental_income"
+  },
+  {
+    "id": "stg_216",
+    "text": "trúng thưởng mini game",
+    "expected": "thu nhập",
+    "type": "game_reward"
+  },
+  {
+    "id": "stg_217",
+    "text": "nhận lì xì đầu năm",
+    "expected": "thu nhập",
+    "type": "lucky_money"
+  },
+  {
+    "id": "stg_218",
+    "text": "thu nhập phụ ngoài giờ",
+    "expected": "thu nhập",
+    "type": "side_hustle"
+  },
+  {
+    "id": "stg_219",
+    "text": "cong ty tra thu lao huong dan",
+    "expected": "thu nhập",
+    "type": "mentoring_fee"
+  },
+  {
+    "id": "stg_220",
+    "text": "nhận tiền hoàn tiền thẻ tín dụng",
+    "expected": "thu nhập",
+    "type": "cashback"
+  },
+  {
+    "id": "stg_221",
+    "text": "tiền thưởng nhân viên xuất sắc",
+    "expected": "thu nhập",
+    "type": "excellence_bonus"
+  },
+  {
+    "id": "stg_222",
+    "text": "ban xe cu duoc 15 trieu",
+    "expected": "thu nhập",
+    "type": "sell_bike_income"
+  },
+  {
+    "id": "stg_223",
+    "text": "thu nhập dạy thêm gia sư",
+    "expected": "thu nhập",
+    "type": "tutoring_income"
+  },
+  {
+    "id": "stg_224",
+    "text": "nhận tiền bồi thường bảo hiểm",
+    "expected": "thu nhập",
+    "type": "insurance_payout"
+  },
+  {
+    "id": "stg_225",
+    "text": "💵 tinh luong thang nay 18tr5",
+    "expected": "thu nhập",
+    "type": "emoji_salary"
+  },
+  {
+    "id": "stg_226",
+    "text": "chuyển khoản cho bạn",
+    "expected": "khác",
+    "type": "transfer_friend"
+  },
+  {
+    "id": "stg_227",
+    "text": "trả nợ",
+    "expected": "khác",
+    "type": "debt_repay_short"
+  },
+  {
+    "id": "stg_228",
+    "text": "chuyen tien cho nam",
+    "expected": "khác",
+    "type": "transfer_no_accent"
+  },
+  {
+    "id": "stg_229",
+    "text": "tra no anh minh 500k",
+    "expected": "khác",
+    "type": "debt_repay_name"
+  },
+  {
+    "id": "stg_230",
+    "text": "tra no the tin dung 4tr",
+    "expected": "khác",
+    "type": "credit_card_repay"
+  },
+  {
+    "id": "stg_231",
+    "text": "cho ban muon 1 trieu",
+    "expected": "khác",
+    "type": "lend_money"
+  },
+  {
+    "id": "stg_232",
+    "text": "mung cuoi ban dai hoc 500k",
+    "expected": "khác",
+    "type": "wedding_gift_money"
+  },
+  {
+    "id": "stg_233",
+    "text": "tien phung vieng dam tang",
+    "expected": "khác",
+    "type": "funeral_donation"
+  },
+  {
+    "id": "stg_234",
+    "text": "lam tu thien bao lu",
+    "expected": "khác",
+    "type": "charity_flood"
+  },
+  {
+    "id": "stg_235",
+    "text": "ung ho quy vac xin",
+    "expected": "khác",
+    "type": "charity_vaccine"
+  },
+  {
+    "id": "stg_236",
+    "text": "dong phat vi pham giao thong",
+    "expected": "khác",
+    "type": "traffic_fine"
+  },
+  {
+    "id": "stg_237",
+    "text": "tien tip them",
+    "expected": "khác",
+    "type": "extra_tip"
+  },
+  {
+    "id": "stg_238",
+    "text": "dieu chinh so du vi",
+    "expected": "khác",
+    "type": "balance_adjustment"
+  },
+  {
+    "id": "stg_239",
+    "text": "rut tien mat atm 2 trieu",
+    "expected": "khác",
+    "type": "atm_withdrawal"
+  },
+  {
+    "id": "stg_240",
+    "text": "doi tien le",
+    "expected": "khác",
+    "type": "exchange_small_cash"
+  },
+  {
+    "id": "stg_241",
+    "text": "chuyen tien ve que cho bo",
+    "expected": "khác",
+    "type": "remittance_home"
+  },
+  {
+    "id": "stg_242",
+    "text": "chuyen tien qua vi momo",
+    "expected": "khác",
+    "type": "wallet_transfer"
+  },
+  {
+    "id": "stg_243",
+    "text": "hoan tien giao dich huy",
+    "expected": "khác",
+    "type": "refund_cancelled"
+  },
+  {
+    "id": "stg_244",
+    "text": "chuyển nhầm tài khoản",
+    "expected": "khác",
+    "type": "wrong_transfer"
+  },
+  {
+    "id": "stg_245",
+    "text": "chi phí phát sinh khác",
+    "expected": "khác",
+    "type": "misc_expense"
+  },
+  {
+    "id": "stg_246",
+    "text": "làm rơi mất tiền 200k",
+    "expected": "khác",
+    "type": "lost_money"
+  },
+  {
+    "id": "stg_247",
+    "text": "tiền cọc giữ chỗ phòng",
+    "expected": "khác",
+    "type": "deposit_money"
+  },
+  {
+    "id": "stg_248",
+    "text": "phí phạt nộp chậm",
+    "expected": "khác",
+    "type": "late_penalty"
+  },
+  {
+    "id": "stg_249",
+    "text": "tiền công đức chùa 100k",
+    "expected": "khác",
+    "type": "temple_donation"
+  },
+  {
+    "id": "stg_250",
+    "text": "💸 gui tien cho em gai an hoc",
+    "expected": "khác",
+    "type": "emoji_family_support"
+  }
+]

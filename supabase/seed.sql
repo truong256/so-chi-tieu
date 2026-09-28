@@ -1,0 +1,4 @@
+-- Sổ Chi Tiêu — Supabase Local Seed File
+-- Auth users & relational test data are provisioned via the official Supabase Auth Admin API
+-- using: node scripts/seed-local-data.mjs
+-- This avoids tampering with auth.users.encrypted_password directly.

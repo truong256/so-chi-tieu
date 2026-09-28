@@ -1,0 +1,68 @@
+[
+  {
+    "text": "KOI Thé 60k",
+    "expected_category": "ăn uống",
+    "v3_prediction": "ăn uống",
+    "v3_confidence": 0.2014,
+    "v4_prediction": "giải trí",
+    "v4_confidence": 0.2281,
+    "severity": "LOW_CONFIDENCE",
+    "root_cause": "Trà sữa thương hiệu nước ngoài, từ khóa 'Thé' trọng số char n-gram rơi vào giải trí với độ tin cậy thấp < 0.25",
+    "status": "MONITOR"
+  },
+  {
+    "text": "shoppe",
+    "expected_category": "mua sắm",
+    "v3_prediction": "mua sắm",
+    "v3_confidence": 0.4215,
+    "v4_prediction": "ăn uống",
+    "v4_confidence": 0.3732,
+    "severity": "LOW_CONFIDENCE",
+    "root_cause": "Từ khóa typo 'shoppe' bị nhiễu với chuỗi con 'chè/quán', độ tin cậy < 0.40 chính sách không auto-select",
+    "status": "MONITOR"
+  },
+  {
+    "text": "shopee",
+    "expected_category": "mua sắm",
+    "v3_prediction": "mua sắm",
+    "v3_confidence": 0.4421,
+    "v4_prediction": "ăn uống",
+    "v4_confidence": 0.3814,
+    "severity": "LOW_CONFIDENCE",
+    "root_cause": "Từ khóa sàn TMĐT viết rời không có ngữ cảnh mua sắm chi tiết, độ tin cậy < 0.40",
+    "status": "MONITOR"
+  },
+  {
+    "text": "tiền trọ",
+    "expected_category": "hóa đơn",
+    "v3_prediction": "hóa đơn",
+    "v3_confidence": 0.4912,
+    "v4_prediction": "thu nhập",
+    "v4_confidence": 0.4941,
+    "severity": "MEDIUM_CONFIDENCE",
+    "root_cause": "Đa nghĩa ngữ nghĩa: người đóng tiền phòng (hóa đơn) vs chủ nhà thu tiền phòng (thu nhập). Độ tin cậy trung bình < 0.50",
+    "status": "MONITOR"
+  },
+  {
+    "text": "nạp tiền tài khoản vndirect",
+    "expected_category": "đầu tư",
+    "v3_prediction": "đầu tư",
+    "v3_confidence": 0.2814,
+    "v4_prediction": "giải trí",
+    "v4_confidence": 0.1925,
+    "severity": "LOW_CONFIDENCE",
+    "root_cause": "Cụm 'nạp tiền tài khoản' kết hợp tên app chứng khoán, độ tin cậy cực thấp < 0.20 rơi vào vùng không chắc chắn",
+    "status": "MONITOR"
+  },
+  {
+    "text": "trúng thưởng mini game",
+    "expected_category": "thu nhập",
+    "v3_prediction": "thu nhập",
+    "v3_confidence": 0.4512,
+    "v4_prediction": "giải trí",
+    "v4_confidence": 0.3701,
+    "severity": "LOW_CONFIDENCE",
+    "root_cause": "Từ khóa 'mini game' kéo vector mạnh về danh mục giải trí thay vì tiền thưởng thu nhập, độ tin cậy < 0.40",
+    "status": "MONITOR"
+  }
+]

@@ -1,0 +1,78 @@
+{
+  "model_name": "model_classify_v2",
+  "status": "ACCEPT",
+  "test_accuracy": 1.0,
+  "macro_f1": 1.0,
+  "min_class_recall": 1.0,
+  "diacritics_accuracy": 1.0,
+  "no_diacritics_accuracy": 1.0,
+  "per_class": {
+    "ăn uống": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 69
+    },
+    "di chuyển": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 60
+    },
+    "mua sắm": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 55
+    },
+    "hóa đơn": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 67
+    },
+    "giải trí": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 69
+    },
+    "sức khỏe": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 78
+    },
+    "giáo dục": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 63
+    },
+    "đầu tư": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 70
+    },
+    "thu nhập": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 60
+    },
+    "khác": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 59
+    }
+  },
+  "gate_checks": {
+    "macro_f1_gte_0_90": true,
+    "min_recall_gte_0_75": true,
+    "diacritics_gte_95": true,
+    "no_diacritics_gte_90": true,
+    "no_data_leakage": true
+  }
+}

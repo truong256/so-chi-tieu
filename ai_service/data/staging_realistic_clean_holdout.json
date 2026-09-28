@@ -1,0 +1,1874 @@
+[
+  {
+    "text": "cà phê sáng 30k",
+    "expected_category": "ăn uống",
+    "original_index": 0,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "cf sáng",
+    "expected_category": "ăn uống",
+    "original_index": 1,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "an trua",
+    "expected_category": "ăn uống",
+    "original_index": 2,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "ăn tối",
+    "expected_category": "ăn uống",
+    "original_index": 3,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "trà sữa",
+    "expected_category": "ăn uống",
+    "original_index": 4,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tra sua tran chau 45k",
+    "expected_category": "ăn uống",
+    "original_index": 5,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "highland coffee 65k",
+    "expected_category": "ăn uống",
+    "original_index": 6,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "phở bò tái 55 nghìn",
+    "expected_category": "ăn uống",
+    "original_index": 7,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "bún đậu 40.000",
+    "expected_category": "ăn uống",
+    "original_index": 8,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "bbq buffet 350k",
+    "expected_category": "ăn uống",
+    "original_index": 9,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nem nuong nha trang",
+    "expected_category": "ăn uống",
+    "original_index": 10,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "bánh mì que 15k",
+    "expected_category": "ăn uống",
+    "original_index": 11,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "ăn vặt cùng cty 80k",
+    "expected_category": "ăn uống",
+    "original_index": 12,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "KOI Thé 60k",
+    "expected_category": "ăn uống",
+    "original_index": 13,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "starbucks cold brew",
+    "expected_category": "ăn uống",
+    "original_index": 14,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "ăn đêm cháo sườn",
+    "expected_category": "ăn uống",
+    "original_index": 15,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "cơm văn phòng 35k",
+    "expected_category": "ăn uống",
+    "original_index": 16,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "bánh tráng trộn 25k",
+    "expected_category": "ăn uống",
+    "original_index": 18,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "uong cafe voi sep",
+    "expected_category": "ăn uống",
+    "original_index": 19,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "bữa trưa bà ngoại",
+    "expected_category": "ăn uống",
+    "original_index": 20,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "pizza hut combo 199k",
+    "expected_category": "ăn uống",
+    "original_index": 22,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "grab đi học",
+    "expected_category": "di chuyển",
+    "original_index": 25,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đổ xăng 70 nghìn",
+    "expected_category": "di chuyển",
+    "original_index": 26,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "do xang 50k",
+    "expected_category": "di chuyển",
+    "original_index": 27,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "xang xe may",
+    "expected_category": "di chuyển",
+    "original_index": 28,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "grab car ra san bay 220k",
+    "expected_category": "di chuyển",
+    "original_index": 30,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nạp tiền thẻ etc",
+    "expected_category": "di chuyển",
+    "original_index": 31,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "thay nhớt motul 120k",
+    "expected_category": "di chuyển",
+    "original_index": 35,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "gửi xe vincom 10k",
+    "expected_category": "di chuyển",
+    "original_index": 36,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tien gui xe thang",
+    "expected_category": "di chuyển",
+    "original_index": 37,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "xanh sm bike",
+    "expected_category": "di chuyển",
+    "original_index": 39,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "vé tàu hỏa đi đà nẵng",
+    "expected_category": "di chuyển",
+    "original_index": 40,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "vé máy bay vietjet 1tr2",
+    "expected_category": "di chuyển",
+    "original_index": 41,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "vá săm xe 30k",
+    "expected_category": "di chuyển",
+    "original_index": 42,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "cứu hộ xe máy",
+    "expected_category": "di chuyển",
+    "original_index": 43,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "grabcar ve nha",
+    "expected_category": "di chuyển",
+    "original_index": 44,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "phí cầu đường cao tốc",
+    "expected_category": "di chuyển",
+    "original_index": 45,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "thuê xe tự lái 800k",
+    "expected_category": "di chuyển",
+    "original_index": 46,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tiền gửi xe qua đêm",
+    "expected_category": "di chuyển",
+    "original_index": 47,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "bơm lốp xe 5k",
+    "expected_category": "di chuyển",
+    "original_index": 48,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "🛵 xe ôm truyền thống 20k",
+    "expected_category": "di chuyển",
+    "original_index": 49,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua áo",
+    "expected_category": "mua sắm",
+    "original_index": 50,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "shoppe",
+    "expected_category": "mua sắm",
+    "original_index": 51,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "shopee",
+    "expected_category": "mua sắm",
+    "original_index": 52,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tiki giao nhanh 180k",
+    "expected_category": "mua sắm",
+    "original_index": 53,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "lazada don hang 320k",
+    "expected_category": "mua sắm",
+    "original_index": 54,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua giay sneaker",
+    "expected_category": "mua sắm",
+    "original_index": 55,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "quan jean zara 650k",
+    "expected_category": "mua sắm",
+    "original_index": 56,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua sắm uniqlo 850k",
+    "expected_category": "mua sắm",
+    "original_index": 57,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "son black rouge",
+    "expected_category": "mua sắm",
+    "original_index": 58,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "kem chong nang anessa",
+    "expected_category": "mua sắm",
+    "original_index": 59,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua balo di lam",
+    "expected_category": "mua sắm",
+    "original_index": 60,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "chuột logitech g102",
+    "expected_category": "mua sắm",
+    "original_index": 61,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "bàn phím cơ akko 1tr1",
+    "expected_category": "mua sắm",
+    "original_index": 62,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua sách tiki 150k",
+    "expected_category": "mua sắm",
+    "original_index": 63,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua ví da nam",
+    "expected_category": "mua sắm",
+    "original_index": 64,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đồng hồ casio",
+    "expected_category": "mua sắm",
+    "original_index": 65,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua kính cận",
+    "expected_category": "mua sắm",
+    "original_index": 66,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "áo sơ mi owen",
+    "expected_category": "mua sắm",
+    "original_index": 67,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua quà sinh nhật bạn",
+    "expected_category": "mua sắm",
+    "original_index": 70,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "order taobao 450k",
+    "expected_category": "mua sắm",
+    "original_index": 71,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua nồi chiên không dầu",
+    "expected_category": "mua sắm",
+    "original_index": 72,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "túi xách nữ",
+    "expected_category": "mua sắm",
+    "original_index": 73,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "🛍️ mua đầm dự tiệc 450k",
+    "expected_category": "mua sắm",
+    "original_index": 74,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đóng tiền điện",
+    "expected_category": "hóa đơn",
+    "original_index": 75,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tiền mạng tháng này",
+    "expected_category": "hóa đơn",
+    "original_index": 76,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nạp data",
+    "expected_category": "hóa đơn",
+    "original_index": 77,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tiền trọ",
+    "expected_category": "hóa đơn",
+    "original_index": 78,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tien nha thang 9",
+    "expected_category": "hóa đơn",
+    "original_index": 79,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đóng tiền nước 120k",
+    "expected_category": "hóa đơn",
+    "original_index": 80,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nap card viettel 50k",
+    "expected_category": "hóa đơn",
+    "original_index": 81,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "goi cuoc 4g vinaphone",
+    "expected_category": "hóa đơn",
+    "original_index": 82,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "hoa don vnpt fiber",
+    "expected_category": "hóa đơn",
+    "original_index": 83,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "phí quản lý chung cư 450k",
+    "expected_category": "hóa đơn",
+    "original_index": 84,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đóng tiền rác",
+    "expected_category": "hóa đơn",
+    "original_index": 85,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tien cap truyen hinh",
+    "expected_category": "hóa đơn",
+    "original_index": 86,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nạp thẻ mobi 100k",
+    "expected_category": "hóa đơn",
+    "original_index": 87,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "hóa đơn tiền điện evn",
+    "expected_category": "hóa đơn",
+    "original_index": 88,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tiền net fpt 220k",
+    "expected_category": "hóa đơn",
+    "original_index": 89,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đóng tiền điện nước phòng trọ",
+    "expected_category": "hóa đơn",
+    "original_index": 90,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nạp 50k điện thoại mẹ",
+    "expected_category": "hóa đơn",
+    "original_index": 91,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tiền gửi xe chung cư tháng",
+    "expected_category": "hóa đơn",
+    "original_index": 92,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua dung lượng icloud 19k",
+    "expected_category": "hóa đơn",
+    "original_index": 93,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "phí duy trì tài khoản ngân hàng",
+    "expected_category": "hóa đơn",
+    "original_index": 94,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tiền wifi tháng 9",
+    "expected_category": "hóa đơn",
+    "original_index": 95,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đóng tiền trọ tháng này 3tr5",
+    "expected_category": "hóa đơn",
+    "original_index": 96,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nạp viettel 200 nghìn",
+    "expected_category": "hóa đơn",
+    "original_index": 97,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "phi dich vu ve sinh",
+    "expected_category": "hóa đơn",
+    "original_index": 98,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "⚡ thanh toan tien dien",
+    "expected_category": "hóa đơn",
+    "original_index": 99,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "ve xem phim cgv",
+    "expected_category": "giải trí",
+    "original_index": 100,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "xem phim rạp lotte 110k",
+    "expected_category": "giải trí",
+    "original_index": 101,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "netflix goi gia dinh 70k",
+    "expected_category": "giải trí",
+    "original_index": 102,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "spotify premium",
+    "expected_category": "giải trí",
+    "original_index": 103,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nap the garena 100k",
+    "expected_category": "giải trí",
+    "original_index": 104,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nap game genshin 200k",
+    "expected_category": "giải trí",
+    "original_index": 105,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "di choi net cyber",
+    "expected_category": "giải trí",
+    "original_index": 106,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "hát karaoke với cty",
+    "expected_category": "giải trí",
+    "original_index": 107,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "ve concert anh trai say hi",
+    "expected_category": "giải trí",
+    "original_index": 108,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua boardgame mèo nổ",
+    "expected_category": "giải trí",
+    "original_index": 109,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua game steam",
+    "expected_category": "giải trí",
+    "original_index": 110,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "du lịch vũng tàu cuối tuần",
+    "expected_category": "giải trí",
+    "original_index": 111,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "vé vào cổng đầm sen",
+    "expected_category": "giải trí",
+    "original_index": 112,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "chơi bida với bạn 90k",
+    "expected_category": "giải trí",
+    "original_index": 113,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nap the zing 50k",
+    "expected_category": "giải trí",
+    "original_index": 114,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "vé xem kịch sân khấu",
+    "expected_category": "giải trí",
+    "original_index": 115,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "camping hồ trị an",
+    "expected_category": "giải trí",
+    "original_index": 116,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đi bar pub cuối tuần 450k",
+    "expected_category": "giải trí",
+    "original_index": 117,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua tài khoản youtube premium",
+    "expected_category": "giải trí",
+    "original_index": 118,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "chơi bắn cung 150k",
+    "expected_category": "giải trí",
+    "original_index": 119,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "vé công viên nước",
+    "expected_category": "giải trí",
+    "original_index": 120,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "di xem trien lam tranh",
+    "expected_category": "giải trí",
+    "original_index": 121,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "thuê lều cắm trại 120k",
+    "expected_category": "giải trí",
+    "original_index": 122,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "vé xem ca nhạc phòng trà",
+    "expected_category": "giải trí",
+    "original_index": 123,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "🎮 nap tien mua skin game",
+    "expected_category": "giải trí",
+    "original_index": 124,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua thuốc",
+    "expected_category": "sức khỏe",
+    "original_index": 125,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "khám bệnh",
+    "expected_category": "sức khỏe",
+    "original_index": 126,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "long chau mua panadol",
+    "expected_category": "sức khỏe",
+    "original_index": 128,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nhà thuốc an khang 85k",
+    "expected_category": "sức khỏe",
+    "original_index": 129,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "khám răng định kỳ",
+    "expected_category": "sức khỏe",
+    "original_index": 130,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nhổ răng khôn 1tr5",
+    "expected_category": "sức khỏe",
+    "original_index": 131,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua vitamin c sủi",
+    "expected_category": "sức khỏe",
+    "original_index": 132,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "xét nghiệm máu tổng quát",
+    "expected_category": "sức khỏe",
+    "original_index": 133,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua khẩu trang y tế 35k",
+    "expected_category": "sức khỏe",
+    "original_index": 134,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "thuốc nhỏ mắt santen",
+    "expected_category": "sức khỏe",
+    "original_index": 135,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đi khám da liễu",
+    "expected_category": "sức khỏe",
+    "original_index": 136,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua men tiêu hóa",
+    "expected_category": "sức khỏe",
+    "original_index": 137,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "thuốc cảm cúm tiffy",
+    "expected_category": "sức khỏe",
+    "original_index": 138,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua nước muối sinh lý",
+    "expected_category": "sức khỏe",
+    "original_index": 139,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "dầu gió xanh",
+    "expected_category": "sức khỏe",
+    "original_index": 140,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "khám mắt viện mắt",
+    "expected_category": "sức khỏe",
+    "original_index": 141,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tiêm phòng cúm mùa",
+    "expected_category": "sức khỏe",
+    "original_index": 142,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua bông gạc y tế",
+    "expected_category": "sức khỏe",
+    "original_index": 143,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "thuốc ho prospan",
+    "expected_category": "sức khỏe",
+    "original_index": 144,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "bác sĩ gia đình",
+    "expected_category": "sức khỏe",
+    "original_index": 145,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "chụp x quang",
+    "expected_category": "sức khỏe",
+    "original_index": 146,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua sữa canxi cho bà",
+    "expected_category": "sức khỏe",
+    "original_index": 147,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "điều trị viêm họng",
+    "expected_category": "sức khỏe",
+    "original_index": 148,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "💊 mua thuoc ho panadol 45k",
+    "expected_category": "sức khỏe",
+    "original_index": 149,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "học phí",
+    "expected_category": "giáo dục",
+    "original_index": 150,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đóng học phí",
+    "expected_category": "giáo dục",
+    "original_index": 151,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tien hoc phi ky 1",
+    "expected_category": "giáo dục",
+    "original_index": 152,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "khoa hoc ielts 4tr",
+    "expected_category": "giáo dục",
+    "original_index": 153,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua sach giao trinh 120k",
+    "expected_category": "giáo dục",
+    "original_index": 154,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "học tiếng anh elsa speak",
+    "expected_category": "giáo dục",
+    "original_index": 155,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tien hoc them toan cua con",
+    "expected_category": "giáo dục",
+    "original_index": 156,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "khoa hoc udemy python",
+    "expected_category": "giáo dục",
+    "original_index": 157,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua but vo viet",
+    "expected_category": "giáo dục",
+    "original_index": 158,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "lệ phí thi toeic",
+    "expected_category": "giáo dục",
+    "original_index": 159,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "học lái xe b2",
+    "expected_category": "giáo dục",
+    "original_index": 160,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đóng quỹ lớp 150k",
+    "expected_category": "giáo dục",
+    "original_index": 161,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua từ điển oxford",
+    "expected_category": "giáo dục",
+    "original_index": 162,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "học phí mầm non",
+    "expected_category": "giáo dục",
+    "original_index": 163,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua sách ngữ pháp tiếng anh",
+    "expected_category": "giáo dục",
+    "original_index": 164,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "gia sư dạy kèm",
+    "expected_category": "giáo dục",
+    "original_index": 165,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "lệ phí thi hsk 4",
+    "expected_category": "giáo dục",
+    "original_index": 166,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "khoá học thiết kế canva",
+    "expected_category": "giáo dục",
+    "original_index": 167,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua khoá học coursera",
+    "expected_category": "giáo dục",
+    "original_index": 168,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "học bơi cơ bản",
+    "expected_category": "giáo dục",
+    "original_index": 169,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua sach luyen thi dai hoc",
+    "expected_category": "giáo dục",
+    "original_index": 170,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tien hoc dan piano",
+    "expected_category": "giáo dục",
+    "original_index": 171,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đóng tiền cơ sở vật chất trường",
+    "expected_category": "giáo dục",
+    "original_index": 172,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua compa thuoc ke",
+    "expected_category": "giáo dục",
+    "original_index": 173,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "📚 dong tien hoc ki 2 3tr8",
+    "expected_category": "giáo dục",
+    "original_index": 174,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua vang sjc",
+    "expected_category": "đầu tư",
+    "original_index": 175,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua 1 chi vang",
+    "expected_category": "đầu tư",
+    "original_index": 176,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tich luy finhay 1tr",
+    "expected_category": "đầu tư",
+    "original_index": 177,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nạp tiền tk chứng khoán vps",
+    "expected_category": "đầu tư",
+    "original_index": 178,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua chung chi quy dcds",
+    "expected_category": "đầu tư",
+    "original_index": 179,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "dau tu chung khoan tcbs",
+    "expected_category": "đầu tư",
+    "original_index": 180,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua usdt binance",
+    "expected_category": "đầu tư",
+    "original_index": 181,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "gửi tiết kiệm online 10tr",
+    "expected_category": "đầu tư",
+    "original_index": 182,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "tích lũy tikop",
+    "expected_category": "đầu tư",
+    "original_index": 183,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua cổ phiếu fpt",
+    "expected_category": "đầu tư",
+    "original_index": 184,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "nạp tiền vào ssi",
+    "expected_category": "đầu tư",
+    "original_index": 185,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mở sổ tiết kiệm vietcombank",
+    "expected_category": "đầu tư",
+    "original_index": 186,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "đầu tư quỹ mở vcb",
+    "expected_category": "đầu tư",
+    "original_index": 187,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.976182"
+  },
+  {
+    "text": "mua eth ví metamask",
+    "expected_category": "đầu tư",
+    "original_index": 188,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tích luỹ vàng nhẫn 9999",
+    "expected_category": "đầu tư",
+    "original_index": 189,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "góp vốn kinh doanh quán cafe",
+    "expected_category": "đầu tư",
+    "original_index": 190,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "mua btc trữ ví lạnh",
+    "expected_category": "đầu tư",
+    "original_index": 193,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "nạp tiền tài khoản vndirect",
+    "expected_category": "đầu tư",
+    "original_index": 195,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "mua cổ phiếu hòa phát",
+    "expected_category": "đầu tư",
+    "original_index": 196,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "trích tiền sang sổ tiết kiệm",
+    "expected_category": "đầu tư",
+    "original_index": 197,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tích lũy cổ tức tái đầu tư",
+    "expected_category": "đầu tư",
+    "original_index": 198,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "📈 nap tien dau tu chung khoan 5tr",
+    "expected_category": "đầu tư",
+    "original_index": 199,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "được thưởng",
+    "expected_category": "thu nhập",
+    "original_index": 201,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "luong cty chuyen",
+    "expected_category": "thu nhập",
+    "original_index": 202,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "nhận tiền thưởng dự án",
+    "expected_category": "thu nhập",
+    "original_index": 203,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "thuong kpi quy 3",
+    "expected_category": "thu nhập",
+    "original_index": 204,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tien lai tiet kiem ngan hang",
+    "expected_category": "thu nhập",
+    "original_index": 205,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "co tuc tien mat fpt",
+    "expected_category": "thu nhập",
+    "original_index": 206,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "nhan tien freelance thiet ke",
+    "expected_category": "thu nhập",
+    "original_index": 207,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "ban do cu thanh ly",
+    "expected_category": "thu nhập",
+    "original_index": 208,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "khach hang thanh toan tien hang",
+    "expected_category": "thu nhập",
+    "original_index": 209,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tien tip cua khach",
+    "expected_category": "thu nhập",
+    "original_index": 210,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "me cho tien sinh hoat",
+    "expected_category": "thu nhập",
+    "original_index": 211,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "nhan tien hoan thue tncn",
+    "expected_category": "thu nhập",
+    "original_index": 212,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "ban co phieu co lai",
+    "expected_category": "thu nhập",
+    "original_index": 213,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tien thue nha nguoi ta tra",
+    "expected_category": "thu nhập",
+    "original_index": 214,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "trúng thưởng mini game",
+    "expected_category": "thu nhập",
+    "original_index": 215,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "nhận lì xì đầu năm",
+    "expected_category": "thu nhập",
+    "original_index": 216,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "thu nhập phụ ngoài giờ",
+    "expected_category": "thu nhập",
+    "original_index": 217,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "cong ty tra thu lao huong dan",
+    "expected_category": "thu nhập",
+    "original_index": 218,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "nhận tiền hoàn tiền thẻ tín dụng",
+    "expected_category": "thu nhập",
+    "original_index": 219,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tiền thưởng nhân viên xuất sắc",
+    "expected_category": "thu nhập",
+    "original_index": 220,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "ban xe cu duoc 15 trieu",
+    "expected_category": "thu nhập",
+    "original_index": 221,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "thu nhập dạy thêm gia sư",
+    "expected_category": "thu nhập",
+    "original_index": 222,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "nhận tiền bồi thường bảo hiểm",
+    "expected_category": "thu nhập",
+    "original_index": 223,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "💵 tinh luong thang nay 18tr5",
+    "expected_category": "thu nhập",
+    "original_index": 224,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "chuyển khoản cho bạn",
+    "expected_category": "khác",
+    "original_index": 225,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "trả nợ",
+    "expected_category": "khác",
+    "original_index": 226,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "chuyen tien cho nam",
+    "expected_category": "khác",
+    "original_index": 227,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tra no anh minh 500k",
+    "expected_category": "khác",
+    "original_index": 228,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tra no the tin dung 4tr",
+    "expected_category": "khác",
+    "original_index": 229,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "cho ban muon 1 trieu",
+    "expected_category": "khác",
+    "original_index": 230,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "mung cuoi ban dai hoc 500k",
+    "expected_category": "khác",
+    "original_index": 231,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tien phung vieng dam tang",
+    "expected_category": "khác",
+    "original_index": 232,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "lam tu thien bao lu",
+    "expected_category": "khác",
+    "original_index": 233,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "ung ho quy vac xin",
+    "expected_category": "khác",
+    "original_index": 234,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "dong phat vi pham giao thong",
+    "expected_category": "khác",
+    "original_index": 235,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tien tip them",
+    "expected_category": "khác",
+    "original_index": 236,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "dieu chinh so du vi",
+    "expected_category": "khác",
+    "original_index": 237,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "rut tien mat atm 2 trieu",
+    "expected_category": "khác",
+    "original_index": 238,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "doi tien le",
+    "expected_category": "khác",
+    "original_index": 239,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "chuyen tien ve que cho bo",
+    "expected_category": "khác",
+    "original_index": 240,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "chuyen tien qua vi momo",
+    "expected_category": "khác",
+    "original_index": 241,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "hoan tien giao dich huy",
+    "expected_category": "khác",
+    "original_index": 242,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "chuyển nhầm tài khoản",
+    "expected_category": "khác",
+    "original_index": 243,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "chi phí phát sinh khác",
+    "expected_category": "khác",
+    "original_index": 244,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "làm rơi mất tiền 200k",
+    "expected_category": "khác",
+    "original_index": 245,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tiền cọc giữ chỗ phòng",
+    "expected_category": "khác",
+    "original_index": 246,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "phí phạt nộp chậm",
+    "expected_category": "khác",
+    "original_index": 247,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "tiền công đức chùa 100k",
+    "expected_category": "khác",
+    "original_index": 248,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  },
+  {
+    "text": "💸 gui tien cho em gai an hoc",
+    "expected_category": "khác",
+    "original_index": 249,
+    "source": "staging_realistic_test_set.json",
+    "dedup_status": "VERIFIED_CLEAN",
+    "clean_audit_timestamp": "2026-09-27T23:39:38.977688"
+  }
+]

@@ -1,0 +1,1882 @@
+[
+  {
+    "text": "nạp tiền tài khoản vetc 500k",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nạp tài khoản epass cao tốc hà nội hải phòng",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thanh toán thẻ epass qua ví momo",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nạp tiền vào tài khoản thu phí tự động etc",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "phí qua trạm bot pháp vân",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "qua trạm thu phí bot xa lộ hà nội",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền vé phà cát lái xe máy",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "trả phí phà đình vũ hải phòng",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền gửi xe ô tô qua đêm hầm vincom",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "vé xe buýt tháng liên tuyến sinh viên",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua vé tàu hỏa bắc nam sài gòn nha trang",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền vé xe khách phương trang đi đà lạt",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "vé xe khách thành bưởi giường nằm",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đặt xe taxi mai linh ra ga hàng cỏ",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "grabcar đưa đón bé đi học về",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "be bike chở khách đi làm ca sáng",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "bơm vá săm lốp xe máy dọc đường",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thay nhớt motul xe tay ga",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "rửa xe ô tô 7 chỗ bọt tuyết",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "xang xe di cong tac tinh",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "do xang ron 95 80k",
+    "category": "di chuyển",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nap the etc qua vietcombank",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "vetc nap phi cao toc",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "phi cau duong bot ben thuy",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "phi gui xe may benh vien cho ray",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "cuoc phi di chuyen grab bike",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien thue xe may tu lai 2 ngay",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua ve xe do ve que an tet",
+    "category": "di chuyển",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tram thu phi long thanh dau giay",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nap phi khong dung epass",
+    "category": "di chuyển",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mẹ gửi tiền sinh hoạt phí tháng này",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "bố mẹ hỗ trợ tiền sinh hoạt 3 triệu",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "gia đình chu cấp tiền ăn học đại học",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ba mẹ cho tiền đóng tiền trọ",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền bố cho tiêu vặt cuối tuần",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "người thuê nhà chuyển khoản trả tiền trọ",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "khách trọ thanh toán tiền phòng tháng 9",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thu tiền mặt thuê nhà nguyên căn",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền khách trả thuê mặt bằng kinh doanh",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nhận tiền cổ tức tiền mặt từ cổ phiếu fpt",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền cổ tức đợt 1 công ty vinamilk",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "lãi gửi tiết kiệm ngân hàng vietinbank",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền lãi tài khoản tích lũy techcombank",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chi cục thuế hoàn tiền thuế thu nhập cá nhân",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nhận tiền hoàn thuế tncn kỳ quyết toán",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "công ty chi trả tiền thưởng dự án xuất sắc",
+    "category": "thu nhập",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền hoa hồng môi giới căn hộ chung cư",
+    "category": "thu nhập",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thù lao hướng dẫn khóa luận tốt nghiệp",
+    "category": "thu nhập",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền thù lao diễn giả hội thảo công nghệ",
+    "category": "thu nhập",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "doanh thu bán hàng online trong ngày",
+    "category": "thu nhập",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "khach tra tien no cu 2 trieu",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "bo me cho tien an thang",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nhan tien tro cap tu chi hai",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien thue tro khach vua ban giao",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nhan co tuc hpg 1 trieu",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "lai ngan hang cong vao tai khoan",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "hoan thue thu nhap ca nhan vcb",
+    "category": "thu nhập",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien luong thuc nhan thang 10",
+    "category": "thu nhập",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nhan thuong tet tay 5tr",
+    "category": "thu nhập",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien ban ve tranh son dau",
+    "category": "thu nhập",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền đặt cọc giữ chỗ thuê phòng trọ",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền cọc thuê mặt bằng 2 tháng",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đặt cọc mua xe máy mới đại lý",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chuyển khoản trả lại tiền nợ bạn nam",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "trả nợ thẻ tín dụng vpbank 5 triệu",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thanh toán nợ tiền vay người thân",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chuyển tiền sang ví điện tử cá nhân",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nạp tiền ví điện tử zalopay từ tài khoản",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chuyển khoản nội bộ giữa hai tài khoản của tôi",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền gửi mừng đám cưới bạn thân",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "phúng viếng đám tang người quen",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền ủng hộ đồng bào bão lũ miền trung",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đóng tiền công đức tôn tạo chùa đình",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nộp phạt vi phạm trật tự an toàn giao thông",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đóng tiền vi phạm hành chính nộp kho bạc",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đóng tiền quỹ tương trợ lớp đại học",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "góp phường hụi tháng này 2 triệu",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "rut tien mat tai cay atm cay xăng",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "dat coc giu cho mua nha 50tr",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tra tien no anh hung",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chuyen khoan vi momo sang ngan hang",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ung ho tre em mo coi lang sos",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien phat nop truc tuyen dich vu cong",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien le chua dau nam",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chuyen khoan muon tien gap",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "cho ban vay tien lam an",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tra gop fe credit hang thang",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chuyen tien vao so tiet kiem",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nop tien quy khuyen hoc khu pho",
+    "category": "khác",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien bo tip cho nhan vien phuc vu",
+    "category": "khác",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua chai dầu gió xanh con ó",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "dầu gió xanh trị cảm ho",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua panadol viên sủi hạ sốt",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nhà thuốc long châu mua thuốc ho cảm sốt",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua vỉ men tiêu hóa trị đau bụng",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua nước muối sinh lý súc họng",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua bông băng gạc y tế tiệt trùng",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chụp x quang phổi tại bệnh viện bạch mai",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chụp cộng hưởng từ cột sống thắt lưng",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "khám bệnh tổng quát định kỳ phòng khám đa khoa",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền khám bác sĩ gia đình tại nhà",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua sữa canxi cho người lớn tuổi anlene",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "sữa hạt dinh dưỡng cho người tiểu đường",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua nhiệt kế hồng ngoại đo trán omron",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "máy đo huyết áp bắp tay tự động",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nhổ răng khôn mọc lệch hàm dưới",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "lấy cao răng đánh bóng nha khoa thẩm mỹ",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiêm vắc xin cúm mùa vnvc",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua khẩu trang y tế kháng khuẩn 4 lớp",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thuoc bo mat dau ca omega 3",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua paracetamol giam dau ha sot",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "xet nghiem mau tai benh vien dai hoc y duoc",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua thuoc nho mat refresh tears",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "kham chuyen khoa da lieu tri mun",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua vitamin tong hop tang de khang",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiem ngua dai tai trung tam y te du phong",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua nuoc sat trung povidine",
+    "category": "sức khỏe",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "vien uong bo sung sat va canxi",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chi phi cap cuu phong kham quoc te",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua que thu tieu duong tai nha",
+    "category": "sức khỏe",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thanh toán tiền điện lực evn hà nội",
+    "category": "hóa đơn",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền nước sinh hoạt thủy cục sài gòn",
+    "category": "hóa đơn",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "hóa đơn cước internet vnpt cáp quang",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "cước viễn thông fpt telecom hàng tháng",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua gói cước dung lượng icloud 50gb apple",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "gia hạn dung lượng google drive hàng tháng",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "phí quản lý dịch vụ vận hành chung cư",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền rác vệ sinh môi trường khu dân cư",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nạp tiền điện thoại trả sau mobifone",
+    "category": "hóa đơn",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "gia hạn gói cước data 4g viettel tháng",
+    "category": "hóa đơn",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đóng tiền gas đun nấu bình 12kg",
+    "category": "hóa đơn",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền truyền hình cáp k+ xem bóng đá",
+    "category": "hóa đơn",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "phi nuoc sach nha be thang 8",
+    "category": "hóa đơn",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "cuoc cap quang viettel thang nay",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "dong tien truyen hinh cap sctv",
+    "category": "hóa đơn",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nap the cao vinaphone tra truoc",
+    "category": "hóa đơn",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "phi gui xe thang chung cu",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "hoa don tien dien sinh hoat gia dinh",
+    "category": "hóa đơn",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thanh toan tien nuoc online viettelpay",
+    "category": "hóa đơn",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "gia han dich vu luu tru cloud one drive",
+    "category": "hóa đơn",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đăng ký tài khoản xem phim netflix chuẩn",
+    "category": "giải trí",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "gia hạn gói nghe nhạc spotify premium 1 năm",
+    "category": "giải trí",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua vé xem phim rạp cgv cresent mall",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "vé xem phim rạp lotte cinema thủ đức",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đi hát karaoke gia đình cuối tuần",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đi cắm trại dã ngoại hồ trị an đồng nai",
+    "category": "giải trí",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua vé vào cổng khu du lịch đầm sen",
+    "category": "giải trí",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "vé công viên nước suối tiên trọn gói",
+    "category": "giải trí",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nạp tiền mua đồ game trên steam",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nạp thẻ garena quay tướng liên quân",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chơi bắn cung đối kháng giải trí cuối tuần",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền chơi bi lắc bi da máy lạnh",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "di xem kich tai san khau the gioi tre",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ve xem ca nhac dem nhac may lang thang",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "di choi bowling tai trung tam thuong mai",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thue phong net cyber game chien pubg",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua the game playstation network",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ve xem trien lam nghe thuat anh sang",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "camping cuoi tuan rung ma thien lanh",
+    "category": "giải trí",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nap kim cuong game free fire",
+    "category": "giải trí",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đóng học phí đại học bách khoa kỳ 2",
+    "category": "giáo dục",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tiền học thêm môn toán luyện thi đại học",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "thuê gia sư dạy kèm tiếng anh tại nhà",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua bộ sách giáo khoa lớp 12 mới",
+    "category": "giáo dục",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua sách luyện thi ielts cambridge 18",
+    "category": "giáo dục",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua compa thước kẻ ê ke học hình học",
+    "category": "giáo dục",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua vở viết bút bi mực xanh thiên long",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "khóa học lập trình web fullstack udemy",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đăng ký khóa học lái xe ô tô hạng b2",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "lệ phí thi chứng chỉ tiếng nhật jlpt",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "lệ phí thi chứng chỉ toeic quốc tế",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "dong tien hoc phi mau giao cho con",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua tai lieu on thi cao hoc kinh te",
+    "category": "giáo dục",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien hoc vo karate nha thieu nhi",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua but mau va tap ve my thuat cho be",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "khoa hoc photoshop online tren kyna",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "dong tien hoc ky he truong su pham",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua giao trinh tieng trung hsk 4",
+    "category": "giáo dục",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "phi phong thi toefl ibt",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "tien thue co giao day them tieng phap",
+    "category": "giáo dục",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua áo thun nam cộc tay cotton",
+    "category": "mua sắm",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua quần jean ống suông cá tính",
+    "category": "mua sắm",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua giày thể thao chạy bộ adidas chính hãng",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua kính cận thời trang gọng titan",
+    "category": "mua sắm",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "cắt kính loạn thị tại hiệu kính mắt việt",
+    "category": "mua sắm",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đơn hàng shopee giao nhanh quần áo mùa đông",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đơn hàng mua sắm lazada gia dụng nhà bếp",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua chuột máy tính không dây logitech mx",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua bàn phím cơ quang học chơi game",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua dây cáp sạc nhanh type c cho điện thoại",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua ốp lưng điện thoại iphone 15 pro max",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua nồi chiên không dầu philips điện máy xanh",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua máy sấy tóc panasonic công suất lớn",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua son môi black rouge chính hãng tiki",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua balo đựng laptop đi làm công sở",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua qua sinh nhat tang nguoi yeu",
+    "category": "mua sắm",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "dat mua tai nghe bluetooth anker",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua tui xach da cong so nu",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua chen bat su cao cap bat trang",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "don hang mua sam tiktok shop do gia dung",
+    "category": "mua sắm",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "cf 35k buoi sang",
+    "category": "ăn uống",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "cf sua da 20k quan coc",
+    "category": "ăn uống",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "cfe Highlands coffee ban mai",
+    "category": "ăn uống",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "an sang xoi ga xe cay",
+    "category": "ăn uống",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "an trua com suon nuong 45k",
+    "category": "ăn uống",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "uong tra sua the alley tran chau duong den",
+    "category": "ăn uống",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ăn tô bún bò huế bắp giò 55k",
+    "category": "ăn uống",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ăn dĩa cơm tấm sườn bì chả đêm",
+    "category": "ăn uống",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ăn bát phở bò tái lăn thơm ngon",
+    "category": "ăn uống",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đi nhậu bia hơi cùng đồng nghiệp công ty",
+    "category": "ăn uống",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ăn buffet lẩu haidilao cùng nhóm bạn",
+    "category": "ăn uống",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua bánh mì kẹp thịt chả lụa ăn sáng",
+    "category": "ăn uống",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "uống nước dừa xiêm tươi giải nhiệt",
+    "category": "ăn uống",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "ăn chè thái sầu riêng tráng miệng",
+    "category": "ăn uống",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua trà đào cam sả phúc long size l",
+    "category": "ăn uống",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "an toi hut tieu nam vang 40k",
+    "category": "ăn uống",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "uong ca phe trung giang ha noi",
+    "category": "ăn uống",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua goi banh trang tron an vat",
+    "category": "ăn uống",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "an kem bach dang giai khat",
+    "category": "ăn uống",
+    "difficulty": "easy",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "an lau de dong den buoi toi",
+    "category": "ăn uống",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nạp tiền vào tài khoản chứng khoán vps",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua thêm cổ phiếu hòa phát hpg tích sản",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nạp tiền mua chứng chỉ quỹ vesaf dragon capital",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua 1 chỉ vàng nhẫn trơn sjc tích trữ",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "góp vốn đầu tư mở rộng cửa hàng bánh mì",
+    "category": "đầu tư",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "góp vốn kinh doanh cùng bạn bè mở quán trà",
+    "category": "đầu tư",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chuyển tiền mua trái phiếu chính phủ bảo lãnh",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "đầu tư mua đất thổ cư ven đô",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua usdt tren san binance tich san",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "nap tai khoan chung khoan ssi 10tr",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua chung chi quy dau tu vfmvf4",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua vang mieng bao tin minh chau",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "gop von chung mo quan cafe take away",
+    "category": "đầu tư",
+    "difficulty": "hard",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "chuyen tien mua dat nen hoa lac",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  },
+  {
+    "text": "mua them co phieu mb bank dau tu lau dai",
+    "category": "đầu tư",
+    "difficulty": "medium",
+    "source": "HUMAN_CURATED",
+    "generation_method": "targeted_error_mining",
+    "created_at": "2026-09-27T23:21:01.962249"
+  }
+]

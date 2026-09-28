@@ -1,0 +1,52 @@
+{
+  "user_id": "usr_danger_demo",
+  "month": "2026-09",
+  "income": 15000000.0,
+  "expense": 18200000.0,
+  "previous_month_expense": 14000000.0,
+  "wallets": [
+    {
+      "name": "Tài khoản thanh toán",
+      "balance": 2500000.0
+    }
+  ],
+  "savings_goals": [],
+  "categories": [
+    {
+      "name": "Ăn uống gia đình",
+      "kind": "expense",
+      "budget": 4000000.0,
+      "amount": 4500000.0
+    },
+    {
+      "name": "Thuê nhà & Nhà ở",
+      "kind": "expense",
+      "budget": 4500000.0,
+      "amount": 4500000.0
+    },
+    {
+      "name": "Ăn ngoài & Cafe",
+      "kind": "expense",
+      "budget": 1500000.0,
+      "amount": 3200000.0
+    },
+    {
+      "name": "Mua sắm & Quần áo",
+      "kind": "expense",
+      "budget": 1000000.0,
+      "amount": 3000000.0
+    },
+    {
+      "name": "Giải trí & Dịch vụ số",
+      "kind": "expense",
+      "budget": 500000.0,
+      "amount": 1800000.0
+    },
+    {
+      "name": "Đi lại & Xăng xe",
+      "kind": "expense",
+      "budget": 1000000.0,
+      "amount": 1200000.0
+    }
+  ]
+}

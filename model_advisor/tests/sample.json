@@ -1,0 +1,75 @@
+{
+  "user_id": "usr_test_demo",
+  "month": "2026-09",
+  "income": 25000000.0,
+  "expense": 18500000.0,
+  "previous_month_expense": 17200000.0,
+  "wallets": [
+    {
+      "name": "Tài khoản Techcombank",
+      "balance": 28000000.0
+    },
+    {
+      "name": "Tiền mặt",
+      "balance": 3500000.0
+    }
+  ],
+  "savings_goals": [
+    {
+      "name": "Quỹ khẩn cấp 6 tháng",
+      "target": 60000000.0,
+      "current": 31500000.0,
+      "monthly_target": 4000000.0
+    },
+    {
+      "name": "Du lịch Nhật Bản",
+      "target": 35000000.0,
+      "current": 15000000.0,
+      "monthly_target": 2500000.0
+    }
+  ],
+  "categories": [
+    {
+      "name": "Ăn uống gia đình",
+      "kind": "expense",
+      "budget": 5000000.0,
+      "amount": 5200000.0
+    },
+    {
+      "name": "Thuê nhà & Nhà ở",
+      "kind": "expense",
+      "budget": 6000000.0,
+      "amount": 6000000.0
+    },
+    {
+      "name": "Đi lại & Xăng xe",
+      "kind": "expense",
+      "budget": 1500000.0,
+      "amount": 1400000.0
+    },
+    {
+      "name": "Tiện ích (Điện, Nước, Net)",
+      "kind": "expense",
+      "budget": 1200000.0,
+      "amount": 1350000.0
+    },
+    {
+      "name": "Ăn ngoài & Cafe",
+      "kind": "expense",
+      "budget": 2000000.0,
+      "amount": 2650000.0
+    },
+    {
+      "name": "Mua sắm & Quần áo",
+      "kind": "expense",
+      "budget": 1000000.0,
+      "amount": 1200000.0
+    },
+    {
+      "name": "Giải trí & Dịch vụ số",
+      "kind": "expense",
+      "budget": 700000.0,
+      "amount": 700000.0
+    }
+  ]
+}

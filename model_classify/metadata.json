@@ -1,0 +1,32 @@
+{
+  "model_type": "LogisticRegression",
+  "vectorizer_type": "TfidfVectorizer",
+  "dataset_train": "train_transactions.csv",
+  "dataset_test": "test_transactions.csv",
+  "training_samples": 5000,
+  "test_samples": 1000,
+  "num_classes": 9,
+  "classes": [
+    "education",
+    "emi",
+    "entertainment",
+    "food",
+    "healthcare",
+    "investment",
+    "shopping",
+    "travel",
+    "utilities"
+  ],
+  "random_state": 42,
+  "tfidf_max_features": 10000,
+  "tfidf_ngram_range": [
+    1,
+    2
+  ],
+  "python_version": "3.10.9",
+  "sklearn_version": "1.7.2",
+  "training_timestamp": "2026-09-18T19:27:07.846216",
+  "text_column": "transaction_text",
+  "label_column": "category",
+  "class_weight": "balanced"
+}

@@ -22,9 +22,12 @@ import {
   calculateTransactionTotals,
   calculateWalletBalances,
 } from "@/frontend/utils/finance-calculations";
-import { parseSmartTransaction, type SmartTransactionResult } from "@/frontend/utils/smart-parser";
+import { parseSmartTransaction, removeAccents, type SmartTransactionResult } from "@/frontend/utils/smart-parser";
 import { AiChatProvider } from "@/frontend/features/ai/ai-chat-context";
 import AiFloatingChat from "@/frontend/features/ai/ai-floating-chat";
+import AiClassifyHint from "@/frontend/components/ai-classify-hint";
+import AiRiskBadge from "@/frontend/components/ai-risk-badge";
+import AiAdvisorPanel from "@/frontend/components/ai-advisor-panel";
 import FormattedMoneyInput from "@/frontend/components/formatted-money-input";
 import { t, setAppLanguage, type Language } from "@/frontend/services/i18n.service";
 import { getExchangeRates, formatMoney, DEFAULT_FALLBACK_RATES } from "@/frontend/services/currency.service";
@@ -116,6 +119,20 @@ function Modal({ title, eyebrow, onClose, children }: { title: string; eyebrow: 
 
 export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignOut: () => Promise<void> }) {
   const supabase = useMemo(() => createClient(), []);
+  const [sessionToken, setSessionToken] = useState<string>("");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) setSessionToken(session.access_token);
+    });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) setSessionToken(session.access_token);
+    });
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
   const [view, setView] = useState<View>("overview");
   const [mobileNav, setMobileNav] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -512,6 +529,38 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     return calculateFinancialInsights(transactions, categories, budgets, goals);
   }, [budgets, categories, goals, transactions]);
 
+  const forecastHistory = useMemo(() => {
+    const dailyMap: Record<string, number> = {};
+    transactions
+      .filter((tx) => tx.type === "expense")
+      .forEach((tx) => {
+        const d = tx.occurred_at ? tx.occurred_at.slice(0, 10) : "";
+        if (d) dailyMap[d] = (dailyMap[d] || 0) + tx.amount;
+      });
+    return Object.entries(dailyMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, amount]) => ({ date, amount }));
+  }, [transactions]);
+
+  const categoryMonthlySpent = useMemo(() => {
+    const map = new Map<string, number>();
+    monthTransactions
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        const catKey = t.category_id || t.category;
+        map.set(catKey, (map.get(catKey) || 0) + t.amount);
+      });
+    return map;
+  }, [monthTransactions]);
+
+  const previousMonthExpense = useMemo(() => {
+    const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    return transactions
+      .filter((t) => t.type === "expense" && inRange(t, prevStart, prevEnd))
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [now, transactions]);
+
   const duplicateWarning = useMemo(() => {
     if (!modal || modal.kind !== "transaction") return null;
     const rawTitle = transactionDraft.title.trim();
@@ -626,12 +675,13 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = session?.access_token || sessionToken;
 
       if (!token) {
         // Fallback to local parser if not logged in
+        console.info("AI_CLASSIFY source=heuristic fallback=true reason=no_auth_token");
         const parsed = parseSmartTransaction(textToParse, categories, wallets);
-        applyParsedTransaction(parsed);
+        applyParsedTransaction(parsed, "[Fallback Ngoại tuyến] Đã nhận diện bằng quy tắc cục bộ.");
         return;
       }
 
@@ -651,22 +701,38 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
       if (!res.ok || !resJson.success) {
         const errMsg = resJson.error || "Không thể phân tích bằng AI. Đang chuyển sang nhận diện ngoại tuyến.";
-        console.warn("AI parse API error, falling back:", errMsg);
+        console.warn("AI_CLASSIFY source=heuristic fallback=true reason=api_error");
         const parsed = parseSmartTransaction(textToParse, categories, wallets);
-        applyParsedTransaction(parsed, errMsg);
+        applyParsedTransaction(parsed, "[Fallback Ngoại tuyến] " + errMsg);
         return;
       }
 
       const aiData: AITransactionParseResult = resJson.data;
+      const source: string = resJson.source || "heuristic";
+      const confidence: number = typeof resJson.confidence === "number" ? resJson.confidence : 0;
+      const fallback: boolean = Boolean(resJson.fallback);
+
+      // Safe logging (zero secrets or sensitive PII)
+      console.info(
+        `AI_CLASSIFY source=${source} confidence=${confidence.toFixed(2)} fallback=${fallback}`
+      );
+
+      const isHighConfidence = confidence >= 0.60;
+      const isMediumConfidence = confidence >= 0.35 && confidence < 0.60;
+      const isLowConfidence = confidence < 0.35;
 
       // Apply AI structured output to transaction draft
       setTransactionDraft((cur) => {
         const nextType = aiData.transaction_type || cur.type;
 
         let nextCategoryId = cur.categoryId;
-        if (aiData.category_id) {
+        // Confidence policy:
+        // High (>= 0.60): Preselect AI predicted category
+        // Medium (0.35 - 0.60): Preselect AI predicted category, user alerted to review
+        // Low (< 0.35): Do NOT auto-preselect category; user picks manually
+        if (!isLowConfidence && aiData.category_id) {
           nextCategoryId = aiData.category_id;
-        } else {
+        } else if (!nextCategoryId) {
           const curCat = categories.find((c) => c.id === cur.categoryId);
           if (curCat && curCat.kind === nextType) {
             nextCategoryId = cur.categoryId;
@@ -699,29 +765,44 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         };
       });
 
-      // Show friendly feedback
+      // Show friendly feedback with model source
       const missingFields: string[] = [];
       if (!aiData.amount) missingFields.push("số tiền");
       if (!aiData.wallet_id) missingFields.push("ví/tài khoản thanh toán");
       if (!aiData.category_id) missingFields.push("danh mục");
 
+      let sourceBadge = "";
+      if (source === "local_model_v3") {
+        sourceBadge = `Local AI V3 (${Math.round(confidence * 100)}%)`;
+      } else if (source === "local_model_v2") {
+        sourceBadge = `Local AI V2 Dự phòng (${Math.round(confidence * 100)}%)`;
+      } else {
+        sourceBadge = `Quy tắc ngoại tuyến`;
+      }
+
       if (missingFields.length > 0) {
         setAiFeedback({
           type: "warning",
-          message: `AI đã điền form. Vui lòng chọn thêm: ${missingFields.join(", ")}.`,
+          message: `[${sourceBadge}] AI đã điền form. Vui lòng chọn thêm: ${missingFields.join(", ")}.`,
         });
-        showNotice(`AI đã điền một phần — vui lòng chọn thêm: ${missingFields.join(", ")}.`);
+        showNotice(`[${sourceBadge}] Vui lòng chọn thêm: ${missingFields.join(", ")}.`);
+      } else if (isLowConfidence) {
+        setAiFeedback({
+          type: "warning",
+          message: `[${sourceBadge}] Độ tin cậy thấp (${Math.round(confidence * 100)}%). Gợi ý: "${aiData.category_name}". Vui lòng xác nhận danh mục.`,
+        });
+        showNotice(`[${sourceBadge}] Độ tin cậy thấp (${Math.round(confidence * 100)}%) — vui lòng kiểm tra danh mục.`);
       } else {
         setAiFeedback({
           type: "success",
-          message: "AI đã nhận diện và điền thông tin vào form. Hãy kiểm tra trước khi lưu.",
+          message: `[${sourceBadge}] Đã nhận diện "${aiData.category_name}" (${money(aiData.amount || 0)}). Hãy kiểm tra trước khi lưu.`,
         });
-        showNotice(`AI đã nhận diện: ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
+        showNotice(`[${sourceBadge}] ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
       }
     } catch (err: unknown) {
-      console.error("AI parse exception:", err);
+      console.warn("AI_CLASSIFY source=heuristic fallback=true reason=exception");
       const parsed = parseSmartTransaction(textToParse, categories, wallets);
-      applyParsedTransaction(parsed, "Lỗi kết nối AI. Đã nhận diện ngoại tuyến.");
+      applyParsedTransaction(parsed, "[Fallback Ngoại tuyến] Lỗi kết nối AI. Đã nhận diện bằng quy tắc cục bộ.");
     } finally {
       setAiParsing(false);
     }
@@ -1809,6 +1890,35 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 )}
               </section>
 
+              {sessionToken && (
+                <div style={{ marginBottom: 20 }}>
+                  <AiAdvisorPanel
+                    token={sessionToken}
+                    financialSummary={{
+                      income: monthTotals.income,
+                      expense: monthTotals.expense,
+                      previous_month_expense: previousMonthExpense,
+                      categories: categories.map((c) => ({
+                        name: c.name,
+                        kind: c.kind,
+                        amount: categoryMonthlySpent.get(c.id) || categoryMonthlySpent.get(c.name) || 0,
+                      })),
+                      wallets: wallets.map((w) => ({
+                        name: w.name,
+                        balance: walletBalances.get(w.id) ?? 0,
+                      })),
+                      savings_goals: goals.map((g) => ({
+                        name: g.title,
+                        target: g.target_amount,
+                        current: g.current_amount,
+                      })),
+                      month: new Date().toISOString().slice(0, 7),
+                    }}
+                    forecastHistory={forecastHistory}
+                  />
+                </div>
+              )}
+
               <section className="summary-grid">
                 <article className="balance-card">
                   <div className="card-top-row">
@@ -1932,7 +2042,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   </div>
                   <button className="pill-button" onClick={() => setView("transactions")}>{language === "vi" ? "Xem tất cả" : "View all"}</button>
                 </div>
-                <TransactionTable items={transactions.slice(0, 6)} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} />
+                <TransactionTable items={transactions.slice(0, 6)} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} token={sessionToken} />
               </article>
             </>}
 
@@ -1965,7 +2075,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   </select>
                 </div>
               </section>
-              <article className="panel transaction-panel full-table"><TransactionTable items={filteredTransactions} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} /></article>
+              <article className="panel transaction-panel full-table"><TransactionTable items={filteredTransactions} money={money} language={language} categoryById={categoryById} walletById={walletById} onEdit={item => openModal({ kind: "transaction", item })} onDelete={item => remove("transactions", item.id, item.title, item.receipt_path)} onReceipt={openReceipt} token={sessionToken} /></article>
             </>}
 
             {view === "wallets" && <>
@@ -2716,7 +2826,44 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 </div>
               )}
               <label>{t("transactions.title", undefined, language)}<input required autoFocus value={transactionDraft.title} onChange={event => setTransactionDraft(current => ({ ...current, title: event.target.value }))} placeholder={language === "vi" ? "Ví dụ: Ăn trưa, Đổ xăng…" : "E.g. Lunch, Gas…"} /></label>
+              {sessionToken && transactionDraft.title.trim().length >= 3 && (
+                <div style={{ marginTop: 2, marginBottom: 8 }}>
+                  <AiClassifyHint
+                    token={sessionToken}
+                    text={transactionDraft.title}
+                    onAccept={(suggestedCategoryName) => {
+                      const norm = removeAccents(suggestedCategoryName.toLowerCase().trim());
+                      const match =
+                        categories.find(
+                          (c) =>
+                            c.kind === transactionDraft.type &&
+                            (removeAccents(c.name.toLowerCase()).includes(norm) ||
+                              norm.includes(removeAccents(c.name.toLowerCase())))
+                        ) ||
+                        categories.find((c) =>
+                          removeAccents(c.name.toLowerCase()).includes(norm)
+                        );
+                      if (match) {
+                        setTransactionDraft((cur) => ({
+                          ...cur,
+                          type: match.kind,
+                          categoryId: match.id,
+                        }));
+                        showNotice(`Đã chọn danh mục: ${match.name}`);
+                      }
+                    }}
+                  />
+                </div>
+              )}
               <label>{t("transactions.amount", undefined, language)}<FormattedMoneyInput required autoFocus={focusAmountInput} value={transactionDraft.amount} onChangeValue={val => setTransactionDraft(current => ({ ...current, amount: val }))} /></label>
+              {sessionToken && Number(transactionDraft.amount) > 0 && transactionDraft.type === "expense" && (
+                <div style={{ marginTop: 2, marginBottom: 8 }}>
+                  <AiRiskBadge
+                    token={sessionToken}
+                    amount={Number(transactionDraft.amount)}
+                  />
+                </div>
+              )}
               <label>{t("transactions.category", undefined, language)}<select required value={transactionDraft.categoryId} onChange={event => setTransactionDraft(current => ({ ...current, categoryId: event.target.value, budgetId: "", paymentSourceType: "wallet" }))}>{categories.filter(item => item.kind === transactionDraft.type).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
               {transactionDraft.type === "expense" && (() => {
                 const matchingBudgets = budgets.filter(b => b.status === "active" && b.remaining_amount > 0 && (!b.category_id || b.category_id === transactionDraft.categoryId));
@@ -3261,7 +3408,7 @@ function WalletModalForm({ modalItem, saving, language = "vi", onSubmit }: { mod
 
 function Empty({ text }: { text: string }) { return <div className="empty-state"><p>{text}</p></div>; }
 
-function TransactionTable({ items, money, language, categoryById, walletById, onEdit, onDelete, onReceipt }: { items: Transaction[]; money: (value: number) => string; language: "vi" | "en"; categoryById: Map<string, Category>; walletById: Map<string, Wallet>; onEdit: (item: Transaction) => void; onDelete: (item: Transaction) => void; onReceipt: (path: string) => void }) {
+function TransactionTable({ items, money, language, categoryById, walletById, onEdit, onDelete, onReceipt, token }: { items: Transaction[]; money: (value: number) => string; language: "vi" | "en"; categoryById: Map<string, Category>; walletById: Map<string, Wallet>; onEdit: (item: Transaction) => void; onDelete: (item: Transaction) => void; onReceipt: (path: string) => void; token?: string }) {
   if (!items.length) return <Empty text={t("transactions.empty", undefined, language)} />;
   return (
     <div className="transaction-table">
@@ -3289,7 +3436,12 @@ function TransactionTable({ items, money, language, categoryById, walletById, on
               <small>{wallet?.name ?? (language === "vi" ? "Không gắn ví" : "No wallet")}</small>
             </span>
             <span>{formatDate(item.occurred_at, language)}</span>
-            <strong className={item.type}>{item.type === "expense" ? "-" : "+"}{money(item.amount)}</strong>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+              <strong className={item.type}>{item.type === "expense" ? "-" : "+"}{money(item.amount)}</strong>
+              {token && item.type === "expense" && item.amount >= 2000000 && (
+                <AiRiskBadge token={token} amount={item.amount} />
+              )}
+            </div>
             <span className="row-actions">
               {item.receipt_path && <button type="button" onClick={() => onReceipt(item.receipt_path!)} title={t("transactions.viewReceipt", undefined, language)} className="tx-text-btn receipt">{t("transactions.receipt", undefined, language)}</button>}
               <button type="button" onClick={() => onEdit(item)} title={t("common.edit", undefined, language)} className="tx-text-btn edit">{t("common.edit", undefined, language)}</button>

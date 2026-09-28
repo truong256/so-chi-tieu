@@ -1,0 +1,30 @@
+{
+  "model_name": "model_classify_v3",
+  "approach": "Hybrid TF-IDF (Word (1,2) + Char (3,4)) + Softmax Logistic Regression (Adam)",
+  "categories": [
+    "ăn uống",
+    "di chuyển",
+    "mua sắm",
+    "hóa đơn",
+    "giải trí",
+    "sức khỏe",
+    "giáo dục",
+    "đầu tư",
+    "thu nhập",
+    "khác"
+  ],
+  "num_classes": 10,
+  "train_samples": 2837,
+  "val_samples": 606,
+  "vocab_size": 9306,
+  "val_accuracy": 0.9983,
+  "val_macro_f1": 0.9982,
+  "confidence_thresholds": {
+    "high_threshold": 0.4,
+    "low_threshold": 0.2,
+    "high_accuracy": 1.0,
+    "coverage_high": 0.9934,
+    "coverage_low": 1.0
+  },
+  "timestamp": "2026-09-26T17:40:00Z"
+}

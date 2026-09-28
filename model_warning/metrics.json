@@ -1,0 +1,71 @@
+{
+  "accuracy": 0.9426,
+  "precision": 0.5236,
+  "recall": 0.8961,
+  "f1_score": 0.6609,
+  "roc_auc": 0.9779,
+  "classification_report": {
+    "0": {
+      "precision": 0.9927304220029394,
+      "recall": 0.9456513587160321,
+      "f1-score": 0.9686191665066257,
+      "support": 40001.0
+    },
+    "1": {
+      "precision": 0.5235590620206004,
+      "recall": 0.8960990247561891,
+      "f1-score": 0.660948955595518,
+      "support": 2666.0
+    },
+    "accuracy": 0.9425551362879977,
+    "macro avg": {
+      "precision": 0.75814474201177,
+      "recall": 0.9208751917361107,
+      "f1-score": 0.8147840610510719,
+      "support": 42667.0
+    },
+    "weighted avg": {
+      "precision": 0.9634147718350597,
+      "recall": 0.9425551362879977,
+      "f1-score": 0.9493947358625915,
+      "support": 42667.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      37827,
+      2174
+    ],
+    [
+      277,
+      2389
+    ]
+  ],
+  "feature_importance": {
+    "use_chip_encoded": 0.4091,
+    "mcc": 0.0968,
+    "has_chip_encoded": 0.0808,
+    "hour": 0.0748,
+    "transaction_amount": 0.0658,
+    "deviation_from_user_average": 0.0372,
+    "deviation_from_card_average": 0.0305,
+    "has_error": 0.0288,
+    "day_of_week": 0.0255,
+    "user_txn_count": 0.025,
+    "amount_to_limit_ratio": 0.0222,
+    "yearly_income": 0.0166,
+    "credit_limit": 0.014,
+    "current_age": 0.0139,
+    "month": 0.0137,
+    "credit_score": 0.0123,
+    "card_type_encoded": 0.0121,
+    "card_brand_encoded": 0.0108,
+    "gender_encoded": 0.0104,
+    "dark_web_encoded": 0.0
+  },
+  "risk_distribution": {
+    "SAFE": 38400,
+    "WARNING": 3840,
+    "DANGER": 427
+  }
+}

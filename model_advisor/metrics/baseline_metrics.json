@@ -1,0 +1,35 @@
+{
+  "model_name": "RuleBased_Baseline",
+  "test_samples": 300,
+  "health_grade_accuracy": 1.0,
+  "health_grade_macro_f1": 1.0,
+  "risk_score_mae": 0.0577,
+  "per_class_metrics": {
+    "CAUTION": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 84
+    },
+    "CRITICAL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 57
+    },
+    "EXCELLENT": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 80
+    },
+    "HEALTHY": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 79
+    }
+  },
+  "avg_latency_ms": 0.011,
+  "p95_latency_ms": 0.015
+}

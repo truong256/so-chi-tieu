@@ -1,0 +1,23 @@
+{
+  "model_name": "model_classify_v2",
+  "approach": "TF-IDF (Word (1,2) + Char (3,4)) + Softmax Logistic Regression (Adam)",
+  "categories": [
+    "ăn uống",
+    "di chuyển",
+    "mua sắm",
+    "hóa đơn",
+    "giải trí",
+    "sức khỏe",
+    "giáo dục",
+    "đầu tư",
+    "thu nhập",
+    "khác"
+  ],
+  "num_classes": 10,
+  "best_configuration": "Word N-grams only (1, 2)",
+  "train_samples": 3200,
+  "val_samples": 650,
+  "test_samples": 650,
+  "vocab_size": 2419,
+  "timestamp": "2026-09-25T17:45:51Z"
+}

@@ -1,0 +1,39 @@
+{
+  "model_name": "model_warning_v2",
+  "status": "ACCEPT",
+  "test_samples": 3000,
+  "test_fraud_count": 231,
+  "test_baseline_ap": 0.077,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "pr_auc": 1.0,
+  "roc_auc": 1.0,
+  "fpr": 0.0,
+  "fnr": 0.0,
+  "brier_score": 0.0,
+  "confusion_matrix": {
+    "tp": 231,
+    "fp": 0,
+    "fn": 0,
+    "tn": 2769
+  },
+  "risk_distribution": {
+    "SAFE": 2769,
+    "WARNING": 0,
+    "DANGER": 231
+  },
+  "thresholds": {
+    "safe_threshold": 0.15,
+    "danger_threshold": 0.92,
+    "source": "tuned_on_validation_only"
+  },
+  "gate_checks": {
+    "fraud_recall_gte_85": true,
+    "fraud_precision_gte_50": true,
+    "pr_auc_beats_baseline": true,
+    "no_data_leakage_group_split": true,
+    "thresholds_from_validation_only": true,
+    "unknown_user_card_resilience": true
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "model_name": "model_advisor_v1",
+  "train_metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "risk_mae": 0.064,
+    "class_metrics": {
+      "CAUTION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 343
+      },
+      "CRITICAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 280
+      },
+      "EXCELLENT": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 339
+      },
+      "HEALTHY": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 438
+      }
+    },
+    "avg_latency_ms": 0.001
+  },
+  "validation_metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "risk_mae": 0.064,
+    "class_metrics": {
+      "CAUTION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 73
+      },
+      "CRITICAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 63
+      },
+      "EXCELLENT": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 81
+      },
+      "HEALTHY": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 83
+      }
+    },
+    "avg_latency_ms": 0.001
+  },
+  "test_metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "risk_mae": 0.0654,
+    "class_metrics": {
+      "CAUTION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 84
+      },
+      "CRITICAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 57
+      },
+      "EXCELLENT": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 80
+      },
+      "HEALTHY": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 79
+      }
+    },
+    "avg_latency_ms": 0.001
+  },
+  "model_status": "ACCEPT"
+}

@@ -1,0 +1,3072 @@
+[
+  {
+    "text": "Công ty chuyển nhận cổ tức tiền mặt 3000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00001"
+  },
+  {
+    "text": "Khám đo mắt cắt kính cận",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00002"
+  },
+  {
+    "text": "Cong ty chuyen nhan tien viet bai cong tac 40000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00003"
+  },
+  {
+    "text": "Chuyển tiền phí phát sinh lặt vặt khác",
+    "category": "khác",
+    "id": "tx_v3_te_00004"
+  },
+  {
+    "text": "Đi tiền grab",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00005"
+  },
+  {
+    "text": "tiêm vaccine phòng cúm 250k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00006"
+  },
+  {
+    "text": "dầu nhớt xe",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00007"
+  },
+  {
+    "text": "THAM GIA BOARDGAME CÙNG NHÓM 1500K",
+    "category": "giải trí",
+    "id": "tx_v3_te_00008"
+  },
+  {
+    "text": "Order dép quai hậu 350k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00009"
+  },
+  {
+    "text": "Xét nghiệm thuốc cảm cúm paracetamol 50k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00010"
+  },
+  {
+    "text": "vé ca nhạc concert 350k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00011"
+  },
+  {
+    "text": "Đóng tiền gửi xe chung cư",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00012"
+  },
+  {
+    "text": "Mua sach lap trinh react 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00013"
+  },
+  {
+    "text": "Đặt phở bò tái nạm 250k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00014"
+  },
+  {
+    "text": "chuot may tinh logitech 220k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00015"
+  },
+  {
+    "text": "Sắm mua sắm tiktok shop 350k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00016"
+  },
+  {
+    "text": "boardgame cùng nhóm 90k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00017"
+  },
+  {
+    "text": "Thanh toan grab 500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00018"
+  },
+  {
+    "text": "don lazada 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00019"
+  },
+  {
+    "text": "Mua nạp finhay tích lũy 10000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00020"
+  },
+  {
+    "text": "Chuyển tiền quyên góp từ thiện 2000k",
+    "category": "khác",
+    "id": "tx_v3_te_00021"
+  },
+  {
+    "text": "Đi tài khoản spotify premium 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00022"
+  },
+  {
+    "text": "áo thun cotton 500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00023"
+  },
+  {
+    "text": "tiêm vaccine phòng cúm 50k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00024"
+  },
+  {
+    "text": "Chuyển tiền cho bạn vay mượn 500k",
+    "category": "khác",
+    "id": "tx_v3_te_00025"
+  },
+  {
+    "text": "Đầu tư mua 1 chỉ vàng sjc 5000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00026"
+  },
+  {
+    "text": "hiệu thuốc long châu 250k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00027"
+  },
+  {
+    "text": "Order nồi cơm điện 500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00028"
+  },
+  {
+    "text": "Uống thực phẩm chức năng vitamin c",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00029"
+  },
+  {
+    "text": "taxi mai linh 150k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00030"
+  },
+  {
+    "text": "DU LỊCH VÉ TRIỂN LÃM NGHỆ THUẬT 90K",
+    "category": "giải trí",
+    "id": "tx_v3_te_00031"
+  },
+  {
+    "text": "Đặt hàng áo thun cotton",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00032"
+  },
+  {
+    "text": "balo laptop chống nước 500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00033"
+  },
+  {
+    "text": "Chuyển tiền mừng tân gia nhà mới 5000k",
+    "category": "khác",
+    "id": "tx_v3_te_00034"
+  },
+  {
+    "text": "Học sách phát triển bản thân",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00035"
+  },
+  {
+    "text": "Thanh toán tiền điện sinh hoạt tháng 6000k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00036"
+  },
+  {
+    "text": "Gia hạn sách phát triển bản thân",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00037"
+  },
+  {
+    "text": "dat shopeefood 120k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00038"
+  },
+  {
+    "text": "kính râm thời trang 220k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00039"
+  },
+  {
+    "text": "Nạp tiền vào gửi tiền kỳ hạn 12 tháng 50000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00040"
+  },
+  {
+    "text": "Học sách lập trình react",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00041"
+  },
+  {
+    "text": "Tích lũy sổ tiết kiệm ngân hàng",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00042"
+  },
+  {
+    "text": "vé máy bay vietjet 70k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00043"
+  },
+  {
+    "text": "CƯỚC TRUYỀN HÌNH CÁP K+ 6000K",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00044"
+  },
+  {
+    "text": "Khám thuốc đau đầu hạ sốt",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00045"
+  },
+  {
+    "text": "Ăn bánh bao xá xíu 85k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00046"
+  },
+  {
+    "text": "Chuyển tiền khoản chi chưa phân loại 300k",
+    "category": "khác",
+    "id": "tx_v3_te_00047"
+  },
+  {
+    "text": "Chi tiền phúng viếng tang lễ",
+    "category": "khác",
+    "id": "tx_v3_te_00048"
+  },
+  {
+    "text": "ĂN XÔI XÉO THỊT KHO 250K",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00049"
+  },
+  {
+    "text": "Gửi sổ tiết kiệm ngân hàng 10000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00050"
+  },
+  {
+    "text": "Gia hạn khóa học lập trình python 12000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00051"
+  },
+  {
+    "text": "đặt hàng tiki 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00052"
+  },
+  {
+    "text": "Chơi mua vé xem kịch 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00053"
+  },
+  {
+    "text": "SHIP BÚN BÒ HUẾ 1500K",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00054"
+  },
+  {
+    "text": "Gửi chứng chỉ quỹ vn30",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00055"
+  },
+  {
+    "text": "Gửi tiền chuyển trả nợ ngân hàng 100k",
+    "category": "khác",
+    "id": "tx_v3_te_00056"
+  },
+  {
+    "text": "Tham gia vé ca nhạc concert 120k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00057"
+  },
+  {
+    "text": "Dong mua vo viet va but bi 2000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00058"
+  },
+  {
+    "text": "GÓI XEM NETFLIX 4K 200K",
+    "category": "giải trí",
+    "id": "tx_v3_te_00059"
+  },
+  {
+    "text": "Chi trả khẩu trang y tế và sát khuẩn 120k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00060"
+  },
+  {
+    "text": "hàn răng sâu 250k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00061"
+  },
+  {
+    "text": "Nộp tiền bình ga petrolimex 350k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00062"
+  },
+  {
+    "text": "Nộp tiền điện evn 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00063"
+  },
+  {
+    "text": "tiền thuê nhà trọ 550k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00064"
+  },
+  {
+    "text": "Đi nạp quân huy liên quân 90k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00065"
+  },
+  {
+    "text": "dép quai hậu 150k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00066"
+  },
+  {
+    "text": "ĐI TIÊM VACCINE PHÒNG CÚM 500K",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00067"
+  },
+  {
+    "text": "Ăn bánh mì chảo 85k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00068"
+  },
+  {
+    "text": "xăng xe máy ron 95 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00069"
+  },
+  {
+    "text": "đơn hàng shopee",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00070"
+  },
+  {
+    "text": "ĐẶT HÀNG NƯỚC HOA NAM 750K",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00071"
+  },
+  {
+    "text": "HỌC PHÍ THẠC SĨ",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00072"
+  },
+  {
+    "text": "Chi trả thực phẩm chức năng vitamin c",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00073"
+  },
+  {
+    "text": "đồng hồ đeo tay 250k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00074"
+  },
+  {
+    "text": "Chơi khách sạn nghỉ dưỡng 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00075"
+  },
+  {
+    "text": "Thanh toán tài liệu ôn tập thi cử 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00076"
+  },
+  {
+    "text": "Pick up do gia dung chao chong dinh 150k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00077"
+  },
+  {
+    "text": "Chuyển tiền mừng tân gia nhà mới",
+    "category": "khác",
+    "id": "tx_v3_te_00078"
+  },
+  {
+    "text": "Thanh toán vé xe khách phương trang",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00079"
+  },
+  {
+    "text": "Duoc chuyen luong cung dot 1 40000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00080"
+  },
+  {
+    "text": "cơm sườn bì chả",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00081"
+  },
+  {
+    "text": "túi xách nữ 250k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00082"
+  },
+  {
+    "text": "Chi trả cước wifi fpt 6000k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00083"
+  },
+  {
+    "text": "đơn lazada",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00084"
+  },
+  {
+    "text": "starbucks latte 30k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00085"
+  },
+  {
+    "text": "Tham gia khách sạn nghỉ dưỡng",
+    "category": "giải trí",
+    "id": "tx_v3_te_00086"
+  },
+  {
+    "text": "Xem vé tham quan vinwonders 90k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00087"
+  },
+  {
+    "text": "Đặt gọi đồ ăn grabfood 250k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00088"
+  },
+  {
+    "text": "Đóng tiền nước máy sawaco 150k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00089"
+  },
+  {
+    "text": "Nhận hoa hồng môi giới bán hàng 15000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00090"
+  },
+  {
+    "text": "trua com tam 25k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00091"
+  },
+  {
+    "text": "Gửi tiết kiệm trực tuyến 6 tháng",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00092"
+  },
+  {
+    "text": "tien phong thang nay 350k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00093"
+  },
+  {
+    "text": "XEM VÉ MÁY BAY PHÚ QUỐC",
+    "category": "giải trí",
+    "id": "tx_v3_te_00094"
+  },
+  {
+    "text": "Nộp tiền bình ga petrolimex 150k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00095"
+  },
+  {
+    "text": "Khám khám tổng quát bệnh viện 500k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00096"
+  },
+  {
+    "text": "Chơi billiard bida lỗ 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00097"
+  },
+  {
+    "text": "Chuyển tiền phòng tháng này 6000k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00098"
+  },
+  {
+    "text": "Đi thuốc cảm cúm paracetamol 120k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00099"
+  },
+  {
+    "text": "UỐNG PIZZA DOMINO",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00100"
+  },
+  {
+    "text": "Đóng luyện thi ielts 6.5 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00101"
+  },
+  {
+    "text": "Chi cơm sườn bì chả 1500k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00102"
+  },
+  {
+    "text": "học phí thạc sĩ 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00103"
+  },
+  {
+    "text": "Di tiem vaccine phong cum 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00104"
+  },
+  {
+    "text": "Uống hàn răng sâu 500k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00105"
+  },
+  {
+    "text": "tiền bình ga petrolimex 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00106"
+  },
+  {
+    "text": "học bằng lái xe b2 350k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00107"
+  },
+  {
+    "text": "cuoc wifi fpt 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00108"
+  },
+  {
+    "text": "đầu tư trái phiếu doanh nghiệp",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00109"
+  },
+  {
+    "text": "sổ tiết kiệm ngân hàng 20000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00110"
+  },
+  {
+    "text": "vé xe khách phương trang 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00111"
+  },
+  {
+    "text": "Bơm xe grab 100k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00112"
+  },
+  {
+    "text": "ĐẶT HÀNG TIKI 150K",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00113"
+  },
+  {
+    "text": "Nạp tiền vào nạp finhay tích lũy 2000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00114"
+  },
+  {
+    "text": "Thu luong cung dot 1",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00115"
+  },
+  {
+    "text": "Ship mi cay seoul 7 cap do 30k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00116"
+  },
+  {
+    "text": "tiền lãi tiết kiệm ngân hàng 25000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00117"
+  },
+  {
+    "text": "Mua hàn răng sâu 120k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00118"
+  },
+  {
+    "text": "Đổ cuốc grab",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00119"
+  },
+  {
+    "text": "Mua chè sầu riêng",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00120"
+  },
+  {
+    "text": "Thanh toán pizza domino",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00121"
+  },
+  {
+    "text": "Đi khám tai mũi họng",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00122"
+  },
+  {
+    "text": "Thu lương làm thêm part-time 15000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00123"
+  },
+  {
+    "text": "thuốc nhỏ mắt rohto 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00124"
+  },
+  {
+    "text": "khách sạn nghỉ dưỡng 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00125"
+  },
+  {
+    "text": "ve may bay vietnam airlines 150k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00126"
+  },
+  {
+    "text": "gửi xe bãi 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00127"
+  },
+  {
+    "text": "Thanh toán khóa học lập trình python 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00128"
+  },
+  {
+    "text": "Kham bo sung canxi",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00129"
+  },
+  {
+    "text": "áo sơ mi công sở 750k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00130"
+  },
+  {
+    "text": "GỌI ĐỒ ĂN GRABFOOD",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00131"
+  },
+  {
+    "text": "tiết kiệm trực tuyến 6 tháng",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00132"
+  },
+  {
+    "text": "mỹ phẩm son môi 1200k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00133"
+  },
+  {
+    "text": "MUA TIỀN HỌC TRƯỜNG MẦM NON 2000K",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00134"
+  },
+  {
+    "text": "bổ sung canxi 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00135"
+  },
+  {
+    "text": "Du lịch billiard bida lỗ",
+    "category": "giải trí",
+    "id": "tx_v3_te_00136"
+  },
+  {
+    "text": "cơm sườn bì chả 1500k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00137"
+  },
+  {
+    "text": "Thanh toán luyện thi ielts 6.5 350k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00138"
+  },
+  {
+    "text": "Xét nghiệm khám tai mũi họng 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00139"
+  },
+  {
+    "text": "Nộp nạp tiền 4g vinaphone 150k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00140"
+  },
+  {
+    "text": "Chi trả nạp data 4g viettel 150k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00141"
+  },
+  {
+    "text": "Đặt hàng tai nghe bluetooth",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00142"
+  },
+  {
+    "text": "Gửi tiền quyên góp từ thiện 300k",
+    "category": "khác",
+    "id": "tx_v3_te_00143"
+  },
+  {
+    "text": "Đổ xăng xe máy ron 95",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00144"
+  },
+  {
+    "text": "Thanh toan mua vo viet va but bi 2000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00145"
+  },
+  {
+    "text": "Uống nhổ răng khôn 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00146"
+  },
+  {
+    "text": "Đi billiard bida lỗ",
+    "category": "giải trí",
+    "id": "tx_v3_te_00147"
+  },
+  {
+    "text": "Mua xe ôm công nghệ 70k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00148"
+  },
+  {
+    "text": "Nhận thanh toán hợp đồng tư vấn 8000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00149"
+  },
+  {
+    "text": "cắm trại glamping 200k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00150"
+  },
+  {
+    "text": "sáng bánh mì 250k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00151"
+  },
+  {
+    "text": "Đặt hàng mỹ phẩm son môi",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00152"
+  },
+  {
+    "text": "Trừ tiền tiền điện evn 1200k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00153"
+  },
+  {
+    "text": "THANH TOÁN ĐƠN HÀNG GIÀY SNEAKER THỂ THAO",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00154"
+  },
+  {
+    "text": "Cộng tiền lương làm thêm part-time 40000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00155"
+  },
+  {
+    "text": "Mua mua thuốc cho mẹ 120k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00156"
+  },
+  {
+    "text": "Chuyen tien thue can ho chung cu 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00157"
+  },
+  {
+    "text": "Nộp tiền điện sinh hoạt tháng 150k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00158"
+  },
+  {
+    "text": "tiêm vaccine phòng cúm 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00159"
+  },
+  {
+    "text": "Đặt hàng sạc dự phòng 20000mah 150k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00160"
+  },
+  {
+    "text": "khám bệnh đa khoa 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00161"
+  },
+  {
+    "text": "Chi phở bò tái nạm",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00162"
+  },
+  {
+    "text": "bảo dưỡng xe honda 200k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00163"
+  },
+  {
+    "text": "Gọi sửa xe thủng lốp 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00164"
+  },
+  {
+    "text": "Đi vé ca nhạc concert 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00165"
+  },
+  {
+    "text": "Chuyển tiền rác dân phòng",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00166"
+  },
+  {
+    "text": "khách sạn nghỉ dưỡng 600k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00167"
+  },
+  {
+    "text": "buffet gogi 120k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00168"
+  },
+  {
+    "text": "Tham gia nạp steam mua game 200k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00169"
+  },
+  {
+    "text": "CHI TRẢ GÓI CƯỚC MOBIFONE 30 NGÀY",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00170"
+  },
+  {
+    "text": "sách tham khảo chuyên ngành 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00171"
+  },
+  {
+    "text": "Nạp tour du lịch đà lạt 3 ngày 120k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00172"
+  },
+  {
+    "text": "mua thuốc cho mẹ 250k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00173"
+  },
+  {
+    "text": "Đi hiệu thuốc long châu 120k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00174"
+  },
+  {
+    "text": "Tru tien tien rac dan phong",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00175"
+  },
+  {
+    "text": "Phi cuoc grab",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00176"
+  },
+  {
+    "text": "Thanh toán mừng tân gia nhà mới 2000k",
+    "category": "khác",
+    "id": "tx_v3_te_00177"
+  },
+  {
+    "text": "thắt lưng da 750k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00178"
+  },
+  {
+    "text": "nồi cơm điện 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00179"
+  },
+  {
+    "text": "Tru tien goi cuoc mobifone 30 ngay",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00180"
+  },
+  {
+    "text": "Gọi taxi mai linh 150k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00181"
+  },
+  {
+    "text": "phở bò tái nạm",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00182"
+  },
+  {
+    "text": "Trích mua cổ phiếu sàn hsc 50000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00183"
+  },
+  {
+    "text": "Thanh toán vé vé xem phim rạp lotte 120k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00184"
+  },
+  {
+    "text": "thay lốp michelin 100k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00185"
+  },
+  {
+    "text": "Sam quan jean ong suong 1200k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00186"
+  },
+  {
+    "text": "Đặt be bike 500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00187"
+  },
+  {
+    "text": "Đi ăn trưa cơm tấm",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00188"
+  },
+  {
+    "text": "gửi tiền kỳ hạn 12 tháng 10000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00189"
+  },
+  {
+    "text": "grab bike di lam 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00190"
+  },
+  {
+    "text": "bún đậu mắm tôm 50k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00191"
+  },
+  {
+    "text": "Order cà phê sữa đá",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00192"
+  },
+  {
+    "text": "đồ gia dụng chảo chống dính 150k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00193"
+  },
+  {
+    "text": "Uống thuốc đau đầu hạ sốt 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00194"
+  },
+  {
+    "text": "mua vở viết và bút bi",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00195"
+  },
+  {
+    "text": "Ăn gà rán kfc",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00196"
+  },
+  {
+    "text": "khoản chi chưa phân loại 1000k",
+    "category": "khác",
+    "id": "tx_v3_te_00197"
+  },
+  {
+    "text": "Nộp khóa học tiếng anh giao tiếp 150k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00198"
+  },
+  {
+    "text": "vé xe buýt điện 1200k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00199"
+  },
+  {
+    "text": "Order bún chả hà nội 45k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00200"
+  },
+  {
+    "text": "Thanh toán đơn hàng thắt lưng da 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00201"
+  },
+  {
+    "text": "sách phát triển bản thân 12000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00202"
+  },
+  {
+    "text": "Thanh toán cước truyền hình cáp k+ 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00203"
+  },
+  {
+    "text": "Nạp hát karaoke bạn bè",
+    "category": "giải trí",
+    "id": "tx_v3_te_00204"
+  },
+  {
+    "text": "Học luyện thi ielts 6.5",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00205"
+  },
+  {
+    "text": "Đưa cho bạn vay mượn",
+    "category": "khác",
+    "id": "tx_v3_te_00206"
+  },
+  {
+    "text": "TIỀN HOA HỒNG ĐẠI LÝ 3000K",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00207"
+  },
+  {
+    "text": "Đi khẩu trang y tế và sát khuẩn",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00208"
+  },
+  {
+    "text": "BẮT XĂNG XE MÁY RON 95 2500K",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00209"
+  },
+  {
+    "text": "grab bike đi làm",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00210"
+  },
+  {
+    "text": "Đi vé xe khách phương trang 45k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00211"
+  },
+  {
+    "text": "cơm gà xối mỡ 50k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00212"
+  },
+  {
+    "text": "mua vo viet va but bi 800k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00213"
+  },
+  {
+    "text": "Thanh toan le phi thi chung chi",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00214"
+  },
+  {
+    "text": "Đi dầu nhớt xe",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00215"
+  },
+  {
+    "text": "Thanh toán burger king 40k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00216"
+  },
+  {
+    "text": "đơn lazada 250k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00217"
+  },
+  {
+    "text": "Dua li xi tet cho cac chau 300k",
+    "category": "khác",
+    "id": "tx_v3_te_00218"
+  },
+  {
+    "text": "cước truyền hình cáp k+",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00219"
+  },
+  {
+    "text": "Du lịch vé tham quan vinwonders",
+    "category": "giải trí",
+    "id": "tx_v3_te_00220"
+  },
+  {
+    "text": "Mua ôn thi toeic cấp tốc 150k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00221"
+  },
+  {
+    "text": "Đóng tiền thuê căn hộ chung cư 6000k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00222"
+  },
+  {
+    "text": "Chi trả tiền phòng tháng này 550k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00223"
+  },
+  {
+    "text": "Nhận chuyển khoản tiền lương công ty 25000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00224"
+  },
+  {
+    "text": "Cộng tiền lương tháng 9",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00225"
+  },
+  {
+    "text": "tiền lãi tiết kiệm ngân hàng",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00226"
+  },
+  {
+    "text": "Đặt be car 350k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00227"
+  },
+  {
+    "text": "Đi cắm trại glamping 200k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00228"
+  },
+  {
+    "text": "Đặt hàng túi xách nữ 150k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00229"
+  },
+  {
+    "text": "rửa xe máy 2500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00230"
+  },
+  {
+    "text": "Sắm bộ drap giường 220k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00231"
+  },
+  {
+    "text": "ĂN ỐC ĐÊM",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00232"
+  },
+  {
+    "text": "Gia hạn khóa học lập trình python",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00233"
+  },
+  {
+    "text": "mua 1 chỉ vàng sjc 20000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00234"
+  },
+  {
+    "text": "Nạp tiền vào tích lũy vàng pnj 2000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00235"
+  },
+  {
+    "text": "boardgame cùng nhóm",
+    "category": "giải trí",
+    "id": "tx_v3_te_00236"
+  },
+  {
+    "text": "Mua sac du phong 20000mah 350k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00237"
+  },
+  {
+    "text": "Đặt hàng ốp lưng điện thoại",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00238"
+  },
+  {
+    "text": "quyên góp từ thiện",
+    "category": "khác",
+    "id": "tx_v3_te_00239"
+  },
+  {
+    "text": "kháng sinh tại pharmacity 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00240"
+  },
+  {
+    "text": "Phí gửi ô tô qua đêm 35k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00241"
+  },
+  {
+    "text": "Ship starbucks latte",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00242"
+  },
+  {
+    "text": "Học luyện thi ielts 6.5 150k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00243"
+  },
+  {
+    "text": "nap the dien thoai viettel 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00244"
+  },
+  {
+    "text": "Mua tài khoản ssi chứng khoán",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00245"
+  },
+  {
+    "text": "Bơm thay lốp michelin",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00246"
+  },
+  {
+    "text": "Đưa chuyển trả nợ ngân hàng",
+    "category": "khác",
+    "id": "tx_v3_te_00247"
+  },
+  {
+    "text": "TIỀN NƯỚC SẠCH 1200K",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00248"
+  },
+  {
+    "text": "Đi phim cgv cuối tuần 120k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00249"
+  },
+  {
+    "text": "tiền điện evn 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00250"
+  },
+  {
+    "text": "Đặt trà đào cam sả 40k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00251"
+  },
+  {
+    "text": "Chi phí đi grab 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00252"
+  },
+  {
+    "text": "Thanh toán phí quản lý tòa nhà",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00253"
+  },
+  {
+    "text": "tiền chu cấp em học 100k",
+    "category": "khác",
+    "id": "tx_v3_te_00254"
+  },
+  {
+    "text": "Nạp vé triển lãm nghệ thuật",
+    "category": "giải trí",
+    "id": "tx_v3_te_00255"
+  },
+  {
+    "text": "BƠM XĂNG XE MÁY RON 95",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00256"
+  },
+  {
+    "text": "Đưa khoản chi chưa phân loại 100k",
+    "category": "khác",
+    "id": "tx_v3_te_00257"
+  },
+  {
+    "text": "sách tham khảo chuyên ngành 150k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00258"
+  },
+  {
+    "text": "Gia hạn mua sách giáo khoa",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00259"
+  },
+  {
+    "text": "Đặt vé xe khách phương trang 70k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00260"
+  },
+  {
+    "text": "Chi highlands coffee",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00261"
+  },
+  {
+    "text": "tiền chu cấp em học",
+    "category": "khác",
+    "id": "tx_v3_te_00262"
+  },
+  {
+    "text": "Mua đầu tư trái phiếu doanh nghiệp 20000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00263"
+  },
+  {
+    "text": "vé triển lãm nghệ thuật 200k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00264"
+  },
+  {
+    "text": "Chi cho bạn vay mượn 1000k",
+    "category": "khác",
+    "id": "tx_v3_te_00265"
+  },
+  {
+    "text": "goi cuoc mobifone 30 ngay 100k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00266"
+  },
+  {
+    "text": "Chi trả tiền thuê căn hộ chung cư 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00267"
+  },
+  {
+    "text": "Mua thắt lưng da",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00268"
+  },
+  {
+    "text": "Thanh toán bánh mì chảo",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00269"
+  },
+  {
+    "text": "vé máy bay phú quốc 90k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00270"
+  },
+  {
+    "text": "Pick up chuột máy tính logitech 150k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00271"
+  },
+  {
+    "text": "hoa hong moi gioi ban hang 3000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00272"
+  },
+  {
+    "text": "Mua vé tàu hỏa bắc nam 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00273"
+  },
+  {
+    "text": "MUA ÔN THI TOEIC CẤP TỐC",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00274"
+  },
+  {
+    "text": "Uống tối lẩu thái 1500k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00275"
+  },
+  {
+    "text": "sạc dự phòng 20000mah 500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00276"
+  },
+  {
+    "text": "Uống thuốc nhỏ mắt rohto 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00277"
+  },
+  {
+    "text": "CHI GÀ RÁN KFC",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00278"
+  },
+  {
+    "text": "gói xem netflix 4k 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00279"
+  },
+  {
+    "text": "Đóng tiền học trường mầm non 2000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00280"
+  },
+  {
+    "text": "Order váy đầm dự tiệc 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00281"
+  },
+  {
+    "text": "Nộp nạp data 4g viettel 350k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00282"
+  },
+  {
+    "text": "mì cay seoul 7 cấp độ 40k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00283"
+  },
+  {
+    "text": "Đưa khoản chi chưa phân loại",
+    "category": "khác",
+    "id": "tx_v3_te_00284"
+  },
+  {
+    "text": "Đầu tư tích lũy vàng nhẫn 2000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00285"
+  },
+  {
+    "text": "giày sneaker thể thao 1200k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00286"
+  },
+  {
+    "text": "Di taxi mai linh 350k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00287"
+  },
+  {
+    "text": "thắt lưng da",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00288"
+  },
+  {
+    "text": "Chuyển tiền tiền phúng viếng tang lễ 100k",
+    "category": "khác",
+    "id": "tx_v3_te_00289"
+  },
+  {
+    "text": "tien nuoc may sawaco 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00290"
+  },
+  {
+    "text": "Gọi vé xe khách phương trang 200k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00291"
+  },
+  {
+    "text": "Chuyển tiền thuê căn hộ chung cư 100k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00292"
+  },
+  {
+    "text": "cà phê đen đá",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00293"
+  },
+  {
+    "text": "đầu tư trái phiếu doanh nghiệp 50000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00294"
+  },
+  {
+    "text": "Tham gia nạp robux 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00295"
+  },
+  {
+    "text": "Nhận nhận tiền viết bài cộng tác",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00296"
+  },
+  {
+    "text": "khẩu trang y tế và sát khuẩn 50k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00297"
+  },
+  {
+    "text": "mua vở viết và bút bi 12000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00298"
+  },
+  {
+    "text": "khám tổng quát bệnh viện 120k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00299"
+  },
+  {
+    "text": "Đóng học phí đại học kỳ 1",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00300"
+  },
+  {
+    "text": "VÉ THAM QUAN VINWONDERS 4500K",
+    "category": "giải trí",
+    "id": "tx_v3_te_00301"
+  },
+  {
+    "text": "MUA KHÁM BỆNH ĐA KHOA",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00302"
+  },
+  {
+    "text": "thức ăn cho cả tuần",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00303"
+  },
+  {
+    "text": "Được chuyển tiền bán hàng online 40000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00304"
+  },
+  {
+    "text": "cơm sườn bì chả 65k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00305"
+  },
+  {
+    "text": "Nộp phí quản lý tòa nhà",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00306"
+  },
+  {
+    "text": "MUA KEM CHỐNG NẮNG",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00307"
+  },
+  {
+    "text": "Mua váy đầm dự tiệc",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00308"
+  },
+  {
+    "text": "GỌI ĐI GRAB",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00309"
+  },
+  {
+    "text": "Đầu tư mua 1 chỉ vàng sjc 50000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00310"
+  },
+  {
+    "text": "Đóng tiền học kỹ năng mềm",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00311"
+  },
+  {
+    "text": "phim cgv cuối tuần 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00312"
+  },
+  {
+    "text": "Trích đầu tư trái phiếu doanh nghiệp",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00313"
+  },
+  {
+    "text": "GỬI CHUYỂN TIỀN VÀO TÀI KHOẢN TIẾT KIỆM 10000K",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00314"
+  },
+  {
+    "text": "Order cà phê sữa đá 250k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00315"
+  },
+  {
+    "text": "Đặt cơm sườn bì chả",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00316"
+  },
+  {
+    "text": "thuoc cam cum paracetamol 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00317"
+  },
+  {
+    "text": "Thanh toán vé vé triển lãm nghệ thuật",
+    "category": "giải trí",
+    "id": "tx_v3_te_00318"
+  },
+  {
+    "text": "Uống khám tai mũi họng 250k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00319"
+  },
+  {
+    "text": "Mua tài khoản ssi chứng khoán 5000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00320"
+  },
+  {
+    "text": "Thanh toán nạp tiền điện thoại vinaphone",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00321"
+  },
+  {
+    "text": "TÀI KHOẢN SSI CHỨNG KHOÁN 2000K",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00322"
+  },
+  {
+    "text": "lẩu haidilao",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00323"
+  },
+  {
+    "text": "vé tham quan vinwonders 90k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00324"
+  },
+  {
+    "text": "Chi phí phát sinh lặt vặt khác",
+    "category": "khác",
+    "id": "tx_v3_te_00325"
+  },
+  {
+    "text": "CHI TRẢ KHẨU TRANG Y TẾ VÀ SÁT KHUẨN",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00326"
+  },
+  {
+    "text": "giày sneaker thể thao 350k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00327"
+  },
+  {
+    "text": "Sắm túi xách nữ 1200k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00328"
+  },
+  {
+    "text": "vé xem phim bhd",
+    "category": "giải trí",
+    "id": "tx_v3_te_00329"
+  },
+  {
+    "text": "Nạp vé ca nhạc concert 200k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00330"
+  },
+  {
+    "text": "Thanh toán quyên góp từ thiện",
+    "category": "khác",
+    "id": "tx_v3_te_00331"
+  },
+  {
+    "text": "MUA DẦU NHỚT XE 45K",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00332"
+  },
+  {
+    "text": "Đổ đi grab",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00333"
+  },
+  {
+    "text": "Đóng mua vở viết và bút bi 350k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00334"
+  },
+  {
+    "text": "Đặt hàng đơn hàng shopee",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00335"
+  },
+  {
+    "text": "Gửi chuyển tiền vào tài khoản tiết kiệm 5000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00336"
+  },
+  {
+    "text": "Uống gà rán kfc",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00337"
+  },
+  {
+    "text": "Ship bún bò huế 45k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00338"
+  },
+  {
+    "text": "Chi khoản chi chưa phân loại 300k",
+    "category": "khác",
+    "id": "tx_v3_te_00339"
+  },
+  {
+    "text": "chè sầu riêng 40k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00340"
+  },
+  {
+    "text": "Tích lũy mua 1 chỉ vàng sjc 20000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00341"
+  },
+  {
+    "text": "ĐI ĂN GỌI ĐỒ ĂN GRABFOOD 45K",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00342"
+  },
+  {
+    "text": "Đầu tư quỹ mở dragon capital 5000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00343"
+  },
+  {
+    "text": "Chi phí phát sinh lặt vặt khác 2000k",
+    "category": "khác",
+    "id": "tx_v3_te_00344"
+  },
+  {
+    "text": "highlands coffee 85k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00345"
+  },
+  {
+    "text": "boardgame cùng nhóm 600k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00346"
+  },
+  {
+    "text": "nạp tiền điện thoại vinaphone 150k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00347"
+  },
+  {
+    "text": "Chuyển tiền phòng tháng này",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00348"
+  },
+  {
+    "text": "Thanh toan ve goi xem netflix 4k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00349"
+  },
+  {
+    "text": "mua cổ phiếu sàn hsc",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00350"
+  },
+  {
+    "text": "Gửi tài khoản ssi chứng khoán",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00351"
+  },
+  {
+    "text": "Xem tài khoản spotify premium 200k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00352"
+  },
+  {
+    "text": "khẩu trang y tế và sát khuẩn 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00353"
+  },
+  {
+    "text": "Gia hạn gia hạn tài khoản coursera 350k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00354"
+  },
+  {
+    "text": "Mua sua xe thung lop",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00355"
+  },
+  {
+    "text": "nạp tiền điện thoại vinaphone",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00356"
+  },
+  {
+    "text": "CHUYỂN TRẢ NỢ NGÂN HÀNG 1000K",
+    "category": "khác",
+    "id": "tx_v3_te_00357"
+  },
+  {
+    "text": "Được chuyển tiền thưởng tết nguyên đán 15000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00358"
+  },
+  {
+    "text": "gia hạn tài khoản coursera 800k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00359"
+  },
+  {
+    "text": "Mua tài liệu ôn tập thi cử 350k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00360"
+  },
+  {
+    "text": "CỘNG TIỀN NHẬN CỔ TỨC TIỀN MẶT 8000K",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00361"
+  },
+  {
+    "text": "Mua dau ca omega 3 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00362"
+  },
+  {
+    "text": "Xét nghiệm khám tổng quát bệnh viện",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00363"
+  },
+  {
+    "text": "Thanh toan don hang quan ao tre em 220k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00364"
+  },
+  {
+    "text": "Thu thanh toán hợp đồng tư vấn",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00365"
+  },
+  {
+    "text": "Thanh toan ve khach san nghi duong 600k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00366"
+  },
+  {
+    "text": "mừng đám cưới bạn thân 5000k",
+    "category": "khác",
+    "id": "tx_v3_te_00367"
+  },
+  {
+    "text": "Thanh toán đơn hàng mỹ phẩm son môi",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00368"
+  },
+  {
+    "text": "Đầu tư gửi tiền kỳ hạn 12 tháng",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00369"
+  },
+  {
+    "text": "Du lịch khách sạn nghỉ dưỡng",
+    "category": "giải trí",
+    "id": "tx_v3_te_00370"
+  },
+  {
+    "text": "Chuyển tiền cho bạn vay mượn 300k",
+    "category": "khác",
+    "id": "tx_v3_te_00371"
+  },
+  {
+    "text": "Đưa trả nợ bạn 300k",
+    "category": "khác",
+    "id": "tx_v3_te_00372"
+  },
+  {
+    "text": "Kham kham tong quat benh vien",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00373"
+  },
+  {
+    "text": "tài khoản ssi chứng khoán 20000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00374"
+  },
+  {
+    "text": "Gia hạn tiền học kỹ năng mềm 150k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00375"
+  },
+  {
+    "text": "Trừ tiền tiền phòng tháng này 550k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00376"
+  },
+  {
+    "text": "Chuyển tiền tiền sinh hoạt lặt vặt",
+    "category": "khác",
+    "id": "tx_v3_te_00377"
+  },
+  {
+    "text": "Đi be bike",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00378"
+  },
+  {
+    "text": "Thanh toán tiền chu cấp em học",
+    "category": "khác",
+    "id": "tx_v3_te_00379"
+  },
+  {
+    "text": "Thanh toán vé phim cgv cuối tuần",
+    "category": "giải trí",
+    "id": "tx_v3_te_00380"
+  },
+  {
+    "text": "Trích mua 1 chỉ vàng sjc 20000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00381"
+  },
+  {
+    "text": "Mua đặt hàng tiki 750k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00382"
+  },
+  {
+    "text": "Dat phi cau duong ecash",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00383"
+  },
+  {
+    "text": "xe grab 100k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00384"
+  },
+  {
+    "text": "Đặt tối lẩu thái 40k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00385"
+  },
+  {
+    "text": "Cộng tiền lương làm thêm part-time 25000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00386"
+  },
+  {
+    "text": "Goi ve xe khach phuong trang",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00387"
+  },
+  {
+    "text": "CÔNG TY CHUYỂN LƯƠNG LÀM THÊM PART-TIME 15000K",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00388"
+  },
+  {
+    "text": "Chi mừng đám cưới bạn thân 500k",
+    "category": "khác",
+    "id": "tx_v3_te_00389"
+  },
+  {
+    "text": "hát karaoke bạn bè",
+    "category": "giải trí",
+    "id": "tx_v3_te_00390"
+  },
+  {
+    "text": "Xem tài khoản spotify premium",
+    "category": "giải trí",
+    "id": "tx_v3_te_00391"
+  },
+  {
+    "text": "luyện thi ielts 6.5 12000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00392"
+  },
+  {
+    "text": "hoa hồng môi giới bán hàng 25000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00393"
+  },
+  {
+    "text": "Thanh toán tài liệu ôn tập thi cử 2000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00394"
+  },
+  {
+    "text": "Du lịch vé triển lãm nghệ thuật 200k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00395"
+  },
+  {
+    "text": "Gia hạn khóa học tiếng anh giao tiếp 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00396"
+  },
+  {
+    "text": "MÌ CAY SEOUL 7 CẤP ĐỘ 35K",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00397"
+  },
+  {
+    "text": "vé máy bay vietnam airlines 2500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00398"
+  },
+  {
+    "text": "Du lịch boardgame cùng nhóm 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00399"
+  },
+  {
+    "text": "nồi cơm điện 1200k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00400"
+  },
+  {
+    "text": "thuốc nhỏ mắt rohto 120k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00401"
+  },
+  {
+    "text": "GIA HẠN TIỀN HỌC THÊM TOÁN VĂN 350K",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00402"
+  },
+  {
+    "text": "Uống cơm sườn bì chả",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00403"
+  },
+  {
+    "text": "Bom ve xe buyt dien 500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00404"
+  },
+  {
+    "text": "Chi trả khám tai mũi họng",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00405"
+  },
+  {
+    "text": "Tham gia nạp robux 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00406"
+  },
+  {
+    "text": "Thanh toán đơn hàng đồ gia dụng chảo chống dính 750k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00407"
+  },
+  {
+    "text": "Order quần áo trẻ em 150k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00408"
+  },
+  {
+    "text": "Đi tài khoản spotify premium",
+    "category": "giải trí",
+    "id": "tx_v3_te_00409"
+  },
+  {
+    "text": "Nạp vé tham quan vinwonders 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00410"
+  },
+  {
+    "text": "rửa xe ô tô",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00411"
+  },
+  {
+    "text": "ao so mi cong so 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00412"
+  },
+  {
+    "text": "Gia hạn sách lập trình react",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00413"
+  },
+  {
+    "text": "ve xem phim rap lotte 120k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00414"
+  },
+  {
+    "text": "Chi tiền sinh hoạt lặt vặt",
+    "category": "khác",
+    "id": "tx_v3_te_00415"
+  },
+  {
+    "text": "dat shopeefood 30k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00416"
+  },
+  {
+    "text": "Gửi tiền phí phát sinh lặt vặt khác 300k",
+    "category": "khác",
+    "id": "tx_v3_te_00417"
+  },
+  {
+    "text": "Mua sách tham khảo chuyên ngành 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00418"
+  },
+  {
+    "text": "Phí vé tàu hỏa bắc nam 500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00419"
+  },
+  {
+    "text": "Chi chuyển trả nợ ngân hàng 1000k",
+    "category": "khác",
+    "id": "tx_v3_te_00420"
+  },
+  {
+    "text": "đồ ăn vặt",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00421"
+  },
+  {
+    "text": "phí cầu đường ecash",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00422"
+  },
+  {
+    "text": "thuốc đau dạ dày 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00423"
+  },
+  {
+    "text": "XÉT NGHIỆM ĐO MẮT CẮT KÍNH CẬN 120K",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00424"
+  },
+  {
+    "text": "quần jean ống suông 220k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00425"
+  },
+  {
+    "text": "Nạp boardgame cùng nhóm 90k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00426"
+  },
+  {
+    "text": "kem chống nắng 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00427"
+  },
+  {
+    "text": "Order tối lẩu thái 85k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00428"
+  },
+  {
+    "text": "Thanh toán đơn hàng áo sơ mi công sở 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00429"
+  },
+  {
+    "text": "mua vé xem kịch 600k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00430"
+  },
+  {
+    "text": "Mua thay lốp michelin 150k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00431"
+  },
+  {
+    "text": "Đổ rửa xe máy",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00432"
+  },
+  {
+    "text": "CHI TRẢ HÀN RĂNG SÂU 1200K",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00433"
+  },
+  {
+    "text": "Bắt gửi xe bãi",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00434"
+  },
+  {
+    "text": "Chuyển tiền bình ga petrolimex 550k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00435"
+  },
+  {
+    "text": "Xem ve tham quan vinwonders 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00436"
+  },
+  {
+    "text": "Thanh toán tiền học kỹ năng mềm 800k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00437"
+  },
+  {
+    "text": "Thanh toán vé mua vé xem kịch 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00438"
+  },
+  {
+    "text": "Thanh toán luyện thi ielts 6.5 2000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00439"
+  },
+  {
+    "text": "Du lịch chơi game nạp thẻ garena 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00440"
+  },
+  {
+    "text": "Đi dầu cá omega 3 50k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00441"
+  },
+  {
+    "text": "Sắm kính râm thời trang 220k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00442"
+  },
+  {
+    "text": "Nộp ôn thi toeic cấp tốc 350k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00443"
+  },
+  {
+    "text": "Chuyển gói cước mobifone 30 ngày",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00444"
+  },
+  {
+    "text": "Nộp nạp tiền điện thoại vinaphone 550k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00445"
+  },
+  {
+    "text": "Đi mua vé xem kịch 200k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00446"
+  },
+  {
+    "text": "túi xách nữ 150k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00447"
+  },
+  {
+    "text": "Nộp nạp thẻ điện thoại viettel 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00448"
+  },
+  {
+    "text": "Nop tien nuoc sach 550k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00449"
+  },
+  {
+    "text": "Đóng tiền điện sinh hoạt tháng 550k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00450"
+  },
+  {
+    "text": "Đầu tư chứng khoán vps 10000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00451"
+  },
+  {
+    "text": "taxi mai linh 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00452"
+  },
+  {
+    "text": "Nhan nhan co tuc tien mat 15000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00453"
+  },
+  {
+    "text": "cà phê sữa đá",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00454"
+  },
+  {
+    "text": "Đặt hàng ốp lưng điện thoại 1200k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00455"
+  },
+  {
+    "text": "Pick up quần áo trẻ em 250k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00456"
+  },
+  {
+    "text": "tiêm ngừa viêm gan 250k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00457"
+  },
+  {
+    "text": "Order đồ gia dụng chảo chống dính",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00458"
+  },
+  {
+    "text": "cước internet viettel 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00459"
+  },
+  {
+    "text": "Order sạc dự phòng 20000mah 220k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00460"
+  },
+  {
+    "text": "Đóng cước wifi fpt",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00461"
+  },
+  {
+    "text": "BỘ DRAP GIƯỜNG 250K",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00462"
+  },
+  {
+    "text": "hoc phi dai hoc ky 1",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00463"
+  },
+  {
+    "text": "bo sung canxi 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00464"
+  },
+  {
+    "text": "Mua khoa hoc lap trinh python",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00465"
+  },
+  {
+    "text": "Uong lau haidilao 45k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00466"
+  },
+  {
+    "text": "thưởng dự án hoàn thành 15000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00467"
+  },
+  {
+    "text": "ĐÓNG CƯỚC TRUYỀN HÌNH CÁP K+ 1200K",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00468"
+  },
+  {
+    "text": "dép quai hậu 750k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00469"
+  },
+  {
+    "text": "be bike",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00470"
+  },
+  {
+    "text": "Chi lì xì tết cho các cháu",
+    "category": "khác",
+    "id": "tx_v3_te_00471"
+  },
+  {
+    "text": "tiền bán hàng online 15000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00472"
+  },
+  {
+    "text": "cafe muối 30k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00473"
+  },
+  {
+    "text": "Thanh toán gói cước mobifone 30 ngày 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00474"
+  },
+  {
+    "text": "Uống trà tắc khổng lồ 45k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00475"
+  },
+  {
+    "text": "phim cgv cuối tuần 350k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00476"
+  },
+  {
+    "text": "ĐÓNG TIỀN GỬI XE CHUNG CƯ 6000K",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00477"
+  },
+  {
+    "text": "NẠP TIỀN VÀO QUỸ MỞ DRAGON CAPITAL",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00478"
+  },
+  {
+    "text": "Đi ăn thịt heo rau củ chợ 85k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00479"
+  },
+  {
+    "text": "bun cha ha noi 40k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00480"
+  },
+  {
+    "text": "Bắt nạp tiền epass",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00481"
+  },
+  {
+    "text": "CHI CHUYỂN TRẢ NỢ NGÂN HÀNG 500K",
+    "category": "khác",
+    "id": "tx_v3_te_00482"
+  },
+  {
+    "text": "Xét nghiệm khám bệnh đa khoa 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00483"
+  },
+  {
+    "text": "cước truyền hình cáp k+ 150k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00484"
+  },
+  {
+    "text": "Thanh toán học phí đại học kỳ 1 350k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00485"
+  },
+  {
+    "text": "Chi trả tiền mạng vnpt 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00486"
+  },
+  {
+    "text": "Uống thức ăn cho cả tuần 25k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00487"
+  },
+  {
+    "text": "tiền sinh hoạt lặt vặt 1000k",
+    "category": "khác",
+    "id": "tx_v3_te_00488"
+  },
+  {
+    "text": "khách sạn nghỉ dưỡng 90k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00489"
+  },
+  {
+    "text": "Xét nghiệm nha khoa lấy cao răng",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00490"
+  },
+  {
+    "text": "Thanh toán đơn hàng dép quai hậu 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00491"
+  },
+  {
+    "text": "nhận tiền viết bài cộng tác 25000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00492"
+  },
+  {
+    "text": "lương làm thêm part-time",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00493"
+  },
+  {
+    "text": "Chuyển cước internet viettel 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00494"
+  },
+  {
+    "text": "Đóng gia hạn tài khoản coursera 800k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00495"
+  },
+  {
+    "text": "dầu nhớt xe 150k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00496"
+  },
+  {
+    "text": "nạp robux 120k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00497"
+  },
+  {
+    "text": "BÁNH CANH CUA 500K",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00498"
+  },
+  {
+    "text": "Đổ phí cầu đường ecash 50k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00499"
+  },
+  {
+    "text": "Đặt hàng váy đầm dự tiệc",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00500"
+  },
+  {
+    "text": "Mua bắt grab 350k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00501"
+  },
+  {
+    "text": "hiệu thuốc long châu 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00502"
+  },
+  {
+    "text": "cf sữa đá",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00503"
+  },
+  {
+    "text": "Nạp nạp robux",
+    "category": "giải trí",
+    "id": "tx_v3_te_00504"
+  },
+  {
+    "text": "Bơm xe grab 500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00505"
+  },
+  {
+    "text": "Trừ tiền nạp data 4g viettel 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00506"
+  },
+  {
+    "text": "Chuyển tiền thuê nhà trọ 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00507"
+  },
+  {
+    "text": "Nạp tiền vào tích lũy vàng pnj 50000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00508"
+  },
+  {
+    "text": "Mua chuột máy tính logitech 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00509"
+  },
+  {
+    "text": "phí trạm thu phí bot 35k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00510"
+  },
+  {
+    "text": "Nạp vé triển lãm nghệ thuật 350k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00511"
+  },
+  {
+    "text": "Thanh toán tiền điện evn 1200k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00512"
+  },
+  {
+    "text": "quỹ mở dragon capital 10000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00513"
+  },
+  {
+    "text": "GRAB 150K",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00514"
+  },
+  {
+    "text": "Xét nghiệm nha khoa lấy cao răng 3000k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00515"
+  },
+  {
+    "text": "tour du lịch đà lạt 3 ngày 1500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00516"
+  },
+  {
+    "text": "luong lam them part-time 40000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00517"
+  },
+  {
+    "text": "tiền điện sinh hoạt tháng 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00518"
+  },
+  {
+    "text": "Nạp vé tham quan vinwonders",
+    "category": "giải trí",
+    "id": "tx_v3_te_00519"
+  },
+  {
+    "text": "Đặt gửi ô tô qua đêm 35k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00520"
+  },
+  {
+    "text": "ĐỒ GIA DỤNG CHẢO CHỐNG DÍNH 500K",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00521"
+  },
+  {
+    "text": "xăng ô tô e5 350k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00522"
+  },
+  {
+    "text": "Uống kichi kichi 120k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00523"
+  },
+  {
+    "text": "THUỐC ĐAU DẠ DÀY 1200K",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00524"
+  },
+  {
+    "text": "cước internet viettel 100k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00525"
+  },
+  {
+    "text": "Thu tiền thưởng kpi quý",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00526"
+  },
+  {
+    "text": "TIỀN LÃI TIẾT KIỆM NGÂN HÀNG 15000K",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00527"
+  },
+  {
+    "text": "xăng ô tô e5 100k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00528"
+  },
+  {
+    "text": "Cộng tiền lương cứng đợt 1",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00529"
+  },
+  {
+    "text": "tiền học kỹ năng mềm 350k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00530"
+  },
+  {
+    "text": "Thanh toán quyên góp từ thiện 500k",
+    "category": "khác",
+    "id": "tx_v3_te_00531"
+  },
+  {
+    "text": "mỹ phẩm son môi 2500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00532"
+  },
+  {
+    "text": "Thanh toán vé vé triển lãm nghệ thuật 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00533"
+  },
+  {
+    "text": "Mua đồ ăn vặt 120k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00534"
+  },
+  {
+    "text": "Thanh toan cuoc internet viettel 6000k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00535"
+  },
+  {
+    "text": "KHÁM NHA KHOA LẤY CAO RĂNG",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00536"
+  },
+  {
+    "text": "Pick up tai nghe bluetooth 1200k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00537"
+  },
+  {
+    "text": "Uống tiêm ngừa viêm gan 120k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00538"
+  },
+  {
+    "text": "gói cước mobifone 30 ngày 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00539"
+  },
+  {
+    "text": "Mua be bike",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00540"
+  },
+  {
+    "text": "Chi trả khẩu trang y tế và sát khuẩn 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00541"
+  },
+  {
+    "text": "Mua chuyển tiền vào tài khoản tiết kiệm",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00542"
+  },
+  {
+    "text": "ĐỔ BE CAR",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00543"
+  },
+  {
+    "text": "tiền phòng tháng này 6000k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00544"
+  },
+  {
+    "text": "vé máy bay vietnam airlines 1200k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00545"
+  },
+  {
+    "text": "PICK UP ĐẶT HÀNG TIKI",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00546"
+  },
+  {
+    "text": "nhận cổ tức tiền mặt 40000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00547"
+  },
+  {
+    "text": "tien thuong kpi quy 8000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00548"
+  },
+  {
+    "text": "Chuyển tiền khoản chi chưa phân loại 100k",
+    "category": "khác",
+    "id": "tx_v3_te_00549"
+  },
+  {
+    "text": "Dong tien hoc them toan van 800k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00550"
+  },
+  {
+    "text": "ủng hộ đồng bào bão lụt 500k",
+    "category": "khác",
+    "id": "tx_v3_te_00551"
+  },
+  {
+    "text": "cước truyền hình cáp k+ 100k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00552"
+  },
+  {
+    "text": "Khám thuốc nhỏ mắt rohto 250k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00553"
+  },
+  {
+    "text": "Chi bánh cuốn nóng 25k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00554"
+  },
+  {
+    "text": "Thanh toán học phí đại học kỳ 1",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00555"
+  },
+  {
+    "text": "nhổ răng khôn 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00556"
+  },
+  {
+    "text": "tham hoi om dau 2000k",
+    "category": "khác",
+    "id": "tx_v3_te_00557"
+  },
+  {
+    "text": "thu nhập làm thêm freelance 8000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00558"
+  },
+  {
+    "text": "dau nhot xe 500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00559"
+  },
+  {
+    "text": "CHUYỂN NẠP THẺ ĐIỆN THOẠI VIETTEL",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00560"
+  },
+  {
+    "text": "tiền gửi xe chung cư 6000k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00561"
+  },
+  {
+    "text": "Mua tích lũy vàng nhẫn 2000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00562"
+  },
+  {
+    "text": "Uống khám bệnh đa khoa 500k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00563"
+  },
+  {
+    "text": "Thanh toan tien dien evn 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00564"
+  },
+  {
+    "text": "Order ca phe den da 40k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00565"
+  },
+  {
+    "text": "Đặt bánh canh cua 65k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00566"
+  },
+  {
+    "text": "Chi phí dầu nhớt xe",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00567"
+  },
+  {
+    "text": "boardgame cùng nhóm 120k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00568"
+  },
+  {
+    "text": "cuoc internet viettel 350k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00569"
+  },
+  {
+    "text": "Thanh toán vé mua vé xem kịch",
+    "category": "giải trí",
+    "id": "tx_v3_te_00570"
+  },
+  {
+    "text": "Được chuyển hoa hồng môi giới bán hàng",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00571"
+  },
+  {
+    "text": "Thanh toán vé phim cgv cuối tuần 600k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00572"
+  },
+  {
+    "text": "TIỀN PHÒNG THÁNG NÀY 1200K",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00573"
+  },
+  {
+    "text": "Khám nhổ răng khôn 250k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00574"
+  },
+  {
+    "text": "Mua nha khoa lấy cao răng",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00575"
+  },
+  {
+    "text": "gói xem netflix 4k 120k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00576"
+  },
+  {
+    "text": "Chuyển nạp data 4g viettel 3500k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00577"
+  },
+  {
+    "text": "Đi ăn gà rán kfc 120k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00578"
+  },
+  {
+    "text": "Du lịch phim cgv cuối tuần 90k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00579"
+  },
+  {
+    "text": "Order balo laptop chống nước 500k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00580"
+  },
+  {
+    "text": "Pick up chuot may tinh logitech 250k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00581"
+  },
+  {
+    "text": "kính râm thời trang 750k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00582"
+  },
+  {
+    "text": "mì cay seoul 7 cấp độ",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00583"
+  },
+  {
+    "text": "Học khóa học lập trình python 2000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00584"
+  },
+  {
+    "text": "Nộp nạp thẻ điện thoại viettel 550k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00585"
+  },
+  {
+    "text": "lương cứng đợt 1 3000k",
+    "category": "thu nhập",
+    "id": "tx_v3_te_00586"
+  },
+  {
+    "text": "Chơi vé triển lãm nghệ thuật 350k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00587"
+  },
+  {
+    "text": "Đưa tiền phúng viếng tang lễ 2000k",
+    "category": "khác",
+    "id": "tx_v3_te_00588"
+  },
+  {
+    "text": "Đi ăn gà rán kfc 1500k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00589"
+  },
+  {
+    "text": "CHI PHÍ RỬA XE Ô TÔ 500K",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00590"
+  },
+  {
+    "text": "Xem vé máy bay phú quốc 350k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00591"
+  },
+  {
+    "text": "SẮM ĐẶT HÀNG TIKI",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00592"
+  },
+  {
+    "text": "Order lẩu haidilao",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00593"
+  },
+  {
+    "text": "be bike 2500k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00594"
+  },
+  {
+    "text": "Du lịch nạp quân huy liên quân 4500k",
+    "category": "giải trí",
+    "id": "tx_v3_te_00595"
+  },
+  {
+    "text": "Nạp tiền vào tích lũy vàng nhẫn",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00596"
+  },
+  {
+    "text": "tiền rác dân phòng 350k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00597"
+  },
+  {
+    "text": "Khám mua thuốc cho mẹ 1200k",
+    "category": "sức khỏe",
+    "id": "tx_v3_te_00598"
+  },
+  {
+    "text": "Gửi tiền tiền phúng viếng tang lễ",
+    "category": "khác",
+    "id": "tx_v3_te_00599"
+  },
+  {
+    "text": "Ship banh trang nuong",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00600"
+  },
+  {
+    "text": "lệ phí thi chứng chỉ 5000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00601"
+  },
+  {
+    "text": "Gọi phí trạm thu phí bot",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00602"
+  },
+  {
+    "text": "Chi trả tiền bình ga petrolimex 350k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00603"
+  },
+  {
+    "text": "SHIP PHỞ BÒ TÁI NẠM",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00604"
+  },
+  {
+    "text": "Học tài liệu ôn tập thi cử 12000k",
+    "category": "giáo dục",
+    "id": "tx_v3_te_00605"
+  },
+  {
+    "text": "cước truyền hình cáp k+ 850k",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00606"
+  },
+  {
+    "text": "Thanh toán cước truyền hình cáp k+",
+    "category": "hóa đơn",
+    "id": "tx_v3_te_00607"
+  },
+  {
+    "text": "chè sầu riêng 45k",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00608"
+  },
+  {
+    "text": "ốp lưng điện thoại 220k",
+    "category": "mua sắm",
+    "id": "tx_v3_te_00609"
+  },
+  {
+    "text": "Gọi thay lốp michelin 100k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00610"
+  },
+  {
+    "text": "xanh sm taxi 350k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00611"
+  },
+  {
+    "text": "bánh cuốn nóng",
+    "category": "ăn uống",
+    "id": "tx_v3_te_00612"
+  },
+  {
+    "text": "vé xe buýt tháng 200k",
+    "category": "di chuyển",
+    "id": "tx_v3_te_00613"
+  },
+  {
+    "text": "Nạp tiền vào tài khoản ssi chứng khoán 5000k",
+    "category": "đầu tư",
+    "id": "tx_v3_te_00614"
+  }
+]

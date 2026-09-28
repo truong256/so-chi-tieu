@@ -1,0 +1,44 @@
+{
+  "model_name": "model_warning_v3",
+  "approach": "Leakage-Free Group-Split Pipeline + RiskMLPClassifier (Hardened null/zero defense)",
+  "train_samples": 12000,
+  "val_samples": 3000,
+  "features": [
+    "log_transaction_amount",
+    "log_credit_limit",
+    "amount_to_limit_ratio",
+    "hour",
+    "is_night",
+    "day_of_week",
+    "is_weekend",
+    "month",
+    "is_high_risk_mcc",
+    "use_chip_encoded",
+    "card_brand_encoded",
+    "card_type_encoded",
+    "has_chip_encoded",
+    "dark_web_encoded",
+    "credit_score",
+    "log_yearly_income",
+    "current_age",
+    "gender_encoded",
+    "has_error",
+    "deviation_from_card_average",
+    "deviation_from_user_average",
+    "user_txn_count"
+  ],
+  "num_features": 22,
+  "thresholds": {
+    "safe_threshold": 0.1,
+    "danger_threshold": 0.92
+  },
+  "val_metrics": {
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "brier_score": 0.0
+  },
+  "timestamp": "2026-09-26T17:42:00Z"
+}

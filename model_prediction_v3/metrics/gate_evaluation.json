@@ -1,0 +1,115 @@
+{
+  "model_name": "model_prediction_v2",
+  "status": "ACCEPT",
+  "test_period": "2026-01-01 to 2026-06-30",
+  "num_test_cutoffs": 11,
+  "horizon_metrics": {
+    "model": {
+      "7_day": {
+        "mae": 105759.51,
+        "rmse": 232832.69,
+        "smape": 24.92,
+        "wape": 28.66
+      },
+      "14_day": {
+        "mae": 107460.75,
+        "rmse": 226816.2,
+        "smape": 25.56,
+        "wape": 29.76
+      },
+      "30_day": {
+        "mae": 108076.36,
+        "rmse": 234704.46,
+        "smape": 25.17,
+        "wape": 29.54
+      }
+    },
+    "seasonal_naive_7": {
+      "7_day": {
+        "mae": 153077.92,
+        "rmse": 279546.36,
+        "smape": 35.88,
+        "wape": 41.48
+      },
+      "14_day": {
+        "mae": 162961.04,
+        "rmse": 286131.86,
+        "smape": 39.13,
+        "wape": 45.14
+      },
+      "30_day": {
+        "mae": 159972.73,
+        "rmse": 289573.89,
+        "smape": 37.92,
+        "wape": 43.72
+      }
+    },
+    "same_weekday": {
+      "7_day": {
+        "mae": 144652.6,
+        "rmse": 264782.84,
+        "smape": 35.29,
+        "wape": 39.2
+      },
+      "14_day": {
+        "mae": 141433.44,
+        "rmse": 253718.59,
+        "smape": 34.61,
+        "wape": 39.17
+      },
+      "30_day": {
+        "mae": 141298.48,
+        "rmse": 259932.72,
+        "smape": 33.79,
+        "wape": 38.62
+      }
+    },
+    "ma_7": {
+      "7_day": {
+        "mae": 164413.73,
+        "rmse": 282630.66,
+        "smape": 41.25,
+        "wape": 44.55
+      },
+      "14_day": {
+        "mae": 164413.73,
+        "rmse": 282094.79,
+        "smape": 41.48,
+        "wape": 45.54
+      },
+      "30_day": {
+        "mae": 162182.68,
+        "rmse": 280778.34,
+        "smape": 40.54,
+        "wape": 44.33
+      }
+    },
+    "naive_last": {
+      "7_day": {
+        "mae": 153298.7,
+        "rmse": 290218.68,
+        "smape": 39.08,
+        "wape": 41.54
+      },
+      "14_day": {
+        "mae": 155493.51,
+        "rmse": 282275.38,
+        "smape": 40.89,
+        "wape": 43.07
+      },
+      "30_day": {
+        "mae": 164800.0,
+        "rmse": 297081.52,
+        "smape": 43.41,
+        "wape": 45.04
+      }
+    }
+  },
+  "gate_checks": {
+    "beats_seasonal_naive_smape": true,
+    "beats_seasonal_naive_mae": true,
+    "30day_recursive_smape_lte_50": true,
+    "no_recursive_collapse": true,
+    "temporal_split_verified": true
+  }
+}

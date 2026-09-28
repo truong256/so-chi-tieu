@@ -69,6 +69,20 @@ export interface AiMonitoringData {
     total: number;
     errors: number;
   }[];
+  canary?: {
+    primaryModel: string;
+    canaryModel: string;
+    canaryEnabled: boolean;
+    canaryPercent: number;
+    realEventsProgress: string;
+    v3Requests: number;
+    v4Requests: number;
+    v4SuccessRate: number;
+    v4FallbackRate: number;
+    v4LatencyP95: number;
+    circuitBreaker: "CLOSED" | "OPEN";
+    promotionGate: "BLOCKED" | "READY_FOR_HUMAN_REVIEW";
+  };
 }
 
 export interface AuditLogItem {

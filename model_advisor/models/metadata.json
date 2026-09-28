@@ -1,0 +1,47 @@
+{
+  "model_type": "AdvisorEnsemble_SoftmaxMLP_Ridge",
+  "approach": "Supervised Feature Classification + Metric Regression + Contextual Synthesis",
+  "features": [
+    "savings_rate",
+    "expense_to_income",
+    "net_flow_log",
+    "expense_growth",
+    "emergency_months",
+    "emergency_months_capped",
+    "needs_ratio",
+    "wants_ratio",
+    "overbudget_count",
+    "overbudget_total_ratio",
+    "max_overbudget_ratio",
+    "food_ratio",
+    "housing_ratio",
+    "entertainment_ratio",
+    "shopping_ratio",
+    "savings_goals_count",
+    "savings_goals_avg_progress",
+    "wallets_count",
+    "log_income",
+    "log_expense"
+  ],
+  "num_features": 20,
+  "target_classes": [
+    "CRITICAL",
+    "CAUTION",
+    "HEALTHY",
+    "EXCELLENT"
+  ],
+  "train_samples": 1400,
+  "val_samples": 300,
+  "test_samples": 300,
+  "hyperparameters": {
+    "hidden_dim": 32,
+    "learning_rate": 0.015,
+    "epochs": 450,
+    "batch_size": 32,
+    "l2_reg": 0.0001,
+    "ridge_alpha": 5.0,
+    "seed": 42
+  },
+  "training_timestamp": "2026-09-25T17:19:21.083423Z",
+  "model_file": "advisor_model.pkl"
+}

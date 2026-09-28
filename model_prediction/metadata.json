@@ -1,0 +1,35 @@
+{
+  "model_type": "XGBRegressor",
+  "dataset": "Personal_Finance_Dataset.csv",
+  "data_filter": "Type == 'Expense'",
+  "total_expense_records": 1222,
+  "total_days_in_range": 1824,
+  "training_days": 1704,
+  "test_days": 90,
+  "warmup_period": 30,
+  "date_range_start": "2020-01-02",
+  "date_range_end": "2024-12-29",
+  "feature_columns": [
+    "lag_1",
+    "lag_7",
+    "rolling_mean_7",
+    "rolling_std_7",
+    "rolling_mean_30",
+    "day_of_week",
+    "day_of_month",
+    "month",
+    "is_weekend"
+  ],
+  "random_state": 42,
+  "xgboost_params": {
+    "n_estimators": 200,
+    "max_depth": 5,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8
+  },
+  "python_version": "3.10.9",
+  "sklearn_version": "1.7.2",
+  "xgboost_version": "3.2.0",
+  "training_timestamp": "2026-09-18T19:28:14.072115"
+}

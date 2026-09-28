@@ -1,0 +1,1474 @@
+[
+  {
+    "date": "2025-07-01",
+    "daily_spending": 331000.0,
+    "day_of_week": 1,
+    "day_of_month": 1,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-02",
+    "daily_spending": 255000.0,
+    "day_of_week": 2,
+    "day_of_month": 2,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-03",
+    "daily_spending": 377000.0,
+    "day_of_week": 3,
+    "day_of_month": 3,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-04",
+    "daily_spending": 379000.0,
+    "day_of_week": 4,
+    "day_of_month": 4,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-05",
+    "daily_spending": 653000.0,
+    "day_of_week": 5,
+    "day_of_month": 5,
+    "month": 7,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-07-06",
+    "daily_spending": 410000.0,
+    "day_of_week": 6,
+    "day_of_month": 6,
+    "month": 7,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-07-07",
+    "daily_spending": 149000.0,
+    "day_of_week": 0,
+    "day_of_month": 7,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-08",
+    "daily_spending": 212000.0,
+    "day_of_week": 1,
+    "day_of_month": 8,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-09",
+    "daily_spending": 126000.0,
+    "day_of_week": 2,
+    "day_of_month": 9,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-10",
+    "daily_spending": 204000.0,
+    "day_of_week": 3,
+    "day_of_month": 10,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-11",
+    "daily_spending": 315000.0,
+    "day_of_week": 4,
+    "day_of_month": 11,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-12",
+    "daily_spending": 368000.0,
+    "day_of_week": 5,
+    "day_of_month": 12,
+    "month": 7,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-07-13",
+    "daily_spending": 292000.0,
+    "day_of_week": 6,
+    "day_of_month": 13,
+    "month": 7,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-07-14",
+    "daily_spending": 178000.0,
+    "day_of_week": 0,
+    "day_of_month": 14,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-15",
+    "daily_spending": 249000.0,
+    "day_of_week": 1,
+    "day_of_month": 15,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-16",
+    "daily_spending": 184000.0,
+    "day_of_week": 2,
+    "day_of_month": 16,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-17",
+    "daily_spending": 194000.0,
+    "day_of_week": 3,
+    "day_of_month": 17,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-18",
+    "daily_spending": 324000.0,
+    "day_of_week": 4,
+    "day_of_month": 18,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-19",
+    "daily_spending": 331000.0,
+    "day_of_week": 5,
+    "day_of_month": 19,
+    "month": 7,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-07-20",
+    "daily_spending": 284000.0,
+    "day_of_week": 6,
+    "day_of_month": 20,
+    "month": 7,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-07-21",
+    "daily_spending": 1648000.0,
+    "day_of_week": 0,
+    "day_of_month": 21,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-22",
+    "daily_spending": 196000.0,
+    "day_of_week": 1,
+    "day_of_month": 22,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-23",
+    "daily_spending": 184000.0,
+    "day_of_week": 2,
+    "day_of_month": 23,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-24",
+    "daily_spending": 235000.0,
+    "day_of_week": 3,
+    "day_of_month": 24,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-25",
+    "daily_spending": 500000.0,
+    "day_of_week": 4,
+    "day_of_month": 25,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-26",
+    "daily_spending": 524000.0,
+    "day_of_week": 5,
+    "day_of_month": 26,
+    "month": 7,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-07-27",
+    "daily_spending": 671000.0,
+    "day_of_week": 6,
+    "day_of_month": 27,
+    "month": 7,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-07-28",
+    "daily_spending": 232000.0,
+    "day_of_week": 0,
+    "day_of_month": 28,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-29",
+    "daily_spending": 229000.0,
+    "day_of_week": 1,
+    "day_of_month": 29,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-30",
+    "daily_spending": 267000.0,
+    "day_of_week": 2,
+    "day_of_month": 30,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-07-31",
+    "daily_spending": 203000.0,
+    "day_of_week": 3,
+    "day_of_month": 31,
+    "month": 7,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-01",
+    "daily_spending": 489000.0,
+    "day_of_week": 4,
+    "day_of_month": 1,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-02",
+    "daily_spending": 514000.0,
+    "day_of_week": 5,
+    "day_of_month": 2,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-03",
+    "daily_spending": 478000.0,
+    "day_of_week": 6,
+    "day_of_month": 3,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-04",
+    "daily_spending": 283000.0,
+    "day_of_week": 0,
+    "day_of_month": 4,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-05",
+    "daily_spending": 232000.0,
+    "day_of_week": 1,
+    "day_of_month": 5,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-06",
+    "daily_spending": 1375000.0,
+    "day_of_week": 2,
+    "day_of_month": 6,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-07",
+    "daily_spending": 913000.0,
+    "day_of_week": 3,
+    "day_of_month": 7,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-08",
+    "daily_spending": 221000.0,
+    "day_of_week": 4,
+    "day_of_month": 8,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-09",
+    "daily_spending": 498000.0,
+    "day_of_week": 5,
+    "day_of_month": 9,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-10",
+    "daily_spending": 473000.0,
+    "day_of_week": 6,
+    "day_of_month": 10,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-11",
+    "daily_spending": 339000.0,
+    "day_of_week": 0,
+    "day_of_month": 11,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-12",
+    "daily_spending": 184000.0,
+    "day_of_week": 1,
+    "day_of_month": 12,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-13",
+    "daily_spending": 285000.0,
+    "day_of_week": 2,
+    "day_of_month": 13,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-14",
+    "daily_spending": 230000.0,
+    "day_of_week": 3,
+    "day_of_month": 14,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-15",
+    "daily_spending": 216000.0,
+    "day_of_week": 4,
+    "day_of_month": 15,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-16",
+    "daily_spending": 316000.0,
+    "day_of_week": 5,
+    "day_of_month": 16,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-17",
+    "daily_spending": 370000.0,
+    "day_of_week": 6,
+    "day_of_month": 17,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-18",
+    "daily_spending": 214000.0,
+    "day_of_week": 0,
+    "day_of_month": 18,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-19",
+    "daily_spending": 210000.0,
+    "day_of_week": 1,
+    "day_of_month": 19,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-20",
+    "daily_spending": 174000.0,
+    "day_of_week": 2,
+    "day_of_month": 20,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-21",
+    "daily_spending": 188000.0,
+    "day_of_week": 3,
+    "day_of_month": 21,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-22",
+    "daily_spending": 259000.0,
+    "day_of_week": 4,
+    "day_of_month": 22,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-23",
+    "daily_spending": 366000.0,
+    "day_of_week": 5,
+    "day_of_month": 23,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-24",
+    "daily_spending": 235000.0,
+    "day_of_week": 6,
+    "day_of_month": 24,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-25",
+    "daily_spending": 231000.0,
+    "day_of_week": 0,
+    "day_of_month": 25,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-26",
+    "daily_spending": 247000.0,
+    "day_of_week": 1,
+    "day_of_month": 26,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-27",
+    "daily_spending": 257000.0,
+    "day_of_week": 2,
+    "day_of_month": 27,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-28",
+    "daily_spending": 192000.0,
+    "day_of_week": 3,
+    "day_of_month": 28,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-29",
+    "daily_spending": 379000.0,
+    "day_of_week": 4,
+    "day_of_month": 29,
+    "month": 8,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-08-30",
+    "daily_spending": 572000.0,
+    "day_of_week": 5,
+    "day_of_month": 30,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-08-31",
+    "daily_spending": 346000.0,
+    "day_of_week": 6,
+    "day_of_month": 31,
+    "month": 8,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-01",
+    "daily_spending": 318000.0,
+    "day_of_week": 0,
+    "day_of_month": 1,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-02",
+    "daily_spending": 372000.0,
+    "day_of_week": 1,
+    "day_of_month": 2,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-03",
+    "daily_spending": 306000.0,
+    "day_of_week": 2,
+    "day_of_month": 3,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-04",
+    "daily_spending": 308000.0,
+    "day_of_week": 3,
+    "day_of_month": 4,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-05",
+    "daily_spending": 389000.0,
+    "day_of_week": 4,
+    "day_of_month": 5,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-06",
+    "daily_spending": 445000.0,
+    "day_of_week": 5,
+    "day_of_month": 6,
+    "month": 9,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-07",
+    "daily_spending": 501000.0,
+    "day_of_week": 6,
+    "day_of_month": 7,
+    "month": 9,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-08",
+    "daily_spending": 151000.0,
+    "day_of_week": 0,
+    "day_of_month": 8,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-09",
+    "daily_spending": 239000.0,
+    "day_of_week": 1,
+    "day_of_month": 9,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-10",
+    "daily_spending": 222000.0,
+    "day_of_week": 2,
+    "day_of_month": 10,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-11",
+    "daily_spending": 382000.0,
+    "day_of_week": 3,
+    "day_of_month": 11,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-12",
+    "daily_spending": 299000.0,
+    "day_of_week": 4,
+    "day_of_month": 12,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-13",
+    "daily_spending": 1349000.0,
+    "day_of_week": 5,
+    "day_of_month": 13,
+    "month": 9,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-14",
+    "daily_spending": 351000.0,
+    "day_of_week": 6,
+    "day_of_month": 14,
+    "month": 9,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-15",
+    "daily_spending": 153000.0,
+    "day_of_week": 0,
+    "day_of_month": 15,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-16",
+    "daily_spending": 1670000.0,
+    "day_of_week": 1,
+    "day_of_month": 16,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-17",
+    "daily_spending": 150000.0,
+    "day_of_week": 2,
+    "day_of_month": 17,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-18",
+    "daily_spending": 207000.0,
+    "day_of_week": 3,
+    "day_of_month": 18,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-19",
+    "daily_spending": 315000.0,
+    "day_of_week": 4,
+    "day_of_month": 19,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-20",
+    "daily_spending": 371000.0,
+    "day_of_week": 5,
+    "day_of_month": 20,
+    "month": 9,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-21",
+    "daily_spending": 197000.0,
+    "day_of_week": 6,
+    "day_of_month": 21,
+    "month": 9,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-22",
+    "daily_spending": 178000.0,
+    "day_of_week": 0,
+    "day_of_month": 22,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-23",
+    "daily_spending": 192000.0,
+    "day_of_week": 1,
+    "day_of_month": 23,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-24",
+    "daily_spending": 233000.0,
+    "day_of_week": 2,
+    "day_of_month": 24,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-25",
+    "daily_spending": 256000.0,
+    "day_of_week": 3,
+    "day_of_month": 25,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-26",
+    "daily_spending": 453000.0,
+    "day_of_week": 4,
+    "day_of_month": 26,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-27",
+    "daily_spending": 553000.0,
+    "day_of_week": 5,
+    "day_of_month": 27,
+    "month": 9,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-28",
+    "daily_spending": 326000.0,
+    "day_of_week": 6,
+    "day_of_month": 28,
+    "month": 9,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-09-29",
+    "daily_spending": 312000.0,
+    "day_of_week": 0,
+    "day_of_month": 29,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-09-30",
+    "daily_spending": 147000.0,
+    "day_of_week": 1,
+    "day_of_month": 30,
+    "month": 9,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-01",
+    "daily_spending": 192000.0,
+    "day_of_week": 2,
+    "day_of_month": 1,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-02",
+    "daily_spending": 359000.0,
+    "day_of_week": 3,
+    "day_of_month": 2,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-03",
+    "daily_spending": 620000.0,
+    "day_of_week": 4,
+    "day_of_month": 3,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-04",
+    "daily_spending": 541000.0,
+    "day_of_week": 5,
+    "day_of_month": 4,
+    "month": 10,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-10-05",
+    "daily_spending": 628000.0,
+    "day_of_week": 6,
+    "day_of_month": 5,
+    "month": 10,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-10-06",
+    "daily_spending": 164000.0,
+    "day_of_week": 0,
+    "day_of_month": 6,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-07",
+    "daily_spending": 230000.0,
+    "day_of_week": 1,
+    "day_of_month": 7,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-08",
+    "daily_spending": 187000.0,
+    "day_of_week": 2,
+    "day_of_month": 8,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-09",
+    "daily_spending": 174000.0,
+    "day_of_week": 3,
+    "day_of_month": 9,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-10",
+    "daily_spending": 253000.0,
+    "day_of_week": 4,
+    "day_of_month": 10,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-11",
+    "daily_spending": 405000.0,
+    "day_of_week": 5,
+    "day_of_month": 11,
+    "month": 10,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-10-12",
+    "daily_spending": 370000.0,
+    "day_of_week": 6,
+    "day_of_month": 12,
+    "month": 10,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-10-13",
+    "daily_spending": 274000.0,
+    "day_of_week": 0,
+    "day_of_month": 13,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-14",
+    "daily_spending": 223000.0,
+    "day_of_week": 1,
+    "day_of_month": 14,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-15",
+    "daily_spending": 254000.0,
+    "day_of_week": 2,
+    "day_of_month": 15,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-16",
+    "daily_spending": 164000.0,
+    "day_of_week": 3,
+    "day_of_month": 16,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-17",
+    "daily_spending": 155000.0,
+    "day_of_week": 4,
+    "day_of_month": 17,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-18",
+    "daily_spending": 550000.0,
+    "day_of_week": 5,
+    "day_of_month": 18,
+    "month": 10,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-10-19",
+    "daily_spending": 283000.0,
+    "day_of_week": 6,
+    "day_of_month": 19,
+    "month": 10,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-10-20",
+    "daily_spending": 183000.0,
+    "day_of_week": 0,
+    "day_of_month": 20,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-21",
+    "daily_spending": 217000.0,
+    "day_of_week": 1,
+    "day_of_month": 21,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-22",
+    "daily_spending": 147000.0,
+    "day_of_week": 2,
+    "day_of_month": 22,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-23",
+    "daily_spending": 225000.0,
+    "day_of_week": 3,
+    "day_of_month": 23,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-24",
+    "daily_spending": 620000.0,
+    "day_of_week": 4,
+    "day_of_month": 24,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-25",
+    "daily_spending": 641000.0,
+    "day_of_week": 5,
+    "day_of_month": 25,
+    "month": 10,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-10-26",
+    "daily_spending": 430000.0,
+    "day_of_week": 6,
+    "day_of_month": 26,
+    "month": 10,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-10-27",
+    "daily_spending": 267000.0,
+    "day_of_week": 0,
+    "day_of_month": 27,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-28",
+    "daily_spending": 248000.0,
+    "day_of_week": 1,
+    "day_of_month": 28,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-29",
+    "daily_spending": 255000.0,
+    "day_of_week": 2,
+    "day_of_month": 29,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-30",
+    "daily_spending": 291000.0,
+    "day_of_week": 3,
+    "day_of_month": 30,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-10-31",
+    "daily_spending": 331000.0,
+    "day_of_week": 4,
+    "day_of_month": 31,
+    "month": 10,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-01",
+    "daily_spending": 2219000.0,
+    "day_of_week": 5,
+    "day_of_month": 1,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-02",
+    "daily_spending": 1027000.0,
+    "day_of_week": 6,
+    "day_of_month": 2,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-03",
+    "daily_spending": 227000.0,
+    "day_of_week": 0,
+    "day_of_month": 3,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-04",
+    "daily_spending": 356000.0,
+    "day_of_week": 1,
+    "day_of_month": 4,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-05",
+    "daily_spending": 175000.0,
+    "day_of_week": 2,
+    "day_of_month": 5,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-06",
+    "daily_spending": 196000.0,
+    "day_of_week": 3,
+    "day_of_month": 6,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-07",
+    "daily_spending": 253000.0,
+    "day_of_week": 4,
+    "day_of_month": 7,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-08",
+    "daily_spending": 413000.0,
+    "day_of_week": 5,
+    "day_of_month": 8,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-09",
+    "daily_spending": 399000.0,
+    "day_of_week": 6,
+    "day_of_month": 9,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-10",
+    "daily_spending": 258000.0,
+    "day_of_week": 0,
+    "day_of_month": 10,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-11",
+    "daily_spending": 162000.0,
+    "day_of_week": 1,
+    "day_of_month": 11,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-12",
+    "daily_spending": 117000.0,
+    "day_of_week": 2,
+    "day_of_month": 12,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-13",
+    "daily_spending": 190000.0,
+    "day_of_week": 3,
+    "day_of_month": 13,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-14",
+    "daily_spending": 324000.0,
+    "day_of_week": 4,
+    "day_of_month": 14,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-15",
+    "daily_spending": 313000.0,
+    "day_of_week": 5,
+    "day_of_month": 15,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-16",
+    "daily_spending": 310000.0,
+    "day_of_week": 6,
+    "day_of_month": 16,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-17",
+    "daily_spending": 308000.0,
+    "day_of_week": 0,
+    "day_of_month": 17,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-18",
+    "daily_spending": 132000.0,
+    "day_of_week": 1,
+    "day_of_month": 18,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-19",
+    "daily_spending": 1218000.0,
+    "day_of_week": 2,
+    "day_of_month": 19,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-20",
+    "daily_spending": 97000.0,
+    "day_of_week": 3,
+    "day_of_month": 20,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-21",
+    "daily_spending": 455000.0,
+    "day_of_week": 4,
+    "day_of_month": 21,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-22",
+    "daily_spending": 394000.0,
+    "day_of_week": 5,
+    "day_of_month": 22,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-23",
+    "daily_spending": 491000.0,
+    "day_of_week": 6,
+    "day_of_month": 23,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-24",
+    "daily_spending": 971000.0,
+    "day_of_week": 0,
+    "day_of_month": 24,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-25",
+    "daily_spending": 182000.0,
+    "day_of_week": 1,
+    "day_of_month": 25,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-26",
+    "daily_spending": 332000.0,
+    "day_of_week": 2,
+    "day_of_month": 26,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-27",
+    "daily_spending": 249000.0,
+    "day_of_week": 3,
+    "day_of_month": 27,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-28",
+    "daily_spending": 283000.0,
+    "day_of_week": 4,
+    "day_of_month": 28,
+    "month": 11,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-11-29",
+    "daily_spending": 762000.0,
+    "day_of_week": 5,
+    "day_of_month": 29,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-11-30",
+    "daily_spending": 667000.0,
+    "day_of_week": 6,
+    "day_of_month": 30,
+    "month": 11,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-01",
+    "daily_spending": 360000.0,
+    "day_of_week": 0,
+    "day_of_month": 1,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-02",
+    "daily_spending": 350000.0,
+    "day_of_week": 1,
+    "day_of_month": 2,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-03",
+    "daily_spending": 338000.0,
+    "day_of_week": 2,
+    "day_of_month": 3,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-04",
+    "daily_spending": 218000.0,
+    "day_of_week": 3,
+    "day_of_month": 4,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-05",
+    "daily_spending": 425000.0,
+    "day_of_week": 4,
+    "day_of_month": 5,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-06",
+    "daily_spending": 556000.0,
+    "day_of_week": 5,
+    "day_of_month": 6,
+    "month": 12,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-07",
+    "daily_spending": 544000.0,
+    "day_of_week": 6,
+    "day_of_month": 7,
+    "month": 12,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-08",
+    "daily_spending": 245000.0,
+    "day_of_week": 0,
+    "day_of_month": 8,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-09",
+    "daily_spending": 186000.0,
+    "day_of_week": 1,
+    "day_of_month": 9,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-10",
+    "daily_spending": 233000.0,
+    "day_of_week": 2,
+    "day_of_month": 10,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-11",
+    "daily_spending": 162000.0,
+    "day_of_week": 3,
+    "day_of_month": 11,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-12",
+    "daily_spending": 272000.0,
+    "day_of_week": 4,
+    "day_of_month": 12,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-13",
+    "daily_spending": 1546000.0,
+    "day_of_week": 5,
+    "day_of_month": 13,
+    "month": 12,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-14",
+    "daily_spending": 388000.0,
+    "day_of_week": 6,
+    "day_of_month": 14,
+    "month": 12,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-15",
+    "daily_spending": 129000.0,
+    "day_of_week": 0,
+    "day_of_month": 15,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-16",
+    "daily_spending": 170000.0,
+    "day_of_week": 1,
+    "day_of_month": 16,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-17",
+    "daily_spending": 179000.0,
+    "day_of_week": 2,
+    "day_of_month": 17,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-18",
+    "daily_spending": 239000.0,
+    "day_of_week": 3,
+    "day_of_month": 18,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-19",
+    "daily_spending": 358000.0,
+    "day_of_week": 4,
+    "day_of_month": 19,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-20",
+    "daily_spending": 696000.0,
+    "day_of_week": 5,
+    "day_of_month": 20,
+    "month": 12,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-21",
+    "daily_spending": 406000.0,
+    "day_of_week": 6,
+    "day_of_month": 21,
+    "month": 12,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-22",
+    "daily_spending": 182000.0,
+    "day_of_week": 0,
+    "day_of_month": 22,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-23",
+    "daily_spending": 474000.0,
+    "day_of_week": 1,
+    "day_of_month": 23,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-24",
+    "daily_spending": 183000.0,
+    "day_of_week": 2,
+    "day_of_month": 24,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-25",
+    "daily_spending": 202000.0,
+    "day_of_week": 3,
+    "day_of_month": 25,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-26",
+    "daily_spending": 428000.0,
+    "day_of_week": 4,
+    "day_of_month": 26,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-27",
+    "daily_spending": 482000.0,
+    "day_of_week": 5,
+    "day_of_month": 27,
+    "month": 12,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-28",
+    "daily_spending": 429000.0,
+    "day_of_week": 6,
+    "day_of_month": 28,
+    "month": 12,
+    "is_weekend": 1
+  },
+  {
+    "date": "2025-12-29",
+    "daily_spending": 288000.0,
+    "day_of_week": 0,
+    "day_of_month": 29,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-30",
+    "daily_spending": 242000.0,
+    "day_of_week": 1,
+    "day_of_month": 30,
+    "month": 12,
+    "is_weekend": 0
+  },
+  {
+    "date": "2025-12-31",
+    "daily_spending": 192000.0,
+    "day_of_week": 2,
+    "day_of_month": 31,
+    "month": 12,
+    "is_weekend": 0
+  }
+]

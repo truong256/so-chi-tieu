@@ -1,0 +1,70 @@
+{
+  "evaluation_dataset": "test.json",
+  "total_test_samples": 300,
+  "comparison": {
+    "baseline": {
+      "model_name": "RuleBased_Baseline",
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "risk_score_mae": 0.0577,
+      "latency_mean_ms": 0.0083,
+      "latency_p95_ms": 0.0105,
+      "latency_p99_ms": 0.0147,
+      "class_metrics": {
+        "CRITICAL": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        },
+        "CAUTION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        },
+        "HEALTHY": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        },
+        "EXCELLENT": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        }
+      }
+    },
+    "trained_model": {
+      "model_name": "model_advisor_v1",
+      "architecture": "SoftmaxMLP (20->32->4) + Ridge (alpha=5.0)",
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "risk_score_mae": 0.0654,
+      "latency_mean_ms": 0.0285,
+      "latency_p95_ms": 0.0319,
+      "latency_p99_ms": 0.0447,
+      "class_metrics": {
+        "CRITICAL": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        },
+        "CAUTION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        },
+        "HEALTHY": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        },
+        "EXCELLENT": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0
+        }
+      }
+    }
+  },
+  "model_status": "ACCEPT"
+}

@@ -1,0 +1,7 @@
+{
+  "high_threshold": 0.4,
+  "low_threshold": 0.2,
+  "high_accuracy": 1.0,
+  "coverage_high": 0.9934,
+  "coverage_low": 1.0
+}

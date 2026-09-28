@@ -1,0 +1,55 @@
+{
+  "startup_time_ms": 20.67,
+  "ram_usage_mb": {
+    "rss_mb": 59.36,
+    "vms_mb": 398.85
+  },
+  "endpoint_latencies": {
+    "GET /health": {
+      "mean_ms": 0.79,
+      "p50_ms": 0.76,
+      "p95_ms": 0.96,
+      "p99_ms": 1.19,
+      "max_ms": 1.86,
+      "sla_target_ms": 100.0,
+      "sla_met": true
+    },
+    "POST /advisor": {
+      "mean_ms": 1.14,
+      "p50_ms": 1.13,
+      "p95_ms": 1.29,
+      "p99_ms": 1.4,
+      "max_ms": 1.5,
+      "sla_target_ms": 100.0,
+      "sla_met": true
+    },
+    "POST /classify": {
+      "mean_ms": 1.08,
+      "p50_ms": 1.07,
+      "p95_ms": 1.21,
+      "p99_ms": 1.55,
+      "max_ms": 1.68,
+      "sla_target_ms": 100.0,
+      "sla_met": true
+    },
+    "POST /forecast": {
+      "mean_ms": 3.65,
+      "p50_ms": 3.43,
+      "p95_ms": 5.64,
+      "p99_ms": 5.95,
+      "max_ms": 5.96,
+      "sla_target_ms": 100.0,
+      "sla_met": true
+    },
+    "POST /risk": {
+      "mean_ms": 1.17,
+      "p50_ms": 0.99,
+      "p95_ms": 1.81,
+      "p99_ms": 2.35,
+      "max_ms": 2.51,
+      "sla_target_ms": 100.0,
+      "sla_met": true
+    }
+  },
+  "all_sla_met": true
+}

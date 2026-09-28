@@ -1,0 +1,60 @@
+{
+  "model_type": "XGBClassifier",
+  "approach": "supervised (XGBoost with fraud labels)",
+  "datasets": {
+    "transactions": "transactions_data.csv",
+    "cards": "cards_data.csv",
+    "users": "users_data.csv",
+    "fraud_labels": "train_fraud_labels.json",
+    "mcc_codes": "mcc_codes.json"
+  },
+  "join_keys": {
+    "txn_to_fraud": "transactions_data.id → train_fraud_labels.target keys",
+    "txn_to_cards": "transactions_data.card_id → cards_data.id",
+    "txn_to_users": "transactions_data.client_id → users_data.id"
+  },
+  "total_transactions_with_labels": 8914963,
+  "fraud_cases_total": 13332,
+  "training_samples": 213332,
+  "train_samples": 170665,
+  "test_samples": 42667,
+  "fraud_in_train": 10666,
+  "fraud_in_test": 2666,
+  "feature_columns": [
+    "transaction_amount",
+    "credit_limit",
+    "amount_to_limit_ratio",
+    "hour",
+    "day_of_week",
+    "month",
+    "mcc",
+    "use_chip_encoded",
+    "card_brand_encoded",
+    "card_type_encoded",
+    "has_chip_encoded",
+    "dark_web_encoded",
+    "credit_score",
+    "yearly_income",
+    "current_age",
+    "gender_encoded",
+    "has_error",
+    "deviation_from_card_average",
+    "deviation_from_user_average",
+    "user_txn_count"
+  ],
+  "num_features": 20,
+  "safe_threshold": 0.5332369208335876,
+  "danger_threshold": 0.994412899017334,
+  "threshold_method": "percentile_fallback_90_99",
+  "scale_pos_weight": 15.0,
+  "random_state": 42,
+  "xgboost_params": {
+    "n_estimators": 300,
+    "max_depth": 6,
+    "learning_rate": 0.05
+  },
+  "python_version": "3.10.9",
+  "sklearn_version": "1.7.2",
+  "xgboost_version": "3.2.0",
+  "training_timestamp": "2026-09-18T19:36:08.890819"
+}

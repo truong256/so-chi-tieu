@@ -1,0 +1,122 @@
+{
+  "ăn uống": {
+    "ăn uống": 75,
+    "di chuyển": 0,
+    "mua sắm": 0,
+    "hóa đơn": 0,
+    "giải trí": 0,
+    "sức khỏe": 0,
+    "giáo dục": 0,
+    "đầu tư": 0,
+    "thu nhập": 0,
+    "khác": 0
+  },
+  "di chuyển": {
+    "ăn uống": 0,
+    "di chuyển": 75,
+    "mua sắm": 0,
+    "hóa đơn": 0,
+    "giải trí": 0,
+    "sức khỏe": 0,
+    "giáo dục": 0,
+    "đầu tư": 0,
+    "thu nhập": 0,
+    "khác": 0
+  },
+  "mua sắm": {
+    "ăn uống": 0,
+    "di chuyển": 0,
+    "mua sắm": 75,
+    "hóa đơn": 0,
+    "giải trí": 0,
+    "sức khỏe": 0,
+    "giáo dục": 0,
+    "đầu tư": 0,
+    "thu nhập": 0,
+    "khác": 0
+  },
+  "hóa đơn": {
+    "ăn uống": 0,
+    "di chuyển": 0,
+    "mua sắm": 0,
+    "hóa đơn": 75,
+    "giải trí": 0,
+    "sức khỏe": 0,
+    "giáo dục": 0,
+    "đầu tư": 0,
+    "thu nhập": 0,
+    "khác": 0
+  },
+  "giải trí": {
+    "ăn uống": 0,
+    "di chuyển": 0,
+    "mua sắm": 0,
+    "hóa đơn": 0,
+    "giải trí": 75,
+    "sức khỏe": 0,
+    "giáo dục": 0,
+    "đầu tư": 0,
+    "thu nhập": 0,
+    "khác": 0
+  },
+  "sức khỏe": {
+    "ăn uống": 0,
+    "di chuyển": 0,
+    "mua sắm": 0,
+    "hóa đơn": 0,
+    "giải trí": 0,
+    "sức khỏe": 63,
+    "giáo dục": 0,
+    "đầu tư": 0,
+    "thu nhập": 0,
+    "khác": 0
+  },
+  "giáo dục": {
+    "ăn uống": 0,
+    "di chuyển": 0,
+    "mua sắm": 0,
+    "hóa đơn": 0,
+    "giải trí": 0,
+    "sức khỏe": 0,
+    "giáo dục": 56,
+    "đầu tư": 0,
+    "thu nhập": 0,
+    "khác": 0
+  },
+  "đầu tư": {
+    "ăn uống": 0,
+    "di chuyển": 0,
+    "mua sắm": 0,
+    "hóa đơn": 0,
+    "giải trí": 0,
+    "sức khỏe": 0,
+    "giáo dục": 0,
+    "đầu tư": 40,
+    "thu nhập": 0,
+    "khác": 0
+  },
+  "thu nhập": {
+    "ăn uống": 0,
+    "di chuyển": 0,
+    "mua sắm": 0,
+    "hóa đơn": 1,
+    "giải trí": 0,
+    "sức khỏe": 0,
+    "giáo dục": 0,
+    "đầu tư": 0,
+    "thu nhập": 35,
+    "khác": 0
+  },
+  "khác": {
+    "ăn uống": 0,
+    "di chuyển": 0,
+    "mua sắm": 0,
+    "hóa đơn": 0,
+    "giải trí": 1,
+    "sức khỏe": 0,
+    "giáo dục": 0,
+    "đầu tư": 0,
+    "thu nhập": 0,
+    "khác": 43
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "model_name": "model_prediction_v2",
+  "approach": "Pure NumPy L2-Regularized Ridge Time-Series Forecaster",
+  "features": [
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "lag_7",
+    "lag_14",
+    "rolling_mean_7",
+    "rolling_std_7",
+    "rolling_mean_14",
+    "rolling_mean_30",
+    "ratio_lag1_rm7",
+    "dow_sin",
+    "dow_cos",
+    "dom_sin",
+    "dom_cos",
+    "is_weekend",
+    "is_bills_window",
+    "is_payday_window"
+  ],
+  "best_alpha": 0.01,
+  "train_days": 912,
+  "val_days": 184,
+  "val_30d_smape": 30.26,
+  "timestamp": "2026-09-25T17:49:48Z"
+}

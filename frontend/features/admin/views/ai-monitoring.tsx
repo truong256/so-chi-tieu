@@ -132,6 +132,44 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
             />
           </div>
 
+          {/* AI Model Classification Canary Status */}
+          {data.canary && (
+            <div className="admin-card">
+              <div className="admin-card-header">
+                <h2 className="admin-card-title">AI Classification Canary (V3 Primary / V4 5% Canary)</h2>
+                <span className="admin-card-subtitle">
+                  Trạng thái triển khai an toàn mô hình phân loại giao dịch
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", padding: "1rem" }}>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Primary / Canary Model</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
+                    V3 (95%) / V4 (5%)
+                  </div>
+                </div>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Circuit Breaker</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.canary.circuitBreaker === "CLOSED" ? "#10b981" : "#ef4444" }}>
+                    {data.canary.circuitBreaker} (Bình thường)
+                  </div>
+                </div>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Real Traffic Events</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
+                    {data.canary.realEventsProgress}
+                  </div>
+                </div>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Promotion Gate (&gt;5%)</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.canary.promotionGate === "BLOCKED" ? "#f59e0b" : "#10b981" }}>
+                    {data.canary.promotionGate} (Cần &ge;500 sự kiện thật)
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Time Series Activity Bar Chart */}
           <div className="admin-card">
             <div className="admin-card-header">

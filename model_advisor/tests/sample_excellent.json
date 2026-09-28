@@ -1,0 +1,63 @@
+{
+  "user_id": "usr_excellent_demo",
+  "month": "2026-09",
+  "income": 45000000.0,
+  "expense": 20000000.0,
+  "previous_month_expense": 21000000.0,
+  "wallets": [
+    {
+      "name": "Tài khoản lương Techcombank",
+      "balance": 85000000.0
+    },
+    {
+      "name": "Sổ tiết kiệm điện tử",
+      "balance": 150000000.0
+    }
+  ],
+  "savings_goals": [
+    {
+      "name": "Mua căn hộ",
+      "target": 500000000.0,
+      "current": 235000000.0,
+      "monthly_target": 15000000.0
+    }
+  ],
+  "categories": [
+    {
+      "name": "Ăn uống gia đình",
+      "kind": "expense",
+      "budget": 7000000.0,
+      "amount": 6500000.0
+    },
+    {
+      "name": "Thuê nhà & Nhà ở",
+      "kind": "expense",
+      "budget": 7000000.0,
+      "amount": 7000000.0
+    },
+    {
+      "name": "Đi lại & Xăng xe",
+      "kind": "expense",
+      "budget": 2000000.0,
+      "amount": 1800000.0
+    },
+    {
+      "name": "Ăn ngoài & Cafe",
+      "kind": "expense",
+      "budget": 2500000.0,
+      "amount": 2200000.0
+    },
+    {
+      "name": "Giải trí & Dịch vụ số",
+      "kind": "expense",
+      "budget": 1500000.0,
+      "amount": 1200000.0
+    },
+    {
+      "name": "Y tế & Sức khỏe",
+      "kind": "expense",
+      "budget": 1500000.0,
+      "amount": 1300000.0
+    }
+  ]
+}

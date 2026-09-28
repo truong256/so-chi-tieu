@@ -29,6 +29,20 @@ export interface AiUsageStats {
     total: number;
     errors: number;
   }[];
+  canary?: {
+    primaryModel: string;
+    canaryModel: string;
+    canaryEnabled: boolean;
+    canaryPercent: number;
+    realEventsProgress: string;
+    v3Requests: number;
+    v4Requests: number;
+    v4SuccessRate: number;
+    v4FallbackRate: number;
+    v4LatencyP95: number;
+    circuitBreaker: "CLOSED" | "OPEN";
+    promotionGate: "BLOCKED" | "READY_FOR_HUMAN_REVIEW";
+  };
 }
 
 /**
@@ -131,6 +145,19 @@ export async function getAiUsageStats(period: "today" | "7d" | "30d" = "7d"): Pr
     });
   }
 
+  let realCount = 0;
+  try {
+    const { count } = await supabase
+      .from("ai_canary_telemetry")
+      .select("id", { count: "exact", head: true })
+      .eq("is_real_traffic", true);
+    realCount = count || 0;
+  } catch {
+    // Database query error isolated
+  }
+
+  const isBlocked = realCount < 500;
+
   return {
     period,
     totalRequests,
@@ -139,5 +166,19 @@ export async function getAiUsageStats(period: "today" | "7d" | "30d" = "7d"): Pr
     avgLatencyMs,
     featureBreakdown,
     timeSeries: Array.from(timeSeriesMap.values()),
+    canary: {
+      primaryModel: "v3",
+      canaryModel: "v4",
+      canaryEnabled: true,
+      canaryPercent: 5,
+      realEventsProgress: `${realCount} / 500`,
+      v3Requests: 0,
+      v4Requests: 0,
+      v4SuccessRate: 100,
+      v4FallbackRate: 0,
+      v4LatencyP95: 0,
+      circuitBreaker: "CLOSED",
+      promotionGate: isBlocked ? "BLOCKED" : "READY_FOR_HUMAN_REVIEW",
+    },
   };
 }

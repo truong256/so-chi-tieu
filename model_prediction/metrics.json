@@ -1,0 +1,17 @@
+{
+  "mae": 754.5167,
+  "rmse": 909.7463,
+  "smape": 137.0577,
+  "test_days": 90,
+  "feature_importance": {
+    "lag_1": 0.093,
+    "lag_7": 0.1048,
+    "rolling_mean_7": 0.121,
+    "rolling_std_7": 0.1212,
+    "rolling_mean_30": 0.1171,
+    "day_of_week": 0.1,
+    "day_of_month": 0.1123,
+    "month": 0.115,
+    "is_weekend": 0.1157
+  }
+}

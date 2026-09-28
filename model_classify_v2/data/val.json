@@ -1,0 +1,4552 @@
+[
+  {
+    "id": "tx_vn_02342",
+    "text": "KHÁM KHÁM BỆNH ĐA KHOA 250K",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03838",
+    "text": "Nhận lương tháng 9 8000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02115",
+    "text": "xem phim cgv cuối tuần - 4500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00014",
+    "text": "Uống buffet gogi",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03844",
+    "text": "thuong du an hoan thanh 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02508",
+    "text": "di hieu thuoc long chau 3000k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00456",
+    "text": "Phí vé tàu hỏa bắc nam 150k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02432",
+    "text": "thuoc cam cum paracetamol",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03882",
+    "text": "Nhận lương tháng 9 8000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03715",
+    "text": "THU LƯƠNG LÀM THÊM PART TIME 25000K",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01652",
+    "text": "gói cước mobifone 30 ngày 6000k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02926",
+    "text": "mua sách giáo khoa",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03047",
+    "text": "luyện thi ielts 6.5",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04467",
+    "text": "chuyển tiền tiền phụng dưỡng cha mẹ - 1000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03982",
+    "text": "nhận lương tháng 9 - 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01544",
+    "text": "Chi trả tiền điện evn 150k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02126",
+    "text": "nạp quân huy liên quân",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03680",
+    "text": "thanh toan hop dong tu van 3000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00075",
+    "text": "Thanh toán sáng bánh mì 30k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04258",
+    "text": "Chi tiền phúng viếng tang lễ",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03947",
+    "text": "Thu chuyển khoản tiền lương công ty",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00009",
+    "text": "Ăn thức ăn cho cả tuần 250k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00893",
+    "text": "vé tàu hỏa bắc nam 500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03119",
+    "text": "Thanh toán ôn thi toeic cấp tốc 12000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03377",
+    "text": "nap tien vao tich luy vang nhan 20000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00007",
+    "text": "mua phuc long tea 50k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03724",
+    "text": "hoa hồng môi giới bán hàng 25000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03675",
+    "text": "lương tháng 9",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00060",
+    "text": "Thanh toán tối lẩu thái 500k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00608",
+    "text": "Thanh toán be bike 200k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03042",
+    "text": "Nộp học phí đại học kỳ 1 2000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02812",
+    "text": "Mua sách phát triển bản thân",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04063",
+    "text": "thăm hỏi ốm đau",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02978",
+    "text": "Thanh toán khóa học tiếng anh giao tiếp",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03437",
+    "text": "mua cổ phiếu sàn hsc",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00817",
+    "text": "Đi sửa xe thủng lốp 2500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04211",
+    "text": "tiền phụng dưỡng cha mẹ",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00271",
+    "text": "Ship gọi đồ ăn grabfood 40k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04256",
+    "text": "Chi tiền phụng dưỡng cha mẹ",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03835",
+    "text": "thu thu nhập làm thêm freelance - 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04478",
+    "text": "chi cho ban vay muon 2000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04111",
+    "text": "chuyển tiền chuyển trả nợ ngân hàng - 5000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00768",
+    "text": "phí phí trạm thu phí bot - 500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01769",
+    "text": "Trừ tiền nạp tiền 4g vinaphone 550k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04298",
+    "text": "Thanh toán mừng đám cưới bạn thân",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03998",
+    "text": "nhan tien viet bai cong tac",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01681",
+    "text": "Nộp nạp tiền 4g vinaphone",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02162",
+    "text": "vé triển lãm nghệ thuật 600k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02352",
+    "text": "Chi trả khẩu trang y tế và sát khuẩn",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00918",
+    "text": "Sắm đồng hồ đeo tay 750k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00481",
+    "text": "rửa xe máy",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00647",
+    "text": "grab bike đi làm 50k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02066",
+    "text": "THANH TOÁN VÉ BOARDGAME CÙNG NHÓM",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00161",
+    "text": "PHỞ BÒ TÁI NẠM",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01840",
+    "text": "vé tham quan vinwonders",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03353",
+    "text": "mua cổ phiếu sàn hsc 20000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03282",
+    "text": "mua 1 chỉ vàng sjc 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04470",
+    "text": "TRẢ NỢ BẠN 5000K",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01102",
+    "text": "order ốp lưng điện thoại - 2500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03330",
+    "text": "mua 1 chỉ vàng sjc 10000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01142",
+    "text": "sắm đơn hàng shopee - 1200k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00944",
+    "text": "order áo sơ mi công sở - 350k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01336",
+    "text": "mua dong ho deo tay",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03218",
+    "text": "tài khoản ssi chứng khoán 10000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00809",
+    "text": "Mua gửi xe bãi 70k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03643",
+    "text": "Nhận thu nhập làm thêm freelance 3000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04264",
+    "text": "CHO BẠN VAY MƯỢN",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03391",
+    "text": "quỹ mở dragon capital",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02491",
+    "text": "Khám tiêm vaccine phòng cúm 1200k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04368",
+    "text": "Gửi tiền tiền phụng dưỡng cha mẹ 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00826",
+    "text": "dầu nhớt xe",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03148",
+    "text": "sách tham khảo chuyên ngành",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02168",
+    "text": "tài khoản spotify premium 90k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03130",
+    "text": "MUA SÁCH GIÁO KHOA 12000K",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04083",
+    "text": "THANH TOÁN MỪNG ĐÁM CƯỚI BẠN THÂN",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03019",
+    "text": "mua sách giáo khoa",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03501",
+    "text": "Gửi nạp finhay tích lũy",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01654",
+    "text": "CƯỚC WIFI FPT",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00207",
+    "text": "ship hủ tiếu nam vang - 50k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00179",
+    "text": "uống trà sữa trân châu - 120k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01232",
+    "text": "nước hoa nam 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01791",
+    "text": "nộp gói cước mobifone 30 ngày - 550k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00352",
+    "text": "Ship bún chả hà nội 35k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00536",
+    "text": "THANH TOÁN GRAB BIKE ĐI LÀM 100K",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02324",
+    "text": "xét nghiệm tiêm ngừa viêm gan - 1200k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02539",
+    "text": "đo mắt cắt kính cận",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01195",
+    "text": "mua noi com dien 2500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02010",
+    "text": "Đi gói xem netflix 4k 90k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00134",
+    "text": "burger king",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02343",
+    "text": "Đi tiêm ngừa viêm gan 120k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04253",
+    "text": "quyên góp từ thiện",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02313",
+    "text": "bổ sung canxi 250k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00363",
+    "text": "Uống trà sữa trân châu",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02284",
+    "text": "đo mắt cắt kính cận 120k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04100",
+    "text": "biếu bố mẹ ở quê 2000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01796",
+    "text": "Chi trả nạp tiền 4g vinaphone",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00946",
+    "text": "Mua đặt hàng tiki 750k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03069",
+    "text": "Đóng tiền học trường mầm non 150k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02094",
+    "text": "Xem vé xem phim rạp lotte 90k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00097",
+    "text": "lẩu haidilao 1500k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01061",
+    "text": "Sắm thắt lưng da 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01869",
+    "text": "xem hát karaoke bạn bè - 1500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01278",
+    "text": "thanh toán đơn hàng dép quai hậu - 500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01103",
+    "text": "mua mua sam tiktok shop",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02153",
+    "text": "Du lịch vé xem phim bhd 4500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02049",
+    "text": "Nạp nạp robux 200k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00040",
+    "text": "mua starbucks latte",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04319",
+    "text": "lì xì tết cho các cháu 2000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01554",
+    "text": "phí quản lý tòa nhà",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04304",
+    "text": "cho bạn vay mượn 100k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03567",
+    "text": "quỹ mở dragon capital 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00520",
+    "text": "dầu nhớt xe",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01726",
+    "text": "Thanh toán cước internet viettel",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04482",
+    "text": "cho bạn vay mượn 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04154",
+    "text": "tiền phụng dưỡng cha mẹ",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03241",
+    "text": "Nạp tiền vào tài khoản ssi chứng khoán 10000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01753",
+    "text": "thanh toán tiền bình ga petrolimex - 6000k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02278",
+    "text": "thuốc đau đầu hạ sốt 250k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01962",
+    "text": "nạp robux",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01046",
+    "text": "Sắm dép quai hậu",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01695",
+    "text": "Chi trả tiền nước máy sawaco 150k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02195",
+    "text": "billiard bida lỗ 120k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03287",
+    "text": "tài khoản ssi chứng khoán",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02485",
+    "text": "khám thuốc đau đầu hạ sốt - 250k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03808",
+    "text": "Thu hoa hồng môi giới bán hàng 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04483",
+    "text": "thanh toán phí phát sinh lặt vặt khác - 100k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02880",
+    "text": "Mua sách phát triển bản thân 2000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04107",
+    "text": "phí phát sinh lặt vặt khác 500k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03669",
+    "text": "Nhận hoa hồng môi giới bán hàng 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02214",
+    "text": "Xem vé máy bay phú quốc 4500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01761",
+    "text": "TRỪ TIỀN CƯỚC WIFI FPT 150K",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03300",
+    "text": "Mua chứng chỉ quỹ vn30",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00700",
+    "text": "Thanh toán grab car về nhà 100k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00373",
+    "text": "Đi ăn kichi kichi",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02382",
+    "text": "Mua thuốc cảm cúm paracetamol 250k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02200",
+    "text": "khách sạn nghỉ dưỡng",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01310",
+    "text": "Đặt hàng nước hoa nam",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00453",
+    "text": "Đi xăng xe máy ron 95",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02734",
+    "text": "Đóng lệ phí thi chứng chỉ",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04227",
+    "text": "trả nợ bạn",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00436",
+    "text": "Uống cà phê sữa đá 45k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00434",
+    "text": "Đi ăn pizza domino 45k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00539",
+    "text": "Mua vé máy bay vietjet",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00152",
+    "text": "thanh toán cơm sườn bì chả - 65k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01566",
+    "text": "nap tien 4g vinaphone 6000k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03862",
+    "text": "lương làm thêm part-time 3000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03860",
+    "text": "Được chuyển hoa hồng môi giới bán hàng 8000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02213",
+    "text": "Nạp phim cgv cuối tuần 120k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02394",
+    "text": "KHÁM TỔNG QUÁT BỆNH VIỆN 3000K",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01471",
+    "text": "tiền thuê nhà trọ 550k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03750",
+    "text": "lương tháng 9",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01413",
+    "text": "dong tien thue can ho chung cu 350k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01108",
+    "text": "Thanh toán đơn hàng đặt hàng tiki",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03619",
+    "text": "lương làm thêm part-time",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02774",
+    "text": "ĐÓNG ÔN THI TOEIC CẤP TỐC 12000K",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00099",
+    "text": "mua chè sầu riêng - 500k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02283",
+    "text": "đi bổ sung canxi - 50k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04042",
+    "text": "CÔNG TY CHUYỂN TIỀN THƯỞNG KPI QUÝ 40000K",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01230",
+    "text": "Đặt hàng tai nghe bluetooth 150k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03813",
+    "text": "hoa hồng môi giới bán hàng 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02469",
+    "text": "chi trả bổ sung canxi - 50k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03648",
+    "text": "cong ty chuyen thuong du an hoan thanh",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02669",
+    "text": "bổ sung canxi 3000k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03922",
+    "text": "nhận tiền thưởng kpi quý - 15000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01676",
+    "text": "nạp thẻ điện thoại viettel",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01927",
+    "text": "tour du lịch đà lạt 3 ngày",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04160",
+    "text": "Chi tiền phúng viếng tang lễ 500k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00921",
+    "text": "ĐƠN HÀNG SHOPEE",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03661",
+    "text": "nhận tiền viết bài cộng tác",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01294",
+    "text": "Đặt hàng thắt lưng da 750k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03911",
+    "text": "nhận hoa hồng môi giới bán hàng - 25000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02563",
+    "text": "đo mắt cắt kính cận",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02628",
+    "text": "Khám kháng sinh tại pharmacity",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01724",
+    "text": "nộp nạp thẻ điện thoại viettel - 150k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04285",
+    "text": "Chuyển tiền trả nợ bạn 1000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02763",
+    "text": "học học bằng lái xe b2 - 150k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00853",
+    "text": "vé xe khách phương trang 1200k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04051",
+    "text": "Chuyển tiền thăm hỏi ốm đau",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04248",
+    "text": "Gửi tiền mừng đám cưới bạn thân",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01540",
+    "text": "Nộp tiền điện evn",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00739",
+    "text": "Chi phí xăng ô tô e5",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01944",
+    "text": "gói xem netflix 4k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03268",
+    "text": "Trích đầu tư trái phiếu doanh nghiệp 20000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01828",
+    "text": "phim cgv cuối tuần",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03373",
+    "text": "Đầu tư mua cổ phiếu sàn hsc 2000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04123",
+    "text": "biếu bố mẹ ở quê",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03690",
+    "text": "duoc chuyen luong cung dot 1 15000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01113",
+    "text": "đặt hàng áo sơ mi công sở - 500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03496",
+    "text": "Gửi chuyển tiền vào tài khoản tiết kiệm",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00070",
+    "text": "Ăn cà phê sữa đá",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02992",
+    "text": "mua sách tham khảo chuyên ngành - 12000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02722",
+    "text": "mua sách giáo khoa",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03001",
+    "text": "mua sach giao khoa",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00582",
+    "text": "XĂNG XE MÁY RON 95 2500K",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04411",
+    "text": "gửi tiền ủng hộ đồng bào bão lụt - 1000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03094",
+    "text": "luyện thi ielts 6.5 2000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01106",
+    "text": "mua balo laptop chống nước - 1200k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02408",
+    "text": "thuốc cảm cúm paracetamol 50k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04175",
+    "text": "Chi quyên góp từ thiện",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00742",
+    "text": "PHÍ CẦU ĐƯỜNG ECASH 70K",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01403",
+    "text": "Nộp tiền thuê nhà trọ",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03407",
+    "text": "Trích tiết kiệm trực tuyến 6 tháng",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00064",
+    "text": "ăn sáng bánh mì - 120k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01628",
+    "text": "Nộp tiền bình ga petrolimex 150k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02654",
+    "text": "kháng sinh tại pharmacity 250k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00381",
+    "text": "starbucks latte 30k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03555",
+    "text": "sổ tiết kiệm ngân hàng 2000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03500",
+    "text": "Nạp tiền vào đầu tư trái phiếu doanh nghiệp",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00753",
+    "text": "thanh toan ve xe khach phuong trang",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00540",
+    "text": "bơm vé xe khách phương trang - 150k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03222",
+    "text": "trích tiết kiệm trực tuyến 6 tháng - 10000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01201",
+    "text": "mua sắm tiktok shop 350k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01236",
+    "text": "ĐẶT HÀNG ĐƠN LAZADA",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03112",
+    "text": "khóa học tiếng anh giao tiếp 800k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00924",
+    "text": "bộ drap giường",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03380",
+    "text": "chung chi quy vn30 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00593",
+    "text": "bắt be car - 50k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00221",
+    "text": "Đi ăn gà rán kfc 45k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01668",
+    "text": "Nộp nạp tiền 4g vinaphone 850k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01004",
+    "text": "Mua tai nghe bluetooth",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01255",
+    "text": "nồi cơm điện",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01052",
+    "text": "Đặt hàng túi xách nữ 350k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01863",
+    "text": "thanh toan ve ve tham quan vinwonders 350k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00026",
+    "text": "Thanh toán thức ăn cho cả tuần",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04062",
+    "text": "Thanh toán tiền phúng viếng tang lễ 500k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04407",
+    "text": "thăm hỏi ốm đau",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00281",
+    "text": "pizza domino",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03309",
+    "text": "GỬI TIẾT KIỆM TRỰC TUYẾN 6 THÁNG",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02242",
+    "text": "NẠP KHÁCH SẠN NGHỈ DƯỠNG",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00685",
+    "text": "thanh toán xăng ô tô e5 - 2500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02333",
+    "text": "khám bổ sung canxi - 120k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00455",
+    "text": "vé máy bay vietjet 70k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03559",
+    "text": "trích đầu tư trái phiếu doanh nghiệp - 50000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03731",
+    "text": "tiền thưởng tết nguyên đán",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03509",
+    "text": "tài khoản ssi chứng khoán",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01670",
+    "text": "tiền rác dân phòng",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03046",
+    "text": "mua sách giáo khoa 2000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03615",
+    "text": "thưởng dự án hoàn thành 15000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03169",
+    "text": "Đầu tư tiết kiệm trực tuyến 6 tháng 50000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02908",
+    "text": "thanh toán luyện thi ielts 6.5 - 150k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01296",
+    "text": "đặt hàng mỹ phẩm son môi - 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01040",
+    "text": "Đặt hàng áo thun cotton 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03374",
+    "text": "tài khoản ssi chứng khoán",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03295",
+    "text": "mua cổ phiếu sàn hsc",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00103",
+    "text": "mua highlands coffee 35k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00492",
+    "text": "thay dầu motul",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00761",
+    "text": "Mua thay dầu motul",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00584",
+    "text": "PHÍ CẦU ĐƯỜNG ECASH",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02031",
+    "text": "khách sạn nghỉ dưỡng 1500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03735",
+    "text": "nhận tiền thưởng tết nguyên đán - 3000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03633",
+    "text": "Được chuyển chuyển khoản tiền lương công ty 3000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00310",
+    "text": "Chi cơm gà xối mỡ 50k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01936",
+    "text": "Du lịch chơi game nạp thẻ garena 90k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02087",
+    "text": "nạp robux 90k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03045",
+    "text": "tiền học thêm toán văn",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00169",
+    "text": "Mua bún bò huế 35k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02320",
+    "text": "Xét nghiệm thuốc cảm cúm paracetamol 120k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01560",
+    "text": "tiền thuê căn hộ chung cư 350k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03331",
+    "text": "mua 1 chỉ vàng sjc",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02215",
+    "text": "vé xem phim bhd",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00837",
+    "text": "rửa xe ô tô",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00448",
+    "text": "Chi đặt shopeefood",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00384",
+    "text": "bún bò huế",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00657",
+    "text": "bơm xăng ô tô e5 - 150k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00704",
+    "text": "phi cau duong ecash",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01850",
+    "text": "VÉ MÁY BAY PHÚ QUỐC",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02681",
+    "text": "mua khau trang y te va sat khuan",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04385",
+    "text": "GỬI TIỀN TIỀN PHỤNG DƯỠNG CHA MẸ",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03190",
+    "text": "Gửi tiết kiệm trực tuyến 6 tháng 20000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03083",
+    "text": "ÔN THI TOEIC CẤP TỐC 150K",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00777",
+    "text": "Đi grab car về nhà",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04122",
+    "text": "gui tien ung ho dong bao bao lut 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01891",
+    "text": "nạp quân huy liên quân 600k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02521",
+    "text": "chi trả khám bệnh đa khoa - 50k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00886",
+    "text": "Đi vé xe buýt tháng 500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01890",
+    "text": "Nạp gói xem netflix 4k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03909",
+    "text": "nhận tiền viết bài cộng tác",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00107",
+    "text": "uống thức ăn cho cả tuần - 25k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04301",
+    "text": "ủng hộ đồng bào bão lụt",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02307",
+    "text": "bổ sung canxi",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03269",
+    "text": "TRÍCH QUỸ MỞ DRAGON CAPITAL",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01367",
+    "text": "GÓI CƯỚC MOBIFONE 30 NGÀY 850K",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04200",
+    "text": "mừng đám cưới bạn thân",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03967",
+    "text": "Thu thu nhập làm thêm freelance 8000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02028",
+    "text": "Nạp nạp quân huy liên quân",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00393",
+    "text": "ĂN CAFE MUỐI 500K",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00246",
+    "text": "Thanh toán trưa cơm tấm",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00123",
+    "text": "thanh toán trưa cơm tấm - 65k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04013",
+    "text": "Thu thưởng dự án hoàn thành",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02478",
+    "text": "mua khám bệnh đa khoa - 3000k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01949",
+    "text": "hát karaoke bạn bè",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01905",
+    "text": "nạp quân huy liên quân",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01389",
+    "text": "Trừ tiền tiền bình ga petrolimex 850k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00041",
+    "text": "starbucks latte 500k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00128",
+    "text": "Chi trưa cơm tấm 250k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02390",
+    "text": "Mua tiêm ngừa viêm gan 500k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02228",
+    "text": "THANH TOÁN VÉ BOARDGAME CÙNG NHÓM",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01677",
+    "text": "nộp tiền điện sinh hoạt tháng - 3500k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03712",
+    "text": "Nhận hoa hồng môi giới bán hàng",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01477",
+    "text": "tiền điện evn 150k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02340",
+    "text": "thuốc đau đầu hạ sốt 50k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00288",
+    "text": "thanh toán starbucks latte - 250k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03945",
+    "text": "ĐƯỢC CHUYỂN TIỀN HOA HỒNG ĐẠI LÝ",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02956",
+    "text": "ôn thi toeic cấp tốc 12000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01697",
+    "text": "trừ tiền tiền bình ga petrolimex - 1200k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03288",
+    "text": "nạp tiền vào nạp finhay tích lũy - 50000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01602",
+    "text": "Thanh toán tiền mạng vnpt 1200k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04433",
+    "text": "thanh toán quyên góp từ thiện - 500k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03246",
+    "text": "Gửi tích lũy vàng nhẫn",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03193",
+    "text": "đầu tư trái phiếu doanh nghiệp 10000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01374",
+    "text": "Đóng phí quản lý tòa nhà 350k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03850",
+    "text": "lương cứng đợt 1",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00131",
+    "text": "cà phê sữa đá 40k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03692",
+    "text": "nhận tiền viết bài cộng tác",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03191",
+    "text": "Trích quỹ mở dragon capital",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00621",
+    "text": "Mua grab car về nhà",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04444",
+    "text": "Chi chuyển trả nợ ngân hàng",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00696",
+    "text": "dầu nhớt xe",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02674",
+    "text": "bo sung canxi",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02845",
+    "text": "hoc tien hoc truong mam non 2000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01838",
+    "text": "vé máy bay phú quốc 120k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01636",
+    "text": "ĐÓNG CƯỚC INTERNET VIETTEL 350K",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02238",
+    "text": "Nạp vé máy bay phú quốc",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00612",
+    "text": "bat thay ruot xe may 2500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00050",
+    "text": "đồ ăn vặt",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03666",
+    "text": "nhận tiền viết bài cộng tác 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00206",
+    "text": "uống bánh tráng nướng - 50k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03601",
+    "text": "thu nhập làm thêm freelance",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01563",
+    "text": "Thanh toán nạp thẻ điện thoại viettel 6000k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02817",
+    "text": "mua sách giáo khoa",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00407",
+    "text": "Đi ăn đặt shopeefood 25k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01768",
+    "text": "Đóng tiền thuê nhà trọ",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02154",
+    "text": "tài khoản spotify premium 200k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01568",
+    "text": "tiền thuê nhà trọ 1200k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01252",
+    "text": "thanh toán đơn hàng tai nghe bluetooth - 500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00789",
+    "text": "Đi vé tàu hỏa bắc nam",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00146",
+    "text": "đi ăn bún chả hà nội - 45k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00212",
+    "text": "chè sầu riêng 35k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02548",
+    "text": "thuốc cảm cúm paracetamol",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03394",
+    "text": "mua sổ tiết kiệm ngân hàng - 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02186",
+    "text": "choi choi game nap the garena 600k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00442",
+    "text": "Chi bún chả hà nội 120k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03603",
+    "text": "được chuyển lương làm thêm part-time - 8000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01718",
+    "text": "đóng tiền nước máy sawaco - 350k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00707",
+    "text": "be bike",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03795",
+    "text": "Thu thu nhập làm thêm freelance 8000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02759",
+    "text": "thanh toán học bằng lái xe b2 - 350k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02645",
+    "text": "MUA KHÁM BỆNH ĐA KHOA",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02843",
+    "text": "Học ôn thi toeic cấp tốc",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03410",
+    "text": "dau tu so tiet kiem ngan hang 2000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01086",
+    "text": "đồng hồ đeo tay",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03664",
+    "text": "được chuyển nhận tiền viết bài cộng tác - 25000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01187",
+    "text": "thanh toán đơn hàng mỹ phẩm son môi - 750k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04247",
+    "text": "mung dam cuoi ban than 100k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03582",
+    "text": "gửi gửi tiền kỳ hạn 12 tháng - 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04426",
+    "text": "Thanh toán cho bạn vay mượn",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01223",
+    "text": "order ao so mi cong so 500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03449",
+    "text": "nạp tiền vào đầu tư trái phiếu doanh nghiệp - 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02032",
+    "text": "hát karaoke bạn bè 1500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04427",
+    "text": "Thanh toán lì xì tết cho các cháu 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01529",
+    "text": "tiền gửi xe chung cư",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00727",
+    "text": "chi phí thay dầu motul - 2500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00751",
+    "text": "bắt vé máy bay vietnam airlines - 2500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03817",
+    "text": "LƯƠNG THÁNG 9 15000K",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01667",
+    "text": "PHÍ QUẢN LÝ TÒA NHÀ 6000K",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02353",
+    "text": "khám tổng quát bệnh viện 500k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03546",
+    "text": "Nạp tiền vào nạp finhay tích lũy",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01048",
+    "text": "SẮM BALO LAPTOP CHỐNG NƯỚC 1200K",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01597",
+    "text": "cước wifi fpt",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03991",
+    "text": "Công ty chuyển tiền thưởng kpi quý",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00619",
+    "text": "PHÍ BE CAR 70K",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01945",
+    "text": "BILLIARD BIDA LỖ",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02286",
+    "text": "Đi thực phẩm chức năng vitamin c 1200k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03013",
+    "text": "Thanh toán khóa học tiếng anh giao tiếp 12000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02991",
+    "text": "khóa học tiếng anh giao tiếp 5000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02406",
+    "text": "Khám nhổ răng khôn",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03854",
+    "text": "CÔNG TY CHUYỂN LƯƠNG THÁNG 9 15000K",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01908",
+    "text": "vé triển lãm nghệ thuật",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02229",
+    "text": "khách sạn nghỉ dưỡng",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01135",
+    "text": "túi xách nữ",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03075",
+    "text": "KHÓA HỌC LẬP TRÌNH PYTHON",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00591",
+    "text": "gửi ô tô qua đêm 70k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00592",
+    "text": "phí cầu đường ecash 1200k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02599",
+    "text": "KHÁNG SINH TẠI PHARMACITY 1200K",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00405",
+    "text": "uống cafe muối - 50k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01268",
+    "text": "mua dong ho deo tay 750k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04499",
+    "text": "trả nợ bạn 1000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02927",
+    "text": "khoa hoc tieng anh giao tiep 5000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01978",
+    "text": "Nạp vé xem phim bhd",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02546",
+    "text": "Xét nghiệm thuốc cảm cúm paracetamol",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00244",
+    "text": "cơm sườn bì chả",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00309",
+    "text": "gọi đồ ăn grabfood 250k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02635",
+    "text": "Xét nghiệm dầu cá omega 3",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02257",
+    "text": "THUỐC CẢM CÚM PARACETAMOL",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03442",
+    "text": "nạp tiền vào tích lũy vàng nhẫn - 50000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00984",
+    "text": "áo sơ mi công sở",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03199",
+    "text": "tiết kiệm trực tuyến 6 tháng",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01521",
+    "text": "tiền điện evn",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03778",
+    "text": "lương tháng 9 15000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00654",
+    "text": "vé tàu hỏa bắc nam",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00882",
+    "text": "Bơm vé máy bay vietnam airlines",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02315",
+    "text": "tiêm vaccine phòng cúm",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00409",
+    "text": "phở bò tái nạm",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01115",
+    "text": "quần áo trẻ em 750k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03906",
+    "text": "Được chuyển tiền thưởng kpi quý",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03436",
+    "text": "quỹ mở dragon capital 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04233",
+    "text": "Chi lì xì tết cho các cháu",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02825",
+    "text": "NỘP HỌC BẰNG LÁI XE B2 800K",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02027",
+    "text": "tài khoản spotify premium 200k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03961",
+    "text": "nhận tiền viết bài cộng tác",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02898",
+    "text": "Mua học phí đại học kỳ 1",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00232",
+    "text": "buffet gogi",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04440",
+    "text": "CHI MỪNG ĐÁM CƯỚI BẠN THÂN",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00272",
+    "text": "Thanh toán buffet gogi",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01145",
+    "text": "order quần áo trẻ em - 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03105",
+    "text": "Đóng tiền học thêm toán văn 150k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01100",
+    "text": "áo sơ mi công sở",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03905",
+    "text": "Nhận lương làm thêm part-time",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03863",
+    "text": "chuyển khoản tiền lương công ty",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03935",
+    "text": "thu nhập làm thêm freelance 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03892",
+    "text": "công ty chuyển lương tháng 9 - 3000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01459",
+    "text": "tiền gửi xe chung cư 350k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04307",
+    "text": "cho ban vay muon",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02967",
+    "text": "mua ôn thi toeic cấp tốc - 350k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00143",
+    "text": "hủ tiếu nam vang",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02504",
+    "text": "CHI TRẢ KHẨU TRANG Y TẾ VÀ SÁT KHUẨN 3000K",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00349",
+    "text": "trua com tam",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03660",
+    "text": "công ty chuyển hoa hồng môi giới bán hàng - 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03564",
+    "text": "trích tiết kiệm trực tuyến 6 tháng - 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03533",
+    "text": "tài khoản ssi chứng khoán 20000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00698",
+    "text": "CHI PHÍ RỬA XE Ô TÔ",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03471",
+    "text": "Mua tiết kiệm trực tuyến 6 tháng",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02684",
+    "text": "tiêm vaccine phòng cúm",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00278",
+    "text": "thức ăn cho cả tuần 50k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01074",
+    "text": "Mua giày sneaker thể thao 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00162",
+    "text": "Ăn kichi kichi 120k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04038",
+    "text": "thuong du an hoan thanh 25000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03226",
+    "text": "Đầu tư tiết kiệm trực tuyến 6 tháng 50000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01084",
+    "text": "đặt hàng tiki 1200k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04172",
+    "text": "tien phung vieng tang le 2000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04254",
+    "text": "thanh toan li xi tet cho cac chau 100k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01622",
+    "text": "gói cước mobifone 30 ngày 550k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00524",
+    "text": "Đổ be bike 500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02233",
+    "text": "XEM VÉ CA NHẠC CONCERT",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00764",
+    "text": "Bắt xăng ô tô e5",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00095",
+    "text": "Ăn burger king",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01717",
+    "text": "Nộp tiền điện evn",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03578",
+    "text": "tích lũy vàng nhẫn",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02609",
+    "text": "KHÁM NHA KHOA LẤY CAO RĂNG",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03383",
+    "text": "mua 1 chỉ vàng sjc",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02100",
+    "text": "Nạp vé triển lãm nghệ thuật",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00791",
+    "text": "đi be car - 50k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01430",
+    "text": "ĐÓNG CƯỚC INTERNET VIETTEL 3500K",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04291",
+    "text": "thanh toán phí phát sinh lặt vặt khác - 500k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02551",
+    "text": "mua thực phẩm chức năng vitamin c - 120k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00052",
+    "text": "đồ ăn vặt",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02479",
+    "text": "chi trả thực phẩm chức năng vitamin c - 50k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00035",
+    "text": "hủ tiếu nam vang",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02939",
+    "text": "NỘP KHÓA HỌC LẬP TRÌNH PYTHON 800K",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00953",
+    "text": "Sắm thắt lưng da 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04250",
+    "text": "Gửi tiền biếu bố mẹ ở quê",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01029",
+    "text": "đặt hàng áo thun cotton - 150k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03398",
+    "text": "Trích đầu tư trái phiếu doanh nghiệp 20000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00058",
+    "text": "Mua bún bò huế 500k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01842",
+    "text": "khách sạn nghỉ dưỡng",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01946",
+    "text": "CHƠI GAME NẠP THẺ GARENA 1500K",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03117",
+    "text": "tài liệu ôn tập thi cử 800k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01164",
+    "text": "đơn hàng shopee",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01658",
+    "text": "Đóng phí quản lý tòa nhà 850k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00879",
+    "text": "gửi xe bãi",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00959",
+    "text": "sắm đồ gia dụng chảo chống dính - 750k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04239",
+    "text": "lì xì tết cho các cháu 500k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00912",
+    "text": "đồng hồ đeo tay 150k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02098",
+    "text": "du lịch phim cgv cuối tuần - 1500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01472",
+    "text": "dong nap the dien thoai viettel 3500k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03062",
+    "text": "ôn thi toeic cấp tốc 5000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02671",
+    "text": "khám bệnh đa khoa",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01816",
+    "text": "Nạp vé ca nhạc concert 120k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01925",
+    "text": "NẠP VÉ CA NHẠC CONCERT",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04348",
+    "text": "Gửi tiền chuyển trả nợ ngân hàng",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00842",
+    "text": "Bắt taxi mai linh",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02022",
+    "text": "Chơi chơi game nạp thẻ garena 350k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02078",
+    "text": "VÉ TRIỂN LÃM NGHỆ THUẬT",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00267",
+    "text": "ship buffet gogi 35k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02142",
+    "text": "ĐI PHIM CGV CUỐI TUẦN 4500K",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03113",
+    "text": "Học khóa học tiếng anh giao tiếp 12000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02064",
+    "text": "Chơi vé triển lãm nghệ thuật 4500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02420",
+    "text": "đi khám bệnh đa khoa - 3000k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00854",
+    "text": "phí cầu đường ecash",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01250",
+    "text": "đơn hàng shopee",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04176",
+    "text": "thăm hỏi ốm đau",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03826",
+    "text": "nhận chuyển khoản tiền lương công ty - 25000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04015",
+    "text": "LƯƠNG CỨNG ĐỢT 1 8000K",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03848",
+    "text": "LƯƠNG CỨNG ĐỢT 1 8000K",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02953",
+    "text": "Học mua sách giáo khoa",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03178",
+    "text": "quỹ mở dragon capital 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01110",
+    "text": "Thanh toán đơn hàng đặt hàng tiki 750k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03362",
+    "text": "Mua tài khoản ssi chứng khoán",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03409",
+    "text": "trich mua co phieu san hsc 10000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03438",
+    "text": "đầu tư trái phiếu doanh nghiệp 50000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01572",
+    "text": "chi trả tiền bình ga petrolimex - 6000k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03981",
+    "text": "nhận tiền viết bài cộng tác",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00433",
+    "text": "gà rán kfc",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04437",
+    "text": "Gửi tiền chuyển trả nợ ngân hàng 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00491",
+    "text": "đi gửi ô tô qua đêm - 50k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02294",
+    "text": "Khám tiêm ngừa viêm gan",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02265",
+    "text": "khám đo mắt cắt kính cận - 120k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03302",
+    "text": "mua chung chi quy vn30 10000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01741",
+    "text": "Chi trả tiền phòng tháng này",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02629",
+    "text": "khám bệnh đa khoa 50k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00088",
+    "text": "Uống bún chả hà nội 25k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00806",
+    "text": "taxi mai linh",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03639",
+    "text": "Được chuyển hoa hồng môi giới bán hàng 3000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01090",
+    "text": "đồng hồ đeo tay",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01858",
+    "text": "tài khoản spotify premium 4500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00505",
+    "text": "bảo dưỡng xe honda",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02011",
+    "text": "Du lịch vé triển lãm nghệ thuật 120k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04064",
+    "text": "chuyển tiền ủng hộ đồng bào bão lụt - 2000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04284",
+    "text": "bieu bo me o que",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01859",
+    "text": "du lịch vé ca nhạc concert - 120k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03657",
+    "text": "nhận nhận tiền viết bài cộng tác - 3000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03067",
+    "text": "Nộp lệ phí thi chứng chỉ",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02203",
+    "text": "Chơi vé xem phim bhd 350k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01347",
+    "text": "quần áo trẻ em",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03142",
+    "text": "tiền học trường mầm non",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03406",
+    "text": "gui nap finhay tich luy 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03405",
+    "text": "chứng chỉ quỹ vn30",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00972",
+    "text": "đặt hàng đơn lazada - 2500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02896",
+    "text": "Mua học phí đại học kỳ 1",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04178",
+    "text": "gui tien mung dam cuoi ban than 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00459",
+    "text": "gửi ô tô qua đêm 200k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01437",
+    "text": "chi tra tien rac dan phong",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04300",
+    "text": "Chi tiền phụng dưỡng cha mẹ 5000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01311",
+    "text": "quần áo trẻ em",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03569",
+    "text": "đầu tư sổ tiết kiệm ngân hàng - 10000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01105",
+    "text": "đồng hồ đeo tay",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03135",
+    "text": "Nộp sách tham khảo chuyên ngành 12000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01861",
+    "text": "Đi tài khoản spotify premium 350k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03785",
+    "text": "Công ty chuyển chuyển khoản tiền lương công ty",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02514",
+    "text": "đi thuốc cảm cúm paracetamol - 1200k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01140",
+    "text": "Sắm áo thun cotton",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03516",
+    "text": "mua 1 chỉ vàng sjc",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03128",
+    "text": "mua sách giáo khoa 150k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02198",
+    "text": "nạp vé triển lãm nghệ thuật - 1500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02072",
+    "text": "GÓI XEM NETFLIX 4K",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00710",
+    "text": "Đổ vé xe buýt tháng",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00712",
+    "text": "đi vé xe khách phương trang - 70k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02334",
+    "text": "KHẨU TRANG Y TẾ VÀ SÁT KHUẨN",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00015",
+    "text": "Ship pizza domino 1500k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02835",
+    "text": "ôn thi toeic cấp tốc 800k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03904",
+    "text": "được chuyển nhận tiền viết bài cộng tác - 8000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02486",
+    "text": "Đi tiêm vaccine phòng cúm",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03524",
+    "text": "Gửi quỹ mở dragon capital",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02701",
+    "text": "học tài liệu ôn tập thi cử - 2000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03525",
+    "text": "đầu tư đầu tư trái phiếu doanh nghiệp - 50000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03098",
+    "text": "Thanh toán luyện thi ielts 6.5 800k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04403",
+    "text": "chi tham hoi om dau",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_01066",
+    "text": "Thanh toán đơn hàng đơn lazada 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01648",
+    "text": "nap tien 4g vinaphone",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02029",
+    "text": "du lịch khách sạn nghỉ dưỡng - 90k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01714",
+    "text": "thanh toán tiền nước máy sawaco - 6000k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00184",
+    "text": "Thanh toán tối lẩu thái 120k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04451",
+    "text": "Chi khoản chi chưa phân loại",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04133",
+    "text": "Gửi tiền lì xì tết cho các cháu",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01687",
+    "text": "Trừ tiền tiền nước sạch 3500k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02357",
+    "text": "Xét nghiệm khám bệnh đa khoa",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00089",
+    "text": "di an tra sua tran chau",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00866",
+    "text": "Bắt phí trạm thu phí bot",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03254",
+    "text": "GỬI CHUYỂN TIỀN VÀO TÀI KHOẢN TIẾT KIỆM 5000K",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01299",
+    "text": "mỹ phẩm son môi 2500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02425",
+    "text": "thực phẩm chức năng vitamin c 50k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00942",
+    "text": "sắm đồ gia dụng chảo chống dính - 350k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02372",
+    "text": "khám tổng quát bệnh viện 3000k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03093",
+    "text": "Nộp tài liệu ôn tập thi cử 5000k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02167",
+    "text": "khách sạn nghỉ dưỡng 120k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00476",
+    "text": "thay ruột xe máy 100k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01857",
+    "text": "Thanh toán vé vé ca nhạc concert 1500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01109",
+    "text": "giày sneaker thể thao",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02771",
+    "text": "mua vở viết và bút bi 150k",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01062",
+    "text": "Đặt hàng thắt lưng da",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02596",
+    "text": "khám bổ sung canxi - 250k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01079",
+    "text": "Mua tai nghe bluetooth 2500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00420",
+    "text": "Chi burger king",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04334",
+    "text": "gui tien quyen gop tu thien 100k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02086",
+    "text": "nạp chơi game nạp thẻ garena - 120k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03512",
+    "text": "Trích tích lũy vàng nhẫn",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03973",
+    "text": "nhận tiền thưởng tết nguyên đán - 15000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01730",
+    "text": "thanh toan tien binh ga petrolimex 6000k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00855",
+    "text": "Mua thay dầu motul 50k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04157",
+    "text": "chi cho bạn vay mượn - 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01994",
+    "text": "vé máy bay phú quốc 200k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00585",
+    "text": "Đổ xanh sm taxi 200k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01082",
+    "text": "MUA TÚI XÁCH NỮ 750K",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00034",
+    "text": "buffet gogi 45k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00877",
+    "text": "mua xang o to e5 70k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_02009",
+    "text": "vé máy bay phú quốc",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00555",
+    "text": "bơm gửi ô tô qua đêm - 2500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04394",
+    "text": "cho bạn vay mượn",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02240",
+    "text": "Chơi vé triển lãm nghệ thuật 4500k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04028",
+    "text": "hoa hồng môi giới bán hàng 15000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02742",
+    "text": "Đóng tiền học trường mầm non",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00774",
+    "text": "bơm sửa xe thủng lốp - 50k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00154",
+    "text": "Ăn highlands coffee 50k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00510",
+    "text": "Bắt dầu nhớt xe 100k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01530",
+    "text": "Đóng tiền thuê căn hộ chung cư",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00176",
+    "text": "Đi ăn đặt shopeefood 120k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01088",
+    "text": "nước hoa nam 1200k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03393",
+    "text": "Nạp tiền vào tiết kiệm trực tuyến 6 tháng",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01678",
+    "text": "chi trả tiền bình ga petrolimex - 3500k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01228",
+    "text": "SẮM ĐỒ GIA DỤNG CHẢO CHỐNG DÍNH 1200K",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03765",
+    "text": "thu nhập làm thêm freelance",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02601",
+    "text": "khám tổng quát bệnh viện",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03352",
+    "text": "trích chứng chỉ quỹ vn30 - 5000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03573",
+    "text": "tích lũy vàng nhẫn",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02194",
+    "text": "phim cgv cuối tuần",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01372",
+    "text": "tiền nước máy sawaco",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00839",
+    "text": "chi phí bảo dưỡng xe honda - 2500k",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03653",
+    "text": "thu nhập làm thêm freelance 25000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02600",
+    "text": "Xét nghiệm thuốc đau đầu hạ sốt 250k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01325",
+    "text": "mua ốp lưng điện thoại - 250k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04357",
+    "text": "mừng đám cưới bạn thân",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02854",
+    "text": "TÀI LIỆU ÔN TẬP THI CỬ",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02554",
+    "text": "đi nha khoa lấy cao răng - 120k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04086",
+    "text": "Gửi tiền thăm hỏi ốm đau 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03659",
+    "text": "Nhận lương làm thêm part-time",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00144",
+    "text": "Chi lẩu haidilao 50k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00314",
+    "text": "ship bun cha ha noi",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_04097",
+    "text": "thanh toán tiền phụng dưỡng cha mẹ - 1000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04150",
+    "text": "chi tiền phúng viếng tang lễ - 5000k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02887",
+    "text": "luyện thi ielts 6.5",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03347",
+    "text": "Mua chứng chỉ quỹ vn30 50000k",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00282",
+    "text": "ăn ốc đêm 45k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01051",
+    "text": "Thanh toán đơn hàng đơn hàng shopee",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01045",
+    "text": "quan jean ong suong",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03307",
+    "text": "đầu tư trái phiếu doanh nghiệp",
+    "category": "đầu tư",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01548",
+    "text": "tiền gửi xe chung cư",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00337",
+    "text": "Đi ăn đồ ăn vặt 65k",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02135",
+    "text": "goi xem netflix 4k",
+    "category": "giải trí",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_00726",
+    "text": "thay dầu motul",
+    "category": "di chuyển",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01209",
+    "text": "Đặt hàng áo thun cotton",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01022",
+    "text": "don hang shopee 2500k",
+    "category": "mua sắm",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": false
+  },
+  {
+    "id": "tx_vn_03745",
+    "text": "hoa hồng môi giới bán hàng 40000k",
+    "category": "thu nhập",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_04315",
+    "text": "Gửi tiền khoản chi chưa phân loại 300k",
+    "category": "khác",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_00020",
+    "text": "bún đậu mắm tôm",
+    "category": "ăn uống",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01679",
+    "text": "Thanh toán tiền rác dân phòng",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01550",
+    "text": "tiền bình ga petrolimex 6000k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02664",
+    "text": "Xét nghiệm bổ sung canxi 1200k",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_03137",
+    "text": "khóa học tiếng anh giao tiếp",
+    "category": "giáo dục",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_01728",
+    "text": "Thanh toán cước wifi fpt 150k",
+    "category": "hóa đơn",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  },
+  {
+    "id": "tx_vn_02436",
+    "text": "dầu cá omega 3",
+    "category": "sức khỏe",
+    "source": "synthetic_curated_vietnamese_v2",
+    "has_diacritics": true
+  }
+]

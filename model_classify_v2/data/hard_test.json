@@ -1,0 +1,752 @@
+[
+  {
+    "text": "ăn sáng phở bò",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "đổ xăng xe",
+    "expected": "di chuyển",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiền điện tháng này",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "mua áo trên shopee",
+    "expected": "mua sắm",
+    "type": "diacritics"
+  },
+  {
+    "text": "khám bệnh",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "đóng học phí",
+    "expected": "giáo dục",
+    "type": "diacritics"
+  },
+  {
+    "text": "đi grab",
+    "expected": "di chuyển",
+    "type": "diacritics"
+  },
+  {
+    "text": "lương tháng 9",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "chuyển tiền tiết kiệm",
+    "expected": "đầu tư",
+    "type": "diacritics"
+  },
+  {
+    "text": "an pho",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien dien",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua quan ao",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "do xang xe may",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "di grab car",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "kham benh nha khoa",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "hoc phi ielts",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nhan luong thang",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "xem phim cgv",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua vang sjc",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mung cuoi ban",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "an com tam",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tra sua phuc long",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap tien dien thoai",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap the game lien quan",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "order ao phong shopee",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "gui tiet kiem ngan hang",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien thuong kpi",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua thuoc cam cum",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "dong tien hoc",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bieu tien ba me",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "hieu thuoc long chau",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "billiard bida lo",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nhận tiền viết bài cộng tác",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "phim cgv cuoi tuan",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tiền mạng vnpt",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "hoa hong moi gioi ban hang",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "phí quản lý tòa nhà",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "bun bo hue",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap the dien thoai viettel",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thăm hỏi ốm đau",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "tài khoản spotify premium",
+    "expected": "giải trí",
+    "type": "diacritics"
+  },
+  {
+    "text": "thanh toan hop dong tu van",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "quần jean ống suông",
+    "expected": "mua sắm",
+    "type": "diacritics"
+  },
+  {
+    "text": "thuốc cảm cúm paracetamol",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "tien thuong kpi quy",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "khoản chi chưa phân loại",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "be car",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "biếu bố mẹ ở quê",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "hoc bang lai xe b2",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "quyên góp từ thiện",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "quyen gop tu thien",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "boardgame cùng nhóm",
+    "expected": "giải trí",
+    "type": "diacritics"
+  },
+  {
+    "text": "thuong du an hoan thanh",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bổ sung canxi",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "luong thang 9",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thuc an cho ca tuan",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "lệ phí thi chứng chỉ",
+    "expected": "giáo dục",
+    "type": "diacritics"
+  },
+  {
+    "text": "vé triển lãm nghệ thuật",
+    "expected": "giải trí",
+    "type": "diacritics"
+  },
+  {
+    "text": "bun dau mam tom",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tiền phòng tháng này",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "thuoc cam cum paracetamol",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "hoc phi dai hoc ky 1",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tham hoi om dau",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "starbucks latte",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "kham tong quat benh vien",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "phim cgv cuoi tuan",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tai khoan spotify premium",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bảo dưỡng xe honda",
+    "expected": "di chuyển",
+    "type": "diacritics"
+  },
+  {
+    "text": "tich luy vang nhan",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "sach tham khao chuyen nganh",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "hiệu thuốc long châu",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "thay ruột xe máy",
+    "expected": "di chuyển",
+    "type": "diacritics"
+  },
+  {
+    "text": "vé triển lãm nghệ thuật",
+    "expected": "giải trí",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiền điện evn",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "mua sam tiktok shop",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "hoa hồng môi giới bán hàng",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "gói xem netflix 4k",
+    "expected": "giải trí",
+    "type": "diacritics"
+  },
+  {
+    "text": "balo laptop chống nước",
+    "expected": "mua sắm",
+    "type": "diacritics"
+  },
+  {
+    "text": "cước wifi fpt",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "học phí đại học kỳ 1",
+    "expected": "giáo dục",
+    "type": "diacritics"
+  },
+  {
+    "text": "bổ sung canxi",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "choi game nap the garena",
+    "expected": "giải trí",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua cổ phiếu sàn hsc",
+    "expected": "đầu tư",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiền nước sạch",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "quỹ mở dragon capital",
+    "expected": "đầu tư",
+    "type": "diacritics"
+  },
+  {
+    "text": "mua sach giao khoa",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "lì xì tết cho các cháu",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "ve may bay vietnam airlines",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "luong cung dot 1",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "chuyen khoan tien luong cong ty",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "đồ gia dụng chảo chống dính",
+    "expected": "mua sắm",
+    "type": "diacritics"
+  },
+  {
+    "text": "do mat cat kinh can",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nhận tiền viết bài cộng tác",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "khoa hoc lap trinh python",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nap finhay tich luy",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "so tiet kiem ngan hang",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nhan tien viet bai cong tac",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "dep quai hau",
+    "expected": "mua sắm",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "bieu bo me o que",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ôn thi toeic cấp tốc",
+    "expected": "giáo dục",
+    "type": "diacritics"
+  },
+  {
+    "text": "thanh toán hợp đồng tư vấn",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "pizza domino",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "dau tu trai phieu doanh nghiep",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "vé xem phim bhd",
+    "expected": "giải trí",
+    "type": "diacritics"
+  },
+  {
+    "text": "mua 1 chi vang sjc",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nha khoa lấy cao răng",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "thay dầu motul",
+    "expected": "di chuyển",
+    "type": "diacritics"
+  },
+  {
+    "text": "thịt heo rau củ chợ",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "gui tien ky han 12 thang",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien phung duong cha me",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "biếu bố mẹ ở quê",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "tour du lịch đà lạt 3 ngày",
+    "expected": "giải trí",
+    "type": "diacritics"
+  },
+  {
+    "text": "khoản chi chưa phân loại",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "khoa hoc lap trinh python",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tiền thưởng kpi quý",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "thu nhap lam them freelance",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tien gui xe chung cu",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "áo thun cotton",
+    "expected": "mua sắm",
+    "type": "diacritics"
+  },
+  {
+    "text": "tien hoc truong mam non",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "ủng hộ đồng bào bão lụt",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "váy đầm dự tiệc",
+    "expected": "mua sắm",
+    "type": "diacritics"
+  },
+  {
+    "text": "biếu bố mẹ ở quê",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "kháng sinh tại pharmacity",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "luong cung dot 1",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "cho bạn vay mượn",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "thanh toan hop dong tu van",
+    "expected": "thu nhập",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thay ruột xe máy",
+    "expected": "di chuyển",
+    "type": "diacritics"
+  },
+  {
+    "text": "dat shopeefood",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "mua sách giáo khoa",
+    "expected": "giáo dục",
+    "type": "diacritics"
+  },
+  {
+    "text": "biếu bố mẹ ở quê",
+    "expected": "khác",
+    "type": "diacritics"
+  },
+  {
+    "text": "thức ăn cho cả tuần",
+    "expected": "ăn uống",
+    "type": "diacritics"
+  },
+  {
+    "text": "gói cước mobifone 30 ngày",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "tra no ban",
+    "expected": "khác",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "nhận tiền viết bài cộng tác",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiền phòng tháng này",
+    "expected": "hóa đơn",
+    "type": "diacritics"
+  },
+  {
+    "text": "thanh toán hợp đồng tư vấn",
+    "expected": "thu nhập",
+    "type": "diacritics"
+  },
+  {
+    "text": "hoc bang lai xe b2",
+    "expected": "giáo dục",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tiet kiem truc tuyen 6 thang",
+    "expected": "đầu tư",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thuoc cam cum paracetamol",
+    "expected": "sức khỏe",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tiêm ngừa viêm gan",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "tài liệu ôn tập thi cử",
+    "expected": "giáo dục",
+    "type": "diacritics"
+  },
+  {
+    "text": "tien mang vnpt",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "tiết kiệm trực tuyến 6 tháng",
+    "expected": "đầu tư",
+    "type": "diacritics"
+  },
+  {
+    "text": "quỹ mở dragon capital",
+    "expected": "đầu tư",
+    "type": "diacritics"
+  },
+  {
+    "text": "bộ drap giường",
+    "expected": "mua sắm",
+    "type": "diacritics"
+  },
+  {
+    "text": "tien nuoc sach",
+    "expected": "hóa đơn",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thuốc cảm cúm paracetamol",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "tiêm ngừa viêm gan",
+    "expected": "sức khỏe",
+    "type": "diacritics"
+  },
+  {
+    "text": "com suon bi cha",
+    "expected": "ăn uống",
+    "type": "no_diacritics"
+  },
+  {
+    "text": "thay ruot xe may",
+    "expected": "di chuyển",
+    "type": "no_diacritics"
+  }
+]

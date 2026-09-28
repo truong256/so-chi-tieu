@@ -1,0 +1,118 @@
+{
+  "ood_dataset": "out_of_distribution.jsonl",
+  "total_cases": 120,
+  "crash_count": 0,
+  "robustness_rate": 100.0,
+  "overall_grade_distribution": {
+    "HEALTHY": 34,
+    "EXCELLENT": 26,
+    "CRITICAL": 49,
+    "CAUTION": 11
+  },
+  "mean_latency_ms": 0.091,
+  "p95_latency_ms": 0.14,
+  "scenario_breakdown": {
+    "break_even_cashflow": {
+      "count": 15,
+      "grade_distribution": {
+        "HEALTHY": 15
+      },
+      "mean_risk_score": 0.45,
+      "mean_confidence": 0.98
+    },
+    "extreme_high_income": {
+      "count": 8,
+      "grade_distribution": {
+        "EXCELLENT": 8
+      },
+      "mean_risk_score": 0.034,
+      "mean_confidence": 0.945
+    },
+    "extreme_low_income_student_or_subsidized": {
+      "count": 7,
+      "grade_distribution": {
+        "CRITICAL": 6,
+        "CAUTION": 1
+      },
+      "mean_risk_score": 0.623,
+      "mean_confidence": 0.951
+    },
+    "high_earner_zero_reserve_lifestyle_inflation": {
+      "count": 15,
+      "grade_distribution": {
+        "CAUTION": 7,
+        "CRITICAL": 8
+      },
+      "mean_risk_score": 0.644,
+      "mean_confidence": 0.979
+    },
+    "temporary_lumpy_expense_with_huge_cushion": {
+      "count": 15,
+      "grade_distribution": {
+        "CRITICAL": 15
+      },
+      "mean_risk_score": 0.993,
+      "mean_confidence": 0.98
+    },
+    "missing_categories_empty_breakdown": {
+      "count": 5,
+      "grade_distribution": {
+        "HEALTHY": 5
+      },
+      "mean_risk_score": 0.276,
+      "mean_confidence": 0.878
+    },
+    "missing_wallets_empty_balances": {
+      "count": 5,
+      "grade_distribution": {
+        "HEALTHY": 2,
+        "CAUTION": 3
+      },
+      "mean_risk_score": 0.332,
+      "mean_confidence": 0.852
+    },
+    "unbudgeted_user_all_zero_budgets": {
+      "count": 5,
+      "grade_distribution": {
+        "HEALTHY": 5
+      },
+      "mean_risk_score": 0.26,
+      "mean_confidence": 0.92
+    },
+    "zero_income_sabbatical": {
+      "count": 5,
+      "grade_distribution": {
+        "CRITICAL": 5
+      },
+      "mean_risk_score": 0.95,
+      "mean_confidence": 0.85
+    },
+    "massive_overbudget_runaway_spending": {
+      "count": 15,
+      "grade_distribution": {
+        "CRITICAL": 15
+      },
+      "mean_risk_score": 1.0,
+      "mean_confidence": 0.98
+    },
+    "zero_expense_fully_saved": {
+      "count": 10,
+      "grade_distribution": {
+        "EXCELLENT": 3,
+        "HEALTHY": 7
+      },
+      "mean_risk_score": 0.0,
+      "mean_confidence": 0.727
+    },
+    "high_savings_rate_with_isolated_overbudget": {
+      "count": 15,
+      "grade_distribution": {
+        "EXCELLENT": 15
+      },
+      "mean_risk_score": 0.189,
+      "mean_confidence": 0.98
+    }
+  },
+  "detected_anomalies_count": 0,
+  "sample_anomalies": []
+}

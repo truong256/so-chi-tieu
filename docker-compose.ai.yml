@@ -1,0 +1,23 @@
+services:
+  ai-service:
+    build:
+      context: .
+      dockerfile: ai_service/Dockerfile
+    image: so-chi-tieu-ai:v3
+    container_name: so-chi-tieu-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - AI_SERVICE_HOST=0.0.0.0
+      - AI_SERVICE_PORT=8000
+      - AI_V3_CANARY_PERCENT=5
+      - AI_SHADOW_MODE=true
+      - AI_SHADOW_SAMPLE_RATE=0.05
+      - AI_MODEL_FALLBACK_ENABLED=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
