@@ -529,6 +529,10 @@ async function singlePost<TReq, TRes>(
   if (isCanary !== undefined) {
     headers["X-AI-Canary"] = String(isCanary);
   }
+  if (typeof payload.idempotency_key === "string" && payload.idempotency_key) {
+    headers["X-Idempotency-Key"] = payload.idempotency_key;
+    headers["X-Request-Id"] = payload.idempotency_key;
+  }
 
   let response: Response;
   try {

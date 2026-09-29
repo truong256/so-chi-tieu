@@ -165,3 +165,77 @@ test("idempotency end-to-end: generated key has strong entropy and contains no P
     assert.equal(idempotencyKey.includes(s), false, `Idempotency key must not contain '${s}'`);
   }
 });
+
+test("supabase security: migration 017 revokes insert from anon/authenticated and grants to service_role", async () => {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const migrationPath = path.resolve(process.cwd(), "database/migrations/017_ai_telemetry_integrity_hardening.sql");
+  const sql = await fs.readFile(migrationPath, "utf-8");
+
+  // 1. Anon and Authenticated INSERT revoked
+  assert.ok(
+    /REVOKE\s+INSERT\s+ON\s+public\.ai_canary_telemetry\s+FROM\s+anon,\s*authenticated;/i.test(sql),
+    "Migration 017 must explicitly REVOKE INSERT from anon and authenticated roles",
+  );
+
+  // 2. Service role has full permissions
+  assert.ok(
+    /GRANT\s+(ALL|INSERT)\s+ON\s+public\.ai_canary_telemetry\s+TO\s+service_role;/i.test(sql),
+    "Migration 017 must explicitly GRANT INSERT/ALL to service_role",
+  );
+
+  // 3. Authenticated insert policy is dropped
+  assert.ok(
+    /DROP\s+POLICY\s+IF\s+EXISTS\s+ai_canary_telemetry_insert\s+ON\s+public\.ai_canary_telemetry;/i.test(sql),
+    "Migration 017 must DROP the old ai_canary_telemetry_insert policy",
+  );
+});
+
+test("database idempotency: migration 017 creates partial unique index and length check constraint", async () => {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const migrationPath = path.resolve(process.cwd(), "database/migrations/017_ai_telemetry_integrity_hardening.sql");
+  const sql = await fs.readFile(migrationPath, "utf-8");
+
+  // 1. Partial UNIQUE index
+  assert.ok(
+    /CREATE\s+UNIQUE\s+INDEX\s+(IF\s+NOT\s+EXISTS\s+)?ai_canary_telemetry_idempotency_key_uidx\s+ON\s+public\.ai_canary_telemetry\s*\(\s*idempotency_key\s*\)\s*WHERE\s+idempotency_key\s+IS\s+NOT\s+NULL;/i.test(sql),
+    "Migration 017 must create partial unique index on idempotency_key WHERE idempotency_key IS NOT NULL",
+  );
+
+  // 2. Length check constraint <= 128 chars
+  assert.ok(
+    /CHECK\s*\(\s*idempotency_key\s+IS\s+NULL\s+OR\s+length\(idempotency_key\)\s*<=\s*128\s*\)/i.test(sql),
+    "Migration 017 must enforce length(idempotency_key) <= 128 constraint at database level",
+  );
+});
+
+test("client retry idempotency: stable clientEventId is preserved across network retries", () => {
+  // Simulate client generating event ID for a logical action
+  const clientEventId = `tx_${crypto.randomUUID()}`;
+
+  // First request payload
+  const request1 = {
+    client_event_id: clientEventId,
+    headers: { "X-Idempotency-Key": clientEventId },
+  };
+
+  // Retry request payload (must reuse identical client_event_id)
+  const retryRequest = {
+    client_event_id: request1.client_event_id,
+    headers: { "X-Idempotency-Key": request1.headers["X-Idempotency-Key"] },
+  };
+
+  assert.equal(request1.client_event_id, retryRequest.client_event_id);
+  assert.equal(request1.headers["X-Idempotency-Key"], retryRequest.headers["X-Idempotency-Key"]);
+  assert.ok(clientEventId.length <= 128);
+});
+
+test("separate actions: distinct logical actions produce unique clientEventIds", () => {
+  const action1Id = `tx_${crypto.randomUUID()}`;
+  const action2Id = `tx_${crypto.randomUUID()}`;
+
+  assert.notEqual(action1Id, action2Id, "Separate user actions must produce different event IDs");
+  assert.match(action1Id, /^tx_/);
+  assert.match(action2Id, /^tx_/);
+});

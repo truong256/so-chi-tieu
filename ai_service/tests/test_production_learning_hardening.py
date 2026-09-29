@@ -600,3 +600,347 @@ def test_classify_realistic_user_phrases(client, text, expected_category):
     assert data["category"] == expected_category, (
         f"Input '{text}' predicted as '{data['category']}', expected '{expected_category}'"
     )
+
+
+# ---------------------------------------------------------------------------
+# 8. Distributed Idempotency, Client Retries, Trust Boundaries & Schema Alignment
+# ---------------------------------------------------------------------------
+def test_distributed_idempotency_simulation():
+    """
+    Requirement 13: Simulate instance A and instance B inserting key abc.
+    Database/persistence must record only 1 row.
+    """
+    from ai_service.observability import record_real_traffic_event, _real_event_records
+
+    key = f"dist-test-key-{uuid.uuid4()}"
+
+    # Instance A records event with key
+    evt1 = record_real_traffic_event(
+        model_version="v4",
+        route_type="canary",
+        category="ăn uống",
+        confidence=0.88,
+        latency_ms=15.0,
+        success=True,
+        fallback=False,
+        user_id_hash="hash-user-a",
+        idempotency_key=key,
+    )
+    assert evt1.get("is_duplicate") is not True
+
+    # Instance B records event with the identical key
+    evt2 = record_real_traffic_event(
+        model_version="v4",
+        route_type="canary",
+        category="ăn uống",
+        confidence=0.88,
+        latency_ms=16.0,
+        success=True,
+        fallback=False,
+        user_id_hash="hash-user-b",
+        idempotency_key=key,
+    )
+    assert evt2.get("is_duplicate") is True
+
+    # Verify that only 1 record exists in _real_event_records for this idempotency key
+    matching = [r for r in _real_event_records if r.get("idempotency_key") == key]
+    assert len(matching) == 1, f"Expected exactly 1 record for key {key}, found {len(matching)}"
+
+
+def test_client_retry_exact_event_count(client):
+    """
+    Requirement 13: client_event_id = UUID-X
+    request 1
+    network retry request 2 (same UUID-X)
+    => exactly 1 valid real event
+    """
+    trusted_headers = {"X-AI-Internal-Token": TEST_TELEMETRY_TOKEN}
+    client_event_id = f"client-retry-{uuid.uuid4()}"
+
+    before = get_real_events_status()["total_real_events"]
+
+    # Request 1
+    res1 = client.post("/classify", json={
+        "text": "Ăn bún chả 45k",
+        "is_real_traffic": True,
+        "user_id": "user-retry-test",
+        "idempotency_key": client_event_id,
+    }, headers=trusted_headers)
+    assert res1.status_code == 200
+
+    # Request 2 (Network retry with identical client_event_id)
+    res2 = client.post("/classify", json={
+        "text": "Ăn bún chả 45k",
+        "is_real_traffic": True,
+        "user_id": "user-retry-test",
+        "idempotency_key": client_event_id,
+    }, headers=trusted_headers)
+    assert res2.status_code == 200
+
+    after = get_real_events_status()["total_real_events"]
+    assert after == before + 1, f"Retry with same UUID-X must increment real events by exactly 1, got {after - before}"
+
+
+def test_separate_client_actions_event_count(client):
+    """
+    Requirement 13: UUID-X and UUID-Y => 2 events.
+    """
+    trusted_headers = {"X-AI-Internal-Token": TEST_TELEMETRY_TOKEN}
+    uuid_x = f"client-action-{uuid.uuid4()}"
+    uuid_y = f"client-action-{uuid.uuid4()}"
+
+    before = get_real_events_status()["total_real_events"]
+
+    # Action 1 (UUID-X)
+    res1 = client.post("/classify", json={
+        "text": "Mua áo len 350k",
+        "is_real_traffic": True,
+        "user_id": "user-separate-test",
+        "idempotency_key": uuid_x,
+    }, headers=trusted_headers)
+    assert res1.status_code == 200
+
+    # Action 2 (UUID-Y)
+    res2 = client.post("/classify", json={
+        "text": "Đổ xăng A95 60k",
+        "is_real_traffic": True,
+        "user_id": "user-separate-test",
+        "idempotency_key": uuid_y,
+    }, headers=trusted_headers)
+    assert res2.status_code == 200
+
+    after = get_real_events_status()["total_real_events"]
+    assert after == before + 2, f"Separate actions (UUID-X and UUID-Y) must increment real events by 2, got {after - before}"
+
+
+def test_missing_internal_token_classification_succeeds_counter_unchanged(client):
+    """
+    Requirement 13: Missing internal token => classification succeeds, real event count unchanged.
+    """
+    before = get_real_events_status()["total_real_events"]
+
+    # No token provided
+    res = client.post("/classify", json={
+        "text": "Mua cơm tấm 35k",
+        "is_real_traffic": True,
+        "user_id": "user-no-token",
+        "idempotency_key": f"key-{uuid.uuid4()}",
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["category"] == "ăn uống"
+
+    after = get_real_events_status()["total_real_events"]
+    assert after == before, "Real event count must remain unchanged when internal token is missing"
+
+
+def test_wrong_internal_token_classification_succeeds_counter_unchanged(client):
+    """
+    Requirement 13: Wrong internal token => classification succeeds, real event count unchanged.
+    """
+    before = get_real_events_status()["total_real_events"]
+
+    # Invalid token provided
+    res = client.post("/classify", json={
+        "text": "Mua nước ngọt 15k",
+        "is_real_traffic": True,
+        "user_id": "user-bad-token",
+        "idempotency_key": f"key-{uuid.uuid4()}",
+    }, headers={"X-AI-Internal-Token": "invalid_wrong_secret_12345"})
+    assert res.status_code == 200
+    data = res.json()
+    assert "category" in data and bool(data["category"])
+
+    after = get_real_events_status()["total_real_events"]
+    assert after == before, "Real event count must remain unchanged when internal token is wrong"
+
+
+def test_idempotency_key_length_constraint():
+    """
+    Requirement 4 & 13: Idempotency key max 128 characters constraint.
+    """
+    from ai_service.observability import record_real_traffic_event
+
+    long_key = "a" * 200
+    evt = record_real_traffic_event(
+        model_version="v4",
+        route_type="canary",
+        category="ăn uống",
+        confidence=0.9,
+        latency_ms=10.0,
+        success=True,
+        fallback=False,
+        idempotency_key=long_key,
+    )
+    # Stored key must not exceed 128 characters
+    assert len(evt["idempotency_key"]) <= 128
+    assert evt["idempotency_key"] == "a" * 128
+
+    normal_key = "tx_" + "b" * 50
+    evt2 = record_real_traffic_event(
+        model_version="v4",
+        route_type="canary",
+        category="ăn uống",
+        confidence=0.9,
+        latency_ms=10.0,
+        success=True,
+        fallback=False,
+        idempotency_key=normal_key,
+    )
+    assert evt2["idempotency_key"] == normal_key
+
+
+def test_telemetry_schema_columns_alignment():
+    """
+    Requirement 10 & 13: Validate payload generated by record_real_traffic_event
+    matches public.ai_canary_telemetry table schema exactly.
+    """
+    from ai_service.observability import record_real_traffic_event
+
+    test_key = f"schema-test-{uuid.uuid4()}"
+    rec = record_real_traffic_event(
+        model_version="v4",
+        route_type="canary",
+        category="ăn uống",
+        confidence=0.85,
+        latency_ms=22.4,
+        success=True,
+        fallback=False,
+        user_id_hash="abcdef0123456789",
+        idempotency_key=test_key,
+    )
+
+    expected_db_columns = {
+        "timestamp",
+        "model_version",
+        "route_type",
+        "category",
+        "confidence",
+        "confidence_band",
+        "latency_ms",
+        "success",
+        "fallback",
+        "user_id_hash",
+        "is_real_traffic",
+        "idempotency_key",
+    }
+    actual_columns = set(rec.keys())
+
+    # Every key in actual payload must exist as a valid column in public.ai_canary_telemetry
+    for key in actual_columns:
+        assert key in expected_db_columns, f"Telemetry record has column '{key}' not in public.ai_canary_telemetry schema!"
+    assert expected_db_columns == actual_columns
+
+
+def test_promotion_gate_exact_matrix():
+    """
+    Requirement 12: Promotion gate rules:
+    - 500 V3 => PROMOTION_BLOCKED
+    - 500 failed V4 => PROMOTION_BLOCKED
+    - 500 fallback V4 => PROMOTION_BLOCKED
+    - 500 duplicate V4 => PROMOTION_BLOCKED
+    - 499 valid V4 => PROMOTION_BLOCKED
+    - 500 valid V4 => READY_FOR_HUMAN_REVIEW (never auto-promotes)
+    """
+    from ai_service.observability import reset_real_events_records, record_real_traffic_event, get_real_events_status
+
+    # Case 1: 500 V3 events
+    reset_real_events_records()
+    for i in range(500):
+        record_real_traffic_event(
+            model_version="v3",
+            route_type="control",
+            category="ăn uống",
+            confidence=0.9,
+            latency_ms=10.0,
+            success=True,
+            fallback=False,
+            idempotency_key=f"v3-{i}",
+        )
+    status = get_real_events_status()
+    assert status["valid_v4_canary_events"] == 0
+    assert status["promotion_gate"] == "PROMOTION_BLOCKED"
+
+    # Case 2: 500 failed V4 events
+    reset_real_events_records()
+    for i in range(500):
+        record_real_traffic_event(
+            model_version="v4",
+            route_type="canary",
+            category="ăn uống",
+            confidence=0.9,
+            latency_ms=10.0,
+            success=False,
+            fallback=False,
+            idempotency_key=f"v4-fail-{i}",
+        )
+    status = get_real_events_status()
+    assert status["valid_v4_canary_events"] == 0
+    assert status["promotion_gate"] == "PROMOTION_BLOCKED"
+
+    # Case 3: 500 fallback V4 events
+    reset_real_events_records()
+    for i in range(500):
+        record_real_traffic_event(
+            model_version="v4",
+            route_type="canary",
+            category="ăn uống",
+            confidence=0.9,
+            latency_ms=10.0,
+            success=True,
+            fallback=True,
+            idempotency_key=f"v4-fb-{i}",
+        )
+    status = get_real_events_status()
+    assert status["valid_v4_canary_events"] == 0
+    assert status["promotion_gate"] == "PROMOTION_BLOCKED"
+
+    # Case 4: 500 duplicates of same V4 event
+    reset_real_events_records()
+    dup_key = f"dup-v4-{uuid.uuid4()}"
+    for i in range(500):
+        record_real_traffic_event(
+            model_version="v4",
+            route_type="canary",
+            category="ăn uống",
+            confidence=0.9,
+            latency_ms=10.0,
+            success=True,
+            fallback=False,
+            idempotency_key=dup_key,
+        )
+    status = get_real_events_status()
+    assert status["valid_v4_canary_events"] == 1
+    assert status["promotion_gate"] == "PROMOTION_BLOCKED"
+
+    # Case 5: 499 valid V4 events
+    reset_real_events_records()
+    for i in range(499):
+        record_real_traffic_event(
+            model_version="v4",
+            route_type="canary",
+            category="ăn uống",
+            confidence=0.9,
+            latency_ms=10.0,
+            success=True,
+            fallback=False,
+            idempotency_key=f"v4-valid-499-{i}",
+        )
+    status = get_real_events_status()
+    assert status["valid_v4_canary_events"] == 499
+    assert status["promotion_gate"] == "PROMOTION_BLOCKED"
+
+    # Case 6: 500 valid V4 events
+    record_real_traffic_event(
+        model_version="v4",
+        route_type="canary",
+        category="ăn uống",
+        confidence=0.9,
+        latency_ms=10.0,
+        success=True,
+        fallback=False,
+        idempotency_key="v4-valid-500",
+    )
+    status = get_real_events_status()
+    assert status["valid_v4_canary_events"] == 500
+    assert status["promotion_gate"] == "READY_FOR_HUMAN_REVIEW"

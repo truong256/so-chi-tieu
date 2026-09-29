@@ -182,18 +182,22 @@ export async function getAiUsageStats(period: "today" | "7d" | "30d" = "7d"): Pr
   } | null = null;
 
   const aiServiceUrl = (process.env.AI_SERVICE_URL ?? "http://127.0.0.1:8000").replace(/\/$/, "");
-  const telemetryToken = process.env.AI_INTERNAL_TELEMETRY_TOKEN;
+  const telemetryToken = process.env.AI_INTERNAL_TELEMETRY_TOKEN || process.env.AI_INTERNAL_SERVICE_TOKEN;
 
   if (telemetryToken) {
     try {
+      const headers = {
+        Authorization: `Bearer ${telemetryToken}`,
+        "X-AI-Internal-Token": telemetryToken,
+      };
       const [canaryRes, feedbackRes] = await Promise.all([
         fetch(`${aiServiceUrl}/telemetry/canary`, {
-          headers: { Authorization: `Bearer ${telemetryToken}` },
+          headers,
           signal: AbortSignal.timeout(2000),
           cache: "no-store",
         }),
         fetch(`${aiServiceUrl}/telemetry/feedback`, {
-          headers: { Authorization: `Bearer ${telemetryToken}` },
+          headers,
           signal: AbortSignal.timeout(2000),
           cache: "no-store",
         }),

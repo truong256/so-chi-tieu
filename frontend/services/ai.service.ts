@@ -73,56 +73,104 @@ export interface AdvisorSuggestion {
 
 const DEFAULT_TIMEOUT = 12_000;
 
+export interface PostAiOptions {
+  timeoutMs?: number;
+  clientEventId?: string;
+  maxRetries?: number;
+}
+
+export function generateClientEventId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `tx_${crypto.randomUUID()}`;
+  }
+  const rand = Math.random().toString(36).substring(2, 12);
+  return `tx_${Date.now()}_${rand}`;
+}
+
 async function postAi<T>(
   path: string,
   token: string,
   body: Record<string, unknown>,
-  timeoutMs = DEFAULT_TIMEOUT,
+  options?: PostAiOptions | number,
 ): Promise<AiClientResult<T>> {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutMs = typeof options === "number" ? options : (options?.timeoutMs ?? DEFAULT_TIMEOUT);
+  const clientEventId = typeof options === "object" ? options?.clientEventId : undefined;
+  const maxRetries = typeof options === "object" ? (options?.maxRetries ?? 1) : 1;
 
-    let res: Response;
-    try {
-      res = await fetch(path, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-        cache: "no-store",
-      });
-    } finally {
-      clearTimeout(timer);
-    }
+  // Resolve client event ID: prefer options, then body, without regenerating on retries
+  const eventId = (
+    clientEventId ||
+    (typeof body.client_event_id === "string" ? body.client_event_id : undefined)
+  );
 
-    const json = (await res.json()) as Record<string, unknown>;
-
-    if (!res.ok) {
-      const errMsg =
-        typeof json.error === "string" ? json.error : `HTTP ${res.status}`;
-      return { ok: false, advisory: true, error: errMsg };
-    }
-
-    if (json.ok === false) {
-      return {
-        ok: false,
-        advisory: true,
-        error: typeof json.error === "string" ? json.error : "AI không khả dụng.",
-      };
-    }
-
-    return { ok: true, advisory: true, data: json.data as T };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg.toLowerCase().includes("abort")) {
-      return { ok: false, advisory: true, error: "AI service timeout." };
-    }
-    return { ok: false, advisory: true, error: "Không thể kết nối AI service." };
+  const requestBody: Record<string, unknown> = { ...body };
+  if (eventId) {
+    requestBody.client_event_id = eventId;
   }
+
+  let attempt = 0;
+  while (attempt <= maxRetries) {
+    attempt += 1;
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+      if (eventId) {
+        headers["X-Idempotency-Key"] = eventId;
+        headers["X-Request-Id"] = eventId;
+      }
+
+      let res: Response;
+      try {
+        res = await fetch(path, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+          cache: "no-store",
+        });
+      } finally {
+        clearTimeout(timer);
+      }
+
+      const json = (await res.json()) as Record<string, unknown>;
+
+      if (!res.ok) {
+        const errMsg =
+          typeof json.error === "string" ? json.error : `HTTP ${res.status}`;
+        return { ok: false, advisory: true, error: errMsg };
+      }
+
+      if (json.ok === false) {
+        return {
+          ok: false,
+          advisory: true,
+          error: typeof json.error === "string" ? json.error : "AI không khả dụng.",
+        };
+      }
+
+      return { ok: true, advisory: true, data: json.data as T };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const isTimeout = msg.toLowerCase().includes("abort");
+
+      // Retry only transient network failures with the identical eventId
+      if (attempt <= maxRetries && !isTimeout) {
+        continue;
+      }
+
+      if (isTimeout) {
+        return { ok: false, advisory: true, error: "AI service timeout." };
+      }
+      return { ok: false, advisory: true, error: "Không thể kết nối AI service." };
+    }
+  }
+
+  return { ok: false, advisory: true, error: "Không thể kết nối AI service." };
 }
 
 // ---------------------------------------------------------------------------
@@ -132,12 +180,23 @@ async function postAi<T>(
 /**
  * Ask AI to suggest a category for a transaction text.
  * Result is advisory only — user must confirm before saving.
+ * Carries stable clientEventId to guarantee idempotency.
  */
 export async function aiSuggestCategory(
   token: string,
   text: string,
+  clientEventId?: string,
 ): Promise<AiClientResult<ClassifySuggestion>> {
-  return postAi<ClassifySuggestion>("/api/ai/classify", token, { text });
+  const eventId = clientEventId && /^[a-zA-Z0-9_-]{8,128}$/.test(clientEventId)
+    ? clientEventId
+    : generateClientEventId();
+
+  return postAi<ClassifySuggestion>(
+    "/api/ai/classify",
+    token,
+    { text, client_event_id: eventId },
+    { clientEventId: eventId },
+  );
 }
 
 /**
@@ -199,11 +258,13 @@ export async function aiGetAdvisory(
 /**
  * Natural language transaction parsing using Local AI with heuristic fallback.
  * Returns structured transaction draft and explicit prediction source.
+ * Generates and preserves stable clientEventId to guarantee end-to-end idempotency.
  */
 export async function aiParseTransaction(
   token: string,
   text: string,
   clientDate?: string,
+  clientEventId?: string,
 ): Promise<AiClientResult<{
   category: string;
   confidence: number;
@@ -211,10 +272,26 @@ export async function aiParseTransaction(
   fallback: boolean;
   data: Record<string, unknown>;
 }>> {
-  return postAi("/api/ai/parse-transaction", token, {
-    text,
-    client_date: clientDate,
-  });
+  const eventId = clientEventId && /^[a-zA-Z0-9_-]{8,128}$/.test(clientEventId)
+    ? clientEventId
+    : generateClientEventId();
+
+  return postAi<{
+    category: string;
+    confidence: number;
+    source: string;
+    fallback: boolean;
+    data: Record<string, unknown>;
+  }>(
+    "/api/ai/parse-transaction",
+    token,
+    {
+      text,
+      client_date: clientDate,
+      client_event_id: eventId,
+    },
+    { clientEventId: eventId },
+  );
 }
 
 /**

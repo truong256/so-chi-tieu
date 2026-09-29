@@ -506,7 +506,13 @@ def reset_classify_v4_shadow_records():
 
 
 def _persist_to_supabase_async(record: Dict[str, Any]):
-    """Persist telemetry record to Supabase ai_canary_telemetry table (fire-and-forget, error-isolated)."""
+    """
+    Persist telemetry record to Supabase ai_canary_telemetry table:
+    - Fire-and-forget daemon thread (error-isolated, never blocks response).
+    - Uses SUPABASE_SERVICE_ROLE_KEY (anon/authenticated roles are revoked in migration 017).
+    - Automatically resolves distributed duplicates via resolution=ignore-duplicates.
+    - Handles HTTP 409 Conflict cleanly without tripping circuit breaker.
+    """
     import os
     supabase_url = os.getenv("SUPABASE_URL", "")
     supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "") or os.getenv("SUPABASE_KEY", "")
@@ -517,17 +523,23 @@ def _persist_to_supabase_async(record: Dict[str, Any]):
     def _worker():
         try:
             import urllib.request
+            import urllib.error
             headers = {
                 "apikey": supabase_key,
                 "Authorization": f"Bearer {supabase_key}",
                 "Content-Type": "application/json",
-                "Prefer": "return=minimal",
+                "Prefer": "resolution=ignore-duplicates,return=minimal",
             }
             url = f"{supabase_url.rstrip('/')}/rest/v1/ai_canary_telemetry"
             data = json.dumps(record).encode("utf-8")
             req = urllib.request.Request(url, data=data, headers=headers, method="POST")
             with urllib.request.urlopen(req, timeout=3.0):
                 pass
+        except urllib.error.HTTPError as http_err:
+            if http_err.code == 409:
+                logger.info("Supabase telemetry insert: duplicate idempotency_key already recorded in database (distributed conflict resolved).")
+            else:
+                logger.debug(f"Supabase telemetry HTTP error: {http_err.code} {http_err.reason}")
         except Exception as e:
             logger.debug(f"Supabase telemetry insert skipped/failed: {e}")
 

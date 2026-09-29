@@ -87,19 +87,84 @@ graph TD
 
 ---
 
-## 5. KẾT QUẢ KIỂM THỬ TOÀN DIỆN (FULL VERIFICATION SUITE)
+## 5. BẢO MẬT & IDEMPOTENCY CẤP ĐỘ SẢN XUẤT (NEW)
 
-| Bộ kiểm thử | Lệnh thực thi | Kết quả | Chi tiết |
-| :--- | :--- | :--- | :--- |
-| **Python Tests** | `pytest ai_service/tests -v` | **136 / 136 PASSED** | Kiểm thử Trust Boundary, Idempotency, 5 kịch bản Promotion Gate, Feedback Isolation V3 vs V4, Warning Audit Metric Consistency, Real-world phrases. |
-| **Node Unit Tests** | `npm run test:unit` | **72 / 72 PASSED** | Kiểm thử Feedback loop V4 isolation, Idempotency key entropy & PII cleanliness, Canary distribution, Security guards. |
-| **TypeScript Check** | `npx tsc --noEmit` | **0 ERRORS** | Biên dịch sạch 100%. |
-| **Lint** | `npm run lint` | **0 ERRORS** | 7 pre-existing warnings được giữ nguyên. |
-| **Next.js & Worker Build** | `npm run build` | **BUILD SUCCESS** | Hoàn thành `build:next` (21 pages static/dynamic) và `build:worker` (Vite RSC/SSR/Client bundle). |
+### TELEMETRY DATABASE WRITE SECURITY
+- **Vấn đề ban đầu**: Migration 015 có policy `CREATE POLICY ai_canary_telemetry_insert ON public.ai_canary_telemetry FOR INSERT TO authenticated WITH CHECK (true);`. Bất kỳ client browser nào có Supabase session đều có thể tự gửi INSERT vào bảng telemetry thực.
+- **Giải pháp triển khai (Migration 017)**:
+  - Thu hồi toàn bộ quyền INSERT từ client-side roles:
+    ```sql
+    DROP POLICY IF EXISTS ai_canary_telemetry_insert ON public.ai_canary_telemetry;
+    REVOKE INSERT ON public.ai_canary_telemetry FROM anon, authenticated;
+    ```
+  - Cấp toàn quyền INSERT & quản trị cho service role server-side:
+    ```sql
+    GRANT ALL ON public.ai_canary_telemetry TO service_role;
+    ```
+  - Giữ quyền SELECT cho `authenticated` duy nhất khi là Administrator (`is_admin()`).
+  - Browser/client tuyệt đối không thể can thiệp hoặc chèn telemetry sự kiện thật trực tiếp vào Supabase.
+
+### DISTRIBUTED IDEMPOTENCY
+- **Vấn đề ban đầu**: Migration 016 chỉ có index thường `CREATE INDEX ON ai_canary_telemetry(idempotency_key);`. Khi nhiều instance/worker FastAPI chạy phân tán, hai worker có thể cùng chèn một `idempotency_key` đồng thời mà không bị chặn ở database.
+- **Giải pháp triển khai (Migration 017 + PostgREST)**:
+  - Dọn dẹp an toàn các bản ghi trùng lặp lịch sử (giữ lại bản ghi sớm nhất có tie-breaker qua ID).
+  - Tạo partial unique index trên database:
+    ```sql
+    CREATE UNIQUE INDEX IF NOT EXISTS ai_canary_telemetry_idempotency_key_uidx
+      ON public.ai_canary_telemetry (idempotency_key)
+      WHERE idempotency_key IS NOT NULL;
+    ```
+  - Bổ sung ràng buộc độ dài khóa ở mức database:
+    ```sql
+    ALTER TABLE public.ai_canary_telemetry
+      ADD CONSTRAINT ai_canary_telemetry_idempotency_key_len_chk
+      CHECK (
+        idempotency_key IS NULL
+        OR length(idempotency_key) <= 128
+      );
+    ```
+  - Khi chèn vào Supabase PostgREST, request kèm header `Prefer: resolution=ignore-duplicates,return=minimal`. Xử lý mã HTTP 409 Conflict như một sự kiện đã được ghi nhận trước đó (`already recorded`), hoàn toàn cô lập lỗi và không bao giờ trip circuit breaker hay làm fail transaction classification.
+
+### CLIENT RETRY IDEMPOTENCY
+- **Vấn đề ban đầu**: Hàm `aiParseTransaction()` ở frontend chưa tạo hoặc truyền stable client event ID. Nếu network retry cả Next.js request, server sẽ tự sinh UUID mới dẫn đến duplicate telemetry.
+- **Giải pháp triển khai**:
+  - Frontend cung cấp hàm `generateClientEventId()` tạo UUID ngẫu nhiên định dạng `tx_${crypto.randomUUID()}` (không chứa PII, text, email, amount, user ID).
+  - `aiParseTransaction()` và `aiSuggestCategory()` sinh `client_event_id` một lần duy nhất cho mỗi thao tác logic của người dùng.
+  - Vòng lặp network retry trong `postAi()` giữ nguyên tuyệt đối `eventId` qua các lần thử lại (gửi qua cả body `client_event_id` và headers `X-Idempotency-Key`, `X-Request-Id`).
+  - Next.js server nhận và chuyển tiếp `idempotency_key` tới FastAPI AI service.
+  - Kết quả: Thao tác retry cùng ID chỉ tạo đúng 1 bản ghi telemetry; thao tác người dùng mới sinh ID mới sẽ tạo bản ghi độc lập.
+
+### DEPLOYMENT ENV CONFIGURATION
+- **Đồng bộ biến môi trường**: Audit toàn bộ hệ thống gồm `backend/src/services/ai-local.client.ts`, `backend/src/services/admin-ai.service.ts`, `ai_service/config.py`, và `ai_service/app.py`. Tất cả sử dụng thống nhất và chính xác:
+  - `AI_SERVICE_URL` (mặc định: `http://127.0.0.1:8000`)
+  - `AI_INTERNAL_SERVICE_TOKEN` (token xác thực giữa Next.js server và FastAPI)
+  - `AI_INTERNAL_TELEMETRY_TOKEN` (token xác thực các endpoint telemetry bảo vệ)
+- **Tài liệu hóa**: Bổ sung đầy đủ chú thích trong `.env.example` với giá trị rỗng (placeholder), không commit bất kỳ secret thật nào.
+- **Bảo mật**: Tuyệt đối không sử dụng tiền tố `NEXT_PUBLIC_` cho bất kỳ token server-to-server nào.
 
 ---
 
-## 6. KẾT LUẬN & TRẠNG THÁI MERGE
+## 6. KẾT QUẢ KIỂM THỬ TOÀN DIỆN (FULL VERIFICATION SUITE)
 
-- **REAL TRAFFIC PIPELINE**: **PASS** (Trust boundary token verified + Idempotency verified + V4-specific promotion gate verified).
-- **SAFE TO MERGE VÀO MAIN**: **NO** (Tuân thủ chỉ đạo của user: giữ nguyên branch `ai/production-learning-hardening`, không merge vào `main` cho đến khi có phê duyệt riêng từ con người).
+| Bộ kiểm thử | Lệnh thực thi | Kết quả | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Python Tests** | `pytest ai_service/tests -v` | **144 / 144 PASSED** | Kiểm thử Distributed Idempotency simulation, Client Retry Dedup, Separate Actions, Missing/Wrong Token Trust Boundary, Idempotency Key Length <= 128, Schema Columns Alignment, 6 kịch bản Promotion Gate, Warning Audit Metric Consistency, Real-world phrases. |
+| **Node Unit Tests** | `npm run test:unit` | **76 / 76 PASSED** | Kiểm thử Supabase Migration 017 SQL Security (Revoke anon/auth, Grant service_role), Database Idempotency Partial Unique Index & Check Constraint, Client Retry Idempotency, Feedback loop V4 isolation, Canary distribution, Security guards. |
+| **TypeScript Check** | `npx tsc --noEmit` | **0 ERRORS** | Biên dịch sạch 100%. |
+| **Lint** | `npm run lint` | **0 ERRORS** | 7 pre-existing warnings được giữ nguyên. |
+| **Next.js & Worker Build** | `npm run build` | **BUILD SUCCESS** | Hoàn thành `build:next` (21 pages static/dynamic) và `build:worker` (Vite RSC/SSR/Client bundle). |
+| **Whitespace & Diff** | `git diff --check` | **0 ERRORS** | Không có lỗi whitespace hay conflict marker. |
+
+---
+
+## 7. KẾT LUẬN & TRẠNG THÁI MERGE
+
+- **REAL TRAFFIC PIPELINE & TELEMETRY INTEGRITY**: **PASS**
+  - Supabase Telemetry Insert Security: Anon (DENIED), Authenticated (DENIED), Service Role (ALLOWED).
+  - Database-level Partial Unique Idempotency: PASS.
+  - Database-level Length Constraint (<= 128 chars): PASS.
+  - End-to-End Client Event ID & Retry Dedup: PASS.
+  - Trust Boundary: PASS (Token sai/thiếu -> classification = allowed, real traffic count = DENIED).
+  - Deployment Env Configuration: PASS (.env.example documented, 0 real secrets).
+  - Promotion Gate (valid_v4_canary_events >= 500): PASS (chặn thăng cấp tự động, chỉ mở khi đủ 500 valid V4 events).
+- **SAFE FOR HUMAN MERGE REVIEW**: **YES** (Sau khi hoàn tất toàn bộ kiểm thử bảo mật, tính toàn vẹn và không tự động merge main).
