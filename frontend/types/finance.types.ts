@@ -171,7 +171,7 @@ export type ModalState =
   | { kind: "transaction"; item?: Transaction; initialMode?: "manual" | "scan" }
   | { kind: "receipt-scan" }
   | { kind: "wallet"; item?: Wallet }
-  | { kind: "transfer" }
+  | { kind: "transfer"; initialData?: { fromWalletId?: string; toWalletId?: string; amount?: number; note?: string } }
   | { kind: "category"; item?: Category }
   | { kind: "budget"; item?: Budget }
   | { kind: "budget-topup"; budget: Budget }

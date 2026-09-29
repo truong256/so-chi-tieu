@@ -13,7 +13,8 @@
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Wallet, Transaction, Budget, SavingsGoal } from "@/frontend/types/finance.types";
+import type { Wallet, Transaction, Budget, SavingsGoal } from "../../../frontend/types/finance.types.ts";
+import { parseVietnameseAmount } from "../../../frontend/utils/smart-parser.ts";
 
 export interface ServerWalletSummary {
   name: string;
@@ -60,6 +61,12 @@ export interface ServerFinancialContext {
   balancesByCurrency: Record<string, number>;
   primaryCurrency: string;
 
+  // Expenses and Incomes grouped strictly by currency (NO cross-currency additions)
+  expensesByCurrency: Record<string, number>;
+  incomesByCurrency: Record<string, number>;
+  previousExpensesByCurrency: Record<string, number>;
+  previousIncomesByCurrency: Record<string, number>;
+
   // Current Month Totals (per primary currency)
   currentMonthIncome: number;
   currentMonthExpense: number;
@@ -102,6 +109,20 @@ export interface ServerFinancialContext {
       wouldExceed: boolean;
     }>;
   };
+
+  // Dynamic what-if analysis
+  dynamicWhatIf?: Array<{
+    budgetName: string;
+    currentRemaining: number;
+    amount: number;
+    currency: string;
+    remainingAfter: number;
+    wouldExceed: boolean;
+  }>;
+
+  // Database error tracking (distinguishing empty data vs failed query)
+  databaseQueryError?: boolean;
+  databaseErrorMessage?: string;
 
   hasSufficientData: boolean;
   dataLimitationsNotice?: string;
@@ -154,6 +175,42 @@ export function getVietnamTimeBounds(referenceDate = new Date()): {
 }
 
 /**
+ * Dynamic What-If Extractor & Calculator
+ */
+export function extractWhatIfAmountFromQuery(query: string): { amount: number; currency: string } | null {
+  if (!query) return null;
+  const m = query.match(
+    /(?:nếu|neu)\s+(?:tôi\s+)?(?:mua|chi|tiêu|tốn|bỏ\s+ra)\s+(?:thêm\s+)?(?:món\s+đồ\s+|cái\s+.*?\s+)?(?:giá\s+)?([0-9.,]+(?:\s*(?:k|nghìn|ngàn|triệu|trieu|tr|usd|đ|vnd|dong))?)/i,
+  );
+  if (m && m[1]) {
+    const parsed = parseVietnameseAmount(m[1]);
+    if (parsed.amount && parsed.amount > 0) {
+      return { amount: parsed.amount, currency: parsed.currency || "VND" };
+    }
+  }
+  return null;
+}
+
+export function calculateDynamicWhatIf(
+  budgets: ServerBudgetSummary[],
+  amount: number,
+  currency = "VND",
+) {
+  return budgets.map((b) => {
+    const diff = b.remaining_amount - amount;
+    return {
+      budgetName: b.name,
+      currentRemaining: b.remaining_amount,
+      amount,
+      currency,
+      remainingAfter: diff,
+      wouldExceed: diff < 0,
+      exceededBy: diff < 0 ? Math.abs(diff) : 0,
+    };
+  });
+}
+
+/**
  * Fetch and build trusted financial context server-side.
  */
 export async function buildServerFinancialContext(
@@ -161,6 +218,7 @@ export async function buildServerFinancialContext(
   supabaseKey: string,
   userToken: string,
   userId: string,
+  queryText?: string,
 ): Promise<ServerFinancialContext> {
   const userClient: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
     global: {
@@ -196,14 +254,20 @@ export async function buildServerFinancialContext(
       .eq("user_id", userId)
       .gte("occurred_at", timeBounds.currentStartIso)
       .lt("occurred_at", timeBounds.currentEndIso)
-      .order("occurred_at", { ascending: false }),
+      .order("occurred_at", { ascending: false })
+      .range(0, 4999),
     userClient
       .from("transactions")
       .select("id, title, amount, type, category, occurred_at, wallet_id")
       .eq("user_id", userId)
       .gte("occurred_at", timeBounds.previousStartIso)
-      .lt("occurred_at", timeBounds.previousEndIso),
+      .lt("occurred_at", timeBounds.previousEndIso)
+      .range(0, 4999),
   ]);
+
+  const dbError = walletsRes.error || budgetsRes.error || goalsRes.error || currentTxsRes.error || prevTxsRes.error;
+  const databaseQueryError = Boolean(dbError);
+  const databaseErrorMessage = dbError ? dbError.message : undefined;
 
   const wallets = (walletsRes.data ?? []) as Wallet[];
   const budgets = (budgetsRes.data ?? []) as Budget[];
@@ -211,47 +275,59 @@ export async function buildServerFinancialContext(
   const currentTxs = (currentTxsRes.data ?? []) as Transaction[];
   const prevTxs = (prevTxsRes.data ?? []) as Transaction[];
 
-  // 1. Group balances by currency (NO cross-currency sum)
+  // 1. Group balances by currency and build wallet -> currency map
   const balancesByCurrency: Record<string, number> = {};
+  const walletCurrencyMap = new Map<string, string>();
   for (const w of wallets) {
     const cur = (w.currency || "VND").toUpperCase();
+    walletCurrencyMap.set(w.id, cur);
     const bal = Number.isFinite(Number(w.balance)) ? Number(w.balance) : 0;
     balancesByCurrency[cur] = (balancesByCurrency[cur] || 0) + bal;
   }
 
   const primaryCurrency = Object.keys(balancesByCurrency)[0] || "VND";
 
-  // 2. Compute current month income and expense
-  let currentMonthIncome = 0;
-  let currentMonthExpense = 0;
+  // 2. Compute current month income and expense grouped strictly by currency
+  const expensesByCurrency: Record<string, number> = {};
+  const incomesByCurrency: Record<string, number> = {};
   const currentCategorySpend = new Map<string, number>();
 
   for (const t of currentTxs) {
     const amt = Number.isFinite(Number(t.amount)) ? Math.max(0, Number(t.amount)) : 0;
+    const cur = (t.wallet_id && walletCurrencyMap.get(t.wallet_id)) || primaryCurrency;
+
     if (t.type === "income") {
-      currentMonthIncome += amt;
+      incomesByCurrency[cur] = (incomesByCurrency[cur] || 0) + amt;
     } else {
-      currentMonthExpense += amt;
+      expensesByCurrency[cur] = (expensesByCurrency[cur] || 0) + amt;
       const cat = (t.category || "Khác").trim();
       currentCategorySpend.set(cat, (currentCategorySpend.get(cat) || 0) + amt);
     }
   }
 
-  // 3. Compute previous month income and expense
-  let previousMonthIncome = 0;
-  let previousMonthExpense = 0;
+  const currentMonthIncome = incomesByCurrency[primaryCurrency] || 0;
+  const currentMonthExpense = expensesByCurrency[primaryCurrency] || 0;
+
+  // 3. Compute previous month income and expense grouped strictly by currency
+  const previousExpensesByCurrency: Record<string, number> = {};
+  const previousIncomesByCurrency: Record<string, number> = {};
   const prevCategorySpend = new Map<string, number>();
 
   for (const t of prevTxs) {
     const amt = Number.isFinite(Number(t.amount)) ? Math.max(0, Number(t.amount)) : 0;
+    const cur = (t.wallet_id && walletCurrencyMap.get(t.wallet_id)) || primaryCurrency;
+
     if (t.type === "income") {
-      previousMonthIncome += amt;
+      previousIncomesByCurrency[cur] = (previousIncomesByCurrency[cur] || 0) + amt;
     } else {
-      previousMonthExpense += amt;
+      previousExpensesByCurrency[cur] = (previousExpensesByCurrency[cur] || 0) + amt;
       const cat = (t.category || "Khác").trim();
       prevCategorySpend.set(cat, (prevCategorySpend.get(cat) || 0) + amt);
     }
   }
+
+  const previousMonthIncome = previousIncomesByCurrency[primaryCurrency] || 0;
+  const previousMonthExpense = previousExpensesByCurrency[primaryCurrency] || 0;
 
   // 4. Net savings and rate
   const currentMonthNetSavings = currentMonthIncome - currentMonthExpense;
@@ -343,14 +419,17 @@ export async function buildServerFinancialContext(
   }));
 
   // 10. Recent transactions (clean, max 20)
-  const recentTransactions = currentTxs.slice(0, 20).map((t) => ({
-    title: t.title,
-    amount: Number(t.amount) || 0,
-    currency: primaryCurrency,
-    type: (t.type === "income" ? "income" : "expense") as "income" | "expense",
-    category: t.category || "Khác",
-    date: t.occurred_at ? t.occurred_at.slice(0, 10) : "",
-  }));
+  const recentTransactions = currentTxs.slice(0, 20).map((t) => {
+    const txCurrency = (t.wallet_id && walletCurrencyMap.get(t.wallet_id)) || primaryCurrency;
+    return {
+      title: t.title,
+      amount: Number(t.amount) || 0,
+      currency: txCurrency,
+      type: (t.type === "income" ? "income" : "expense") as "income" | "expense",
+      category: t.category || "Khác",
+      date: t.occurred_at ? t.occurred_at.slice(0, 10) : "",
+    };
+  });
 
   // 11. Pre-calculate What-If for 500,000 VND
   const sample500kImpacts = budgetSummaries.map((b) => ({
@@ -359,6 +438,15 @@ export async function buildServerFinancialContext(
     remainingAfter500k: b.remaining_amount - 500_000,
     wouldExceed: b.remaining_amount - 500_000 < 0,
   }));
+
+  // Dynamic what-if if query text is provided
+  let dynamicWhatIf: ServerFinancialContext["dynamicWhatIf"] = undefined;
+  if (queryText && budgetSummaries.length > 0) {
+    const extracted = extractWhatIfAmountFromQuery(queryText);
+    if (extracted) {
+      dynamicWhatIf = calculateDynamicWhatIf(budgetSummaries, extracted.amount, extracted.currency);
+    }
+  }
 
   const hasSufficientData =
     wallets.length > 0 || currentTxs.length > 0 || budgets.length > 0;
@@ -371,6 +459,10 @@ export async function buildServerFinancialContext(
     timezone: "Asia/Ho_Chi_Minh (UTC+7)",
     balancesByCurrency,
     primaryCurrency,
+    expensesByCurrency,
+    incomesByCurrency,
+    previousExpensesByCurrency,
+    previousIncomesByCurrency,
     currentMonthIncome,
     currentMonthExpense,
     currentMonthNetSavings,
@@ -390,6 +482,9 @@ export async function buildServerFinancialContext(
     whatIfContext: {
       sample500kImpacts,
     },
+    dynamicWhatIf,
+    databaseQueryError,
+    databaseErrorMessage,
     hasSufficientData,
     dataLimitationsNotice: !hasSufficientData
       ? "Người dùng chưa có dữ liệu giao dịch hoặc ví nào trong hệ thống."
@@ -404,7 +499,16 @@ export async function buildServerFinancialContext(
 export function formatServerFinancialContextForPrompt(
   ctx: ServerFinancialContext,
   currentPage?: string,
+  userQuery?: string,
 ): string {
+  // Ergonomic overload: If user passes query as 2nd argument (e.g. starts with "nếu" or has "?")
+  let actualPage = currentPage;
+  let actualQuery = userQuery;
+  if (!actualQuery && currentPage && (currentPage.includes("?") || /nếu|chi|mua|hỏi/i.test(currentPage))) {
+    actualQuery = currentPage;
+    actualPage = undefined;
+  }
+
   const sanitize = (text: string) =>
     text.replace(/[<>{}\\]/g, "").slice(0, 80);
 
@@ -420,33 +524,60 @@ export function formatServerFinancialContextForPrompt(
     `Kỳ trước: ${ctx.previousPeriod}`,
   ];
 
-  if (currentPage) {
-    lines.push(`Màn hình người dùng đang xem: ${sanitize(currentPage)}`);
+  if (actualPage) {
+    lines.push(`Màn hình người dùng đang xem: ${sanitize(actualPage)}`);
+  }
+
+  // Database Query Error warning
+  if (ctx.databaseQueryError) {
+    lines.push("\n[LỖI TRUY VẤN CƠ SỞ DỮ LIỆU TỪ MÁY CHỦ]");
+    lines.push(`- Trạng thái: Không thể truy vấn dữ liệu từ cơ sở dữ liệu (${ctx.databaseErrorMessage || "Lỗi kết nối cơ sở dữ liệu"}).`);
+    lines.push("- BẮT BUỘC: KHÔNG ĐƯỢC thông báo người dùng chi tiêu 0đ hoặc nói người dùng chưa chi tiêu gì. Hãy thông báo rõ ràng cho người dùng là hệ thống đang gặp lỗi kết nối cơ sở dữ liệu khi truy vấn dữ liệu tài chính.");
   }
 
   // Balances
-  lines.push("\n[SỐ DƯ KHẢ DỤNG THEO TIỀN TỆ]");
+  lines.push("\n[SỐ DƯ KHẢ DỤNG THEO TỪNG LOẠI TIỀN TỆ]");
   for (const [cur, bal] of Object.entries(ctx.balancesByCurrency)) {
-    lines.push(`- Tổng số dư ${cur}: ${bal.toLocaleString("vi-VN")} ${cur}`);
+    lines.push(`- Tổng số dư ${cur}: ${formatMoney(bal, cur)}`);
   }
 
-  // Current Month Summary
-  lines.push(`\n[TỔNG KẾT TÀI CHÍNH ${ctx.currentPeriod.toUpperCase()}]`);
-  lines.push(`- Tổng thu nhập: ${formatMoney(ctx.currentMonthIncome, ctx.primaryCurrency)}`);
-  lines.push(`- Tổng chi tiêu: ${formatMoney(ctx.currentMonthExpense, ctx.primaryCurrency)}`);
-  lines.push(`- Tiết kiệm ròng: ${formatMoney(ctx.currentMonthNetSavings, ctx.primaryCurrency)}`);
-  lines.push(`- Tỷ lệ tiết kiệm: ${ctx.currentMonthSavingsRate}%`);
+  // Current Month Summary by currency
+  lines.push(`\n[TỔNG KẾT TÀI CHÍNH ${ctx.currentPeriod.toUpperCase()} THEO TIỀN TỆ]`);
+  const activeCurrencies = Array.from(new Set([
+    ...Object.keys(ctx.balancesByCurrency || {}),
+    ...Object.keys(ctx.expensesByCurrency || {}),
+    ...Object.keys(ctx.incomesByCurrency || {}),
+  ]));
+
+  if (activeCurrencies.length === 0 || (!ctx.expensesByCurrency && !ctx.incomesByCurrency)) {
+    lines.push(`- Tổng thu nhập: ${formatMoney(ctx.currentMonthIncome, ctx.primaryCurrency)}`);
+    lines.push(`- Tổng chi tiêu: ${formatMoney(ctx.currentMonthExpense, ctx.primaryCurrency)}`);
+    lines.push(`- Tiết kiệm ròng: ${formatMoney(ctx.currentMonthNetSavings, ctx.primaryCurrency)}`);
+  } else {
+    for (const cur of activeCurrencies) {
+      const exp = (ctx.expensesByCurrency && ctx.expensesByCurrency[cur]) || 0;
+      const inc = (ctx.incomesByCurrency && ctx.incomesByCurrency[cur]) || 0;
+      const net = inc - exp;
+      lines.push(`- Tiền tệ ${cur}: Tổng thu ${formatMoney(inc, cur)} | Tổng chi tiêu ${formatMoney(exp, cur)} | Tiết kiệm ròng ${formatMoney(net, cur)}`);
+    }
+  }
+  lines.push(`- Tỷ lệ tiết kiệm (${ctx.primaryCurrency}): ${ctx.currentMonthSavingsRate}%`);
+  lines.push("- QUY TẮC BẮT BUỘC: Không được tự ý cộng gộp các loại tiền tệ khác nhau thành một tổng duy nhất khi chưa có tỷ giá chính thức.");
 
   // Previous Month Comparison
-  lines.push(`\n[SO SÁNH VỚI ${ctx.previousPeriod.toUpperCase()}]`);
-  lines.push(`- Chi tiêu tháng trước: ${formatMoney(ctx.previousMonthExpense, ctx.primaryCurrency)}`);
-  const diffWord = ctx.expenseChangeVsPreviousMonth.difference >= 0 ? "tăng" : "giảm";
-  const absDiff = Math.abs(ctx.expenseChangeVsPreviousMonth.difference);
-  const pctStr =
-    ctx.expenseChangeVsPreviousMonth.percentChange !== null
-      ? ` (${ctx.expenseChangeVsPreviousMonth.percentChange > 0 ? "+" : ""}${ctx.expenseChangeVsPreviousMonth.percentChange}%)`
-      : "";
-  lines.push(`- Chênh lệch chi tiêu: ${diffWord} ${formatMoney(absDiff, ctx.primaryCurrency)}${pctStr}`);
+  lines.push(`\n[SO SÁNH CHI TIÊU VỚI ${ctx.previousPeriod.toUpperCase()}]`);
+  if (ctx.previousMonthExpense === 0) {
+    lines.push(`- Chi tiêu tháng trước (${ctx.primaryCurrency}): 0 ${ctx.primaryCurrency} (Tháng trước không có chi tiêu, không thể tính % tăng/giảm).`);
+  } else {
+    lines.push(`- Chi tiêu tháng trước (${ctx.primaryCurrency}): ${formatMoney(ctx.previousMonthExpense, ctx.primaryCurrency)}`);
+    const diffWord = ctx.expenseChangeVsPreviousMonth.difference >= 0 ? "tăng" : "giảm";
+    const absDiff = Math.abs(ctx.expenseChangeVsPreviousMonth.difference);
+    const pctStr =
+      ctx.expenseChangeVsPreviousMonth.percentChange !== null
+        ? ` (${ctx.expenseChangeVsPreviousMonth.percentChange > 0 ? "+" : ""}${ctx.expenseChangeVsPreviousMonth.percentChange}%)`
+        : "";
+    lines.push(`- Chênh lệch chi tiêu: ${diffWord} ${formatMoney(absDiff, ctx.primaryCurrency)}${pctStr}`);
+  }
 
   // Top spending categories
   if (ctx.topCategories.length > 0) {
@@ -477,20 +608,37 @@ export function formatServerFinancialContextForPrompt(
         alert = "CẢNH BÁO: SẮP VƯỢT HẠN MỨC (>=80%)";
       }
       lines.push(
-        `- ${sanitize(b.name)}: Đã chi ${formatMoney(b.spent_amount, ctx.primaryCurrency)} / ${formatMoney(b.amount, ctx.primaryCurrency)} (${b.percentUsed}%), còn lại ${formatMoney(b.remaining_amount, ctx.primaryCurrency)} [${alert}]`,
+        `- ${sanitize(b.name)}: Hạn mức ${formatMoney(b.amount, ctx.primaryCurrency)}, Đã chi ${formatMoney(b.spent_amount, ctx.primaryCurrency)} (${b.percentUsed}%), Còn lại ${formatMoney(b.remaining_amount, ctx.primaryCurrency)} [${alert}]`,
       );
     }
   }
 
-  // What-If 500k
-  if (ctx.whatIfContext.sample500kImpacts.length > 0) {
-    lines.push("\n[DỮ LIỆU TÍNH SẴN CHO PHÂN TÍCH WHAT-IF (NẾU MUA THÊM 500.000đ)]");
+  // Dynamic What-If or fallback What-If
+  let activeWhatIf = ctx.dynamicWhatIf;
+  if (!activeWhatIf && actualQuery && ctx.budgets.length > 0) {
+    const extracted = extractWhatIfAmountFromQuery(actualQuery);
+    if (extracted) {
+      activeWhatIf = calculateDynamicWhatIf(ctx.budgets, extracted.amount, extracted.currency);
+    }
+  }
+
+  if (activeWhatIf && activeWhatIf.length > 0) {
+    const sample = activeWhatIf[0];
+    lines.push(`\n[PHÂN TÍCH WHAT-IF ĐỘNG CHO MỨC CHI TIÊU ${formatMoney(sample.amount, sample.currency)}]`);
+    for (const imp of activeWhatIf) {
+      lines.push(
+        `- Ngân sách ${sanitize(imp.budgetName)}: Hạn mức còn lại hiện tại ${formatMoney(imp.currentRemaining, imp.currency)}. Nếu mua thêm ${formatMoney(imp.amount, imp.currency)}, ngân sách còn lại sẽ là ${formatMoney(imp.remainingAfter, imp.currency)} ${imp.wouldExceed ? "(VƯỢT HẠN MỨC " + formatMoney(Math.abs(imp.remainingAfter), imp.currency) + "!)" : "(Vẫn nằm trong hạn mức an toàn)"}`,
+      );
+    }
+  } else if (ctx.whatIfContext.sample500kImpacts.length > 0) {
+    lines.push("\n[DỮ LIỆU TÍNH SẴN CHO PHÂN TÍCH WHAT-IF (MẪU 500.000đ)]");
     for (const imp of ctx.whatIfContext.sample500kImpacts) {
       lines.push(
         `- Ngân sách ${sanitize(imp.budgetName)}: còn lại ${formatMoney(imp.currentRemaining, ctx.primaryCurrency)}, nếu mua thêm 500k sẽ còn ${formatMoney(imp.remainingAfter500k, ctx.primaryCurrency)} ${imp.wouldExceed ? "(VƯỢT NGÂN SÁCH!)" : "(Vẫn nằm trong hạn mức)"}`,
       );
     }
   }
+  lines.push("- QUY TẮC TÍNH WHAT-IF: Với bất kỳ món đồ giá X nào khác, Ngân sách mới = Ngân sách còn lại hiện tại - X. Hãy tính toán chính xác số tiền còn lại và thông báo rõ có vượt hạn mức hay không.");
 
   // Wallets list
   if (ctx.wallets.length > 0) {

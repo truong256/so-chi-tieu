@@ -61,6 +61,7 @@ export async function POST(request: Request) {
         supabasePublishableKey,
         token,
         verifiedUser.id,
+        req.message,
       );
     } catch (dbErr) {
       console.warn("Failed to load server financial context for chat:", dbErr);

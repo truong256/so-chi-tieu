@@ -65,3 +65,5 @@ venv/
 ai_service/data/real_events_telemetry.jsonl
 ai_service/data/feedback_telemetry.jsonl
 ai_service/data/shadow_telemetry.jsonl
+ai_service/data/feedback_moderation.jsonl
+ai_service/data/*.jsonl

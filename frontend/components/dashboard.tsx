@@ -161,7 +161,30 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const [aiParsing, setAiParsing] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<{ type: "success" | "warning" | "error"; message: string } | null>(null);
   const [recurringType, setRecurringType] = useState<TransactionType>("expense");
-  const [transactionDraft, setTransactionDraft] = useState({ title: "", amount: "", type: "expense" as TransactionType, categoryId: "", walletId: "", budgetId: "", paymentSourceType: "wallet" as "wallet" | "budget", occurredAt: localDateTime(), note: "" });
+  interface MultiDraftItem {
+    id: string;
+    title: string;
+    amount: string;
+    type: TransactionType;
+    categoryId: string;
+    walletId: string;
+    occurredAt: string;
+    currency?: string;
+    saved?: boolean;
+  }
+  const [multiDrafts, setMultiDrafts] = useState<MultiDraftItem[]>([]);
+  const [transactionDraft, setTransactionDraft] = useState<{
+    title: string;
+    amount: string;
+    type: TransactionType;
+    categoryId: string;
+    walletId: string;
+    budgetId: string;
+    paymentSourceType: "wallet" | "budget";
+    occurredAt: string;
+    note: string;
+    currency?: string;
+  }>({ title: "", amount: "", type: "expense" as TransactionType, categoryId: "", walletId: "", budgetId: "", paymentSourceType: "wallet", occurredAt: localDateTime(), note: "", currency: "VND" });
   const [showNotifications, setShowNotifications] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -619,6 +642,60 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   }
 
   const applyParsedTransaction = (parsed: SmartTransactionResult, customMsg?: string) => {
+    // 1. Check if internal transfer
+    if (parsed.isTransfer) {
+      setModal({
+        kind: "transfer",
+        initialData: {
+          fromWalletId: parsed.fromWalletId || wallets[0]?.id,
+          toWalletId: parsed.toWalletId || wallets[1]?.id,
+          amount: parsed.amount ?? undefined,
+          note: parsed.name,
+        },
+      });
+      setAiFeedback({
+        type: "success",
+        message: "Phát hiện chuyển tiền nội bộ. Đã chuyển sang biểu mẫu chuyển tiền giữa các ví (không tính là chi tiêu).",
+      });
+      showNotice("Đã chuyển sang giao dịch chuyển tiền nội bộ.");
+      return;
+    }
+
+    // 2. Check if multiple transactions detected
+    if (parsed.multipleDetected && parsed.subItems && parsed.subItems.length > 1) {
+      const items: MultiDraftItem[] = parsed.subItems.map((sub, idx) => ({
+        id: `draft-${Date.now()}-${idx}`,
+        title: sub.name || `Giao dịch ${idx + 1}`,
+        amount: sub.amount ? String(sub.amount) : "0",
+        type: (sub.type || "expense") as TransactionType,
+        categoryId: sub.categoryId || categories.find((c) => c.kind === (sub.type || "expense"))?.id || "",
+        walletId: sub.walletId || wallets[0]?.id || "",
+        occurredAt: sub.date ? localDateTime(sub.date) : localDateTime(),
+        currency: sub.currency || "VND",
+        saved: false,
+      }));
+      setMultiDrafts(items);
+      setAiFeedback({
+        type: "success",
+        message: `Phát hiện ${items.length} giao dịch trong câu. Hãy xem và chỉnh sửa từng bản nháp bên dưới trước khi lưu.`,
+      });
+      showNotice(`Đã tách ${items.length} bản nháp giao dịch.`);
+      return;
+    }
+
+    // 3. Currency handling: USD check
+    let targetWalletId = parsed.walletId;
+    let usdNotice = "";
+    if (parsed.currency === "USD") {
+      const usdWallet = wallets.find(w => (w as unknown as { currency?: string }).currency === "USD" || w.name.toLowerCase().includes("usd"));
+      if (usdWallet) {
+        targetWalletId = usdWallet.id;
+      } else {
+        targetWalletId = "";
+        usdNotice = " (Lưu ý: Khoản tiền USD chưa có ví USD, vui lòng chọn ví thích hợp)";
+      }
+    }
+
     setTransactionDraft((cur) => {
       const nextType = parsed.type || cur.type;
       let nextCategoryId = parsed.categoryId;
@@ -636,24 +713,25 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         type: nextType,
         amount: parsed.amount ? String(parsed.amount) : cur.amount,
         categoryId: nextCategoryId,
-        walletId: parsed.walletId || cur.walletId || wallets[0]?.id || "",
+        walletId: targetWalletId || cur.walletId || (parsed.currency === "USD" ? "" : (wallets[0]?.id || "")),
         occurredAt: parsed.date ? localDateTime(parsed.date) : cur.occurredAt,
+        currency: parsed.currency || "VND",
       };
     });
 
     if (customMsg) {
-      setAiFeedback({ type: "warning", message: customMsg });
-      showNotice(customMsg);
+      setAiFeedback({ type: "warning", message: customMsg + usdNotice });
+      showNotice(customMsg + usdNotice);
     } else if (!parsed.type || !parsed.amount) {
       setAiFeedback({
         type: "warning",
-        message: "Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu.",
+        message: "Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu." + usdNotice,
       });
       showNotice("Đã nhận diện một phần — vui lòng kiểm tra lại các trường còn thiếu.");
     } else {
       setAiFeedback({
         type: "success",
-        message: `Đã nhận diện: ${parsed.summaryText}`,
+        message: `Đã nhận diện: ${parsed.summaryText}${usdNotice}`,
       });
       showNotice(`Đã nhận diện: ${parsed.summaryText}`);
     }
@@ -717,19 +795,67 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         `AI_CLASSIFY source=${source} confidence=${confidence.toFixed(2)} fallback=${fallback}`
       );
 
-      const isHighConfidence = confidence >= 0.60;
-      const isMediumConfidence = confidence >= 0.35 && confidence < 0.60;
+      // 1. Internal Transfer Check
+      if (aiData.is_transfer) {
+        setModal({
+          kind: "transfer",
+          initialData: {
+            fromWalletId: aiData.from_wallet_id || wallets[0]?.id,
+            toWalletId: aiData.to_wallet_id || wallets[1]?.id,
+            amount: aiData.amount || undefined,
+            note: aiData.description || textToParse,
+          },
+        });
+        setAiFeedback({
+          type: "success",
+          message: "Phát hiện chuyển tiền nội bộ. Đã chuyển sang biểu mẫu chuyển tiền giữa các ví (không tính là chi tiêu).",
+        });
+        showNotice("Đã chuyển sang giao dịch chuyển tiền nội bộ.");
+        return;
+      }
+
+      // 2. Multi-drafts Check
+      if (aiData.multiple_transactions_detected && aiData.draft_items && aiData.draft_items.length > 1) {
+        const items: MultiDraftItem[] = aiData.draft_items.map((item, idx) => ({
+          id: `draft-${Date.now()}-${idx}`,
+          title: item.description || `Giao dịch ${idx + 1}`,
+          amount: item.amount ? String(item.amount) : "0",
+          type: (item.transaction_type || "expense") as TransactionType,
+          categoryId: item.category_id || categories.find((c) => c.kind === (item.transaction_type || "expense"))?.id || "",
+          walletId: item.wallet_id || wallets[0]?.id || "",
+          occurredAt: item.date ? `${item.date}T${item.time || new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}` : localDateTime(),
+          currency: item.currency || "VND",
+          saved: false,
+        }));
+        setMultiDrafts(items);
+        setAiFeedback({
+          type: "success",
+          message: `Phát hiện ${items.length} giao dịch trong câu. Hãy xem và chỉnh sửa từng bản nháp bên dưới trước khi lưu.`,
+        });
+        showNotice(`Đã tách ${items.length} bản nháp giao dịch.`);
+        return;
+      }
+
       const isLowConfidence = confidence < 0.35;
+
+      // Currency check for single transaction
+      let targetWalletId = aiData.wallet_id || undefined;
+      let currencyNotice = "";
+      if (aiData.currency === "USD") {
+        const usdWallet = wallets.find(w => (w as unknown as { currency?: string }).currency === "USD" || w.name.toLowerCase().includes("usd"));
+        if (usdWallet) {
+          targetWalletId = usdWallet.id;
+        } else {
+          targetWalletId = "";
+          currencyNotice = " (Lưu ý: Khoản tiền USD chưa có ví USD phù hợp, vui lòng chọn ví thích hợp)";
+        }
+      }
 
       // Apply AI structured output to transaction draft
       setTransactionDraft((cur) => {
         const nextType = aiData.transaction_type || cur.type;
 
         let nextCategoryId = cur.categoryId;
-        // Confidence policy:
-        // High (>= 0.60): Preselect AI predicted category
-        // Medium (0.35 - 0.60): Preselect AI predicted category, user alerted to review
-        // Low (< 0.35): Do NOT auto-preselect category; user picks manually
         if (!isLowConfidence && aiData.category_id) {
           nextCategoryId = aiData.category_id;
         } else if (!nextCategoryId) {
@@ -742,8 +868,8 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         }
 
         let nextWalletId = cur.walletId;
-        if (aiData.wallet_id) {
-          nextWalletId = aiData.wallet_id;
+        if (targetWalletId !== undefined) {
+          nextWalletId = targetWalletId;
         }
 
         let nextOccurredAt = cur.occurredAt;
@@ -762,13 +888,15 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           paymentSourceType: "wallet",
           budgetId: "",
           occurredAt: nextOccurredAt,
+          currency: aiData.currency || "VND",
         };
       });
 
       // Show friendly feedback with model source
       const missingFields: string[] = [];
       if (!aiData.amount) missingFields.push("số tiền");
-      if (!aiData.wallet_id) missingFields.push("ví/tài khoản thanh toán");
+      if (!targetWalletId && aiData.currency === "USD") missingFields.push("ví USD");
+      else if (!aiData.wallet_id) missingFields.push("ví/tài khoản thanh toán");
       if (!aiData.category_id) missingFields.push("danh mục");
 
       let sourceBadge = "";
@@ -783,23 +911,23 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (missingFields.length > 0) {
         setAiFeedback({
           type: "warning",
-          message: `[${sourceBadge}] AI đã điền form. Vui lòng chọn thêm: ${missingFields.join(", ")}.`,
+          message: `[${sourceBadge}] AI đã điền form. Vui lòng chọn thêm: ${missingFields.join(", ")}.${currencyNotice}`,
         });
         showNotice(`[${sourceBadge}] Vui lòng chọn thêm: ${missingFields.join(", ")}.`);
       } else if (isLowConfidence) {
         setAiFeedback({
           type: "warning",
-          message: `[${sourceBadge}] Độ tin cậy thấp (${Math.round(confidence * 100)}%). Gợi ý: "${aiData.category_name}". Vui lòng xác nhận danh mục.`,
+          message: `[${sourceBadge}] Độ tin cậy thấp (${Math.round(confidence * 100)}%). Gợi ý: "${aiData.category_name}". Vui lòng xác nhận danh mục.${currencyNotice}`,
         });
         showNotice(`[${sourceBadge}] Độ tin cậy thấp (${Math.round(confidence * 100)}%) — vui lòng kiểm tra danh mục.`);
       } else {
         setAiFeedback({
           type: "success",
-          message: `[${sourceBadge}] Đã nhận diện "${aiData.category_name}" (${money(aiData.amount || 0)}). Hãy kiểm tra trước khi lưu.`,
+          message: `[${sourceBadge}] Đã nhận diện "${aiData.category_name}" (${money(aiData.amount || 0)}). Hãy kiểm tra trước khi lưu.${currencyNotice}`,
         });
         showNotice(`[${sourceBadge}] ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
       }
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
       console.warn("AI_CLASSIFY source=heuristic fallback=true reason=exception");
       const parsed = parseSmartTransaction(textToParse, categories, wallets);
       applyParsedTransaction(parsed, "[Fallback Ngoại tuyến] Lỗi kết nối AI. Đã nhận diện bằng quy tắc cục bộ.");
@@ -876,11 +1004,123 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     }
   }
 
+  async function saveSingleMultiDraft(draftId: string) {
+    if (saving) return;
+    const draft = multiDrafts.find(d => d.id === draftId);
+    if (!draft) return;
+
+    if (!draft.title.trim()) return showNotice("Hãy nhập tên giao dịch.");
+    const amount = Number(draft.amount);
+    if (!amount || amount <= 0) return showNotice("Số tiền phải lớn hơn 0.");
+    if (!draft.categoryId) return showNotice("Hãy chọn danh mục.");
+
+    const selectedWallet = wallets.find(w => w.id === draft.walletId) || wallets[0];
+    if (!selectedWallet) return showNotice("Hãy chọn ví thanh toán.");
+
+    // Currency check: USD requires a USD wallet
+    if (draft.currency === "USD") {
+      const isUsd = (selectedWallet as unknown as { currency?: string })?.currency === "USD" || selectedWallet.name.toLowerCase().includes("usd");
+      if (!isUsd) {
+        return showNotice("Giao dịch tiền tệ USD yêu cầu chọn ví USD phù hợp. Vui lòng kiểm tra lại ví.");
+      }
+    }
+
+    setSaving(true);
+    try {
+      const category = categoryById.get(draft.categoryId);
+      const payload: Record<string, unknown> = {
+        user_id: user.id,
+        title: draft.title.trim(),
+        amount,
+        type: draft.type,
+        category: category?.name ?? "Khác",
+        category_id: draft.categoryId,
+        wallet_id: selectedWallet.id,
+        occurred_at: new Date(draft.occurredAt).toISOString(),
+        note: "",
+        receipt_path: null,
+        budget_id: null,
+        payment_source_type: "wallet",
+      };
+
+      const { error } = await supabase.from("transactions").insert(payload);
+      if (error) throw error;
+
+      setMultiDrafts(prev => prev.filter(d => d.id !== draftId));
+      showNotice(`Đã lưu giao dịch: ${draft.title}`);
+      await loadData(false);
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Không thể lưu giao dịch.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveAllMultiDrafts() {
+    if (saving) return;
+    if (multiDrafts.length === 0) return;
+
+    for (const draft of multiDrafts) {
+      if (!draft.title.trim()) return showNotice("Hãy nhập tên cho tất cả các giao dịch.");
+      const amount = Number(draft.amount);
+      if (!amount || amount <= 0) return showNotice("Số tiền của tất cả giao dịch phải lớn hơn 0.");
+      if (!draft.categoryId) return showNotice(`Hãy chọn danh mục cho "${draft.title}".`);
+      const selectedWallet = wallets.find(w => w.id === draft.walletId) || wallets[0];
+      if (draft.currency === "USD") {
+        const isUsd = (selectedWallet as unknown as { currency?: string })?.currency === "USD" || selectedWallet.name.toLowerCase().includes("usd");
+        if (!isUsd) {
+          return showNotice(`Giao dịch "${draft.title}" (USD) yêu cầu chọn ví USD.`);
+        }
+      }
+    }
+
+    setSaving(true);
+    try {
+      for (const draft of multiDrafts) {
+        const selectedWallet = wallets.find(w => w.id === draft.walletId) || wallets[0];
+        const category = categoryById.get(draft.categoryId);
+        const payload: Record<string, unknown> = {
+          user_id: user.id,
+          title: draft.title.trim(),
+          amount: Number(draft.amount),
+          type: draft.type,
+          category: category?.name ?? "Khác",
+          category_id: draft.categoryId,
+          wallet_id: selectedWallet?.id ?? null,
+          occurred_at: new Date(draft.occurredAt).toISOString(),
+          note: "",
+          receipt_path: null,
+          budget_id: null,
+          payment_source_type: "wallet",
+        };
+        const { error } = await supabase.from("transactions").insert(payload);
+        if (error) throw error;
+      }
+      setMultiDrafts([]);
+      showNotice(`Đã lưu thành công ${multiDrafts.length} giao dịch.`);
+      await loadData(false);
+    } catch (err) {
+      showNotice(err instanceof Error ? err.message : "Lỗi khi lưu các bản nháp.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function saveTransaction(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saving) return;
     if (!transactionDraft.title.trim()) return showNotice("Hãy nhập tên giao dịch.");
     if (!transactionDraft.amount || Number(transactionDraft.amount) <= 0) return showNotice("Số tiền phải lớn hơn 0.");
     if (!transactionDraft.categoryId) return showNotice("Hãy chọn danh mục.");
+
+    // Currency check: USD requires a USD wallet
+    if (transactionDraft.currency === "USD") {
+      const selectedWallet = wallets.find(w => w.id === transactionDraft.walletId);
+      const isUsd = (selectedWallet as unknown as { currency?: string })?.currency === "USD" || selectedWallet?.name.toLowerCase().includes("usd");
+      if (!isUsd) {
+        return showNotice("Giao dịch USD yêu cầu chọn ví tiền tệ USD hoặc xác nhận quy đổi trước khi lưu.");
+      }
+    }
     // If paying from budget, walletId is not required
     if (transactionDraft.paymentSourceType === "wallet" && !transactionDraft.walletId) return showNotice("Hãy chọn ví thanh toán.");
     if (transactionDraft.paymentSourceType === "budget" && !transactionDraft.budgetId) return showNotice("Hãy chọn ngân sách.");
@@ -1343,7 +1583,9 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   }
 
   async function saveTransfer(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setSaving(true);
+    event.preventDefault();
+    if (saving) return;
+    setSaving(true);
     const form = new FormData(event.currentTarget);
     const from = String(form.get("fromWalletId")); const to = String(form.get("toWalletId"));
     const amount = Number(form.get("amount"));
@@ -2808,6 +3050,125 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                       {aiFeedback.message}
                     </div>
                   )}
+
+                  {/* Multi-Drafts review panel */}
+                  {multiDrafts.length > 0 && (
+                    <div className="multi-drafts-panel" style={{ margin: "14px 0", padding: "14px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                        <span style={{ fontWeight: 600, fontSize: 14 }}>📋 Danh sách {multiDrafts.length} bản nháp nhận diện:</span>
+                        <button
+                          type="button"
+                          className="ghost-action"
+                          style={{ fontSize: 12, padding: "2px 8px" }}
+                          onClick={() => {
+                            setMultiDrafts([]);
+                            showNotice("Đã hủy tất cả bản nháp.");
+                          }}
+                        >
+                          Hủy tất cả bản nháp
+                        </button>
+                      </div>
+                      <p style={{ fontSize: 12, color: "var(--text-muted, #888)", marginBottom: 12 }}>
+                        Người dùng có thể sửa từng bản nháp trước khi lưu. Chỉ khi nhấn nút lưu, dữ liệu mới được ghi vào cơ sở dữ liệu.
+                      </p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {multiDrafts.map((d, index) => (
+                          <div key={d.id} style={{ display: "flex", flexDirection: "column", gap: 8, padding: 10, background: "rgba(0,0,0,0.2)", borderRadius: 6, border: "1px solid rgba(255,255,255,0.08)" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontWeight: 600, fontSize: 13 }}>#{index + 1}. {d.title} {d.currency === "USD" ? "(USD)" : ""}</span>
+                              <button
+                                type="button"
+                                style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12 }}
+                                onClick={() => setMultiDrafts(prev => prev.filter(item => item.id !== d.id))}
+                              >
+                                Xóa bản nháp này
+                              </button>
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                              <label style={{ fontSize: 11, display: "flex", flexDirection: "column", gap: 2 }}>
+                                Tên giao dịch
+                                <input
+                                  type="text"
+                                  value={d.title}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setMultiDrafts(prev => prev.map(item => item.id === d.id ? { ...item, title: val } : item));
+                                  }}
+                                  style={{ fontSize: 12, padding: "6px" }}
+                                />
+                              </label>
+                              <label style={{ fontSize: 11, display: "flex", flexDirection: "column", gap: 2 }}>
+                                Số tiền ({d.currency || "VND"})
+                                <input
+                                  type="number"
+                                  value={d.amount}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setMultiDrafts(prev => prev.map(item => item.id === d.id ? { ...item, amount: val } : item));
+                                  }}
+                                  style={{ fontSize: 12, padding: "6px" }}
+                                />
+                              </label>
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                              <label style={{ fontSize: 11, display: "flex", flexDirection: "column", gap: 2 }}>
+                                Danh mục
+                                <select
+                                  value={d.categoryId}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setMultiDrafts(prev => prev.map(item => item.id === d.id ? { ...item, categoryId: val } : item));
+                                  }}
+                                  style={{ fontSize: 12, padding: "6px" }}
+                                >
+                                  <option value="">Chọn danh mục...</option>
+                                  {categories.filter(c => c.kind === d.type).map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                  ))}
+                                </select>
+                              </label>
+                              <label style={{ fontSize: 11, display: "flex", flexDirection: "column", gap: 2 }}>
+                                Ví thanh toán
+                                <select
+                                  value={d.walletId}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setMultiDrafts(prev => prev.map(item => item.id === d.id ? { ...item, walletId: val } : item));
+                                  }}
+                                  style={{ fontSize: 12, padding: "6px" }}
+                                >
+                                  {wallets.map(w => (
+                                    <option key={w.id} value={w.id}>{w.name}</option>
+                                  ))}
+                                </select>
+                              </label>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                              <button
+                                type="button"
+                                className="save-button"
+                                disabled={saving}
+                                style={{ padding: "4px 12px", fontSize: 12 }}
+                                onClick={() => saveSingleMultiDraft(d.id)}
+                              >
+                                {saving ? "Đang lưu..." : `Lưu bản nháp #${index + 1}`}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
+                        <button
+                          type="button"
+                          className="save-button"
+                          disabled={saving}
+                          onClick={saveAllMultiDrafts}
+                        >
+                          {saving ? "Đang lưu..." : `Lưu tất cả ${multiDrafts.length} bản nháp`}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               <div className="type-toggle">
@@ -2967,7 +3328,34 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           </Modal>
         )}
 
-        {modal?.kind === "transfer" && <Modal title={t("wallets.transferTitle", undefined, language)} eyebrow={t("wallets.transferHistory", undefined, language)} onClose={() => setModal(null)}><form onSubmit={saveTransfer}><div className="form-grid"><label>{t("wallets.fromWallet", undefined, language)}<select name="fromWalletId">{wallets.map(item => <option key={item.id} value={item.id}>{item.name} · {money(walletBalances.get(item.id) ?? 0)}</option>)}</select></label><label>{t("wallets.toWallet", undefined, language)}<select name="toWalletId" defaultValue={wallets[1]?.id}>{wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label></div><label>{t("common.amount", undefined, language)}<FormattedMoneyInput name="amount" required /></label><label>{language === "vi" ? "Ngày & giờ" : "Date & time"}<input name="occurredAt" type="datetime-local" defaultValue={localDateTime()} required /></label><label>{t("common.note", undefined, language)}<textarea name="note" /></label><button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : t("common.confirm", undefined, language)}</button></form></Modal>}
+        {modal?.kind === "transfer" && (
+          <Modal title={t("wallets.transferTitle", undefined, language)} eyebrow={t("wallets.transferHistory", undefined, language)} onClose={() => setModal(null)}>
+            <form onSubmit={saveTransfer}>
+              <div className="form-grid">
+                <label>{t("wallets.fromWallet", undefined, language)}
+                  <select name="fromWalletId" defaultValue={modal.initialData?.fromWalletId || wallets[0]?.id}>
+                    {wallets.map(item => <option key={item.id} value={item.id}>{item.name} · {money(walletBalances.get(item.id) ?? 0)}</option>)}
+                  </select>
+                </label>
+                <label>{t("wallets.toWallet", undefined, language)}
+                  <select name="toWalletId" defaultValue={modal.initialData?.toWalletId || wallets[1]?.id}>
+                    {wallets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </select>
+                </label>
+              </div>
+              <label>{t("common.amount", undefined, language)}
+                <FormattedMoneyInput name="amount" required defaultValue={modal.initialData?.amount ? String(modal.initialData.amount) : undefined} />
+              </label>
+              <label>{language === "vi" ? "Ngày & giờ" : "Date & time"}
+                <input name="occurredAt" type="datetime-local" defaultValue={localDateTime()} required />
+              </label>
+              <label>{t("common.note", undefined, language)}
+                <textarea name="note" defaultValue={modal.initialData?.note || ""} />
+              </label>
+              <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : t("common.confirm", undefined, language)}</button>
+            </form>
+          </Modal>
+        )}
 
         {modal?.kind === "category" && (
           <Modal title={modal.item ? t("categories.editTitle", undefined, language) : t("categories.addTitle", undefined, language)} eyebrow={t("categories.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}>

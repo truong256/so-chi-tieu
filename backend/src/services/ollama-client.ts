@@ -75,13 +75,31 @@ const TAGS_CACHE_TTL_MS = 30_000;
 // Concurrency Limiter (Semaphore) — Max concurrent calls to Ollama
 // ---------------------------------------------------------------------------
 const MAX_CONCURRENT_OLLAMA_CALLS = 3;
+const MAX_WAITING_QUEUE_LENGTH = 10;
 let activeOllamaCalls = 0;
 const waitingQueue: Array<() => void> = [];
+
+export function getOllamaConcurrencyState(): { activeCalls: number; queueLength: number } {
+  return { activeCalls: activeOllamaCalls, queueLength: waitingQueue.length };
+}
+
+export function _resetOllamaConcurrencyForTest(): void {
+  activeOllamaCalls = 0;
+  waitingQueue.length = 0;
+}
 
 async function acquireOllamaSlot(signal?: AbortSignal): Promise<() => void> {
   if (activeOllamaCalls < MAX_CONCURRENT_OLLAMA_CALLS) {
     activeOllamaCalls++;
     return () => releaseOllamaSlot();
+  }
+
+  // Reject immediately if the queue has reached capacity
+  if (waitingQueue.length >= MAX_WAITING_QUEUE_LENGTH) {
+    const err = new Error("Hệ thống AI đang quá tải với hàng đợi đầy. Vui lòng thử lại sau.");
+    (err as unknown as { code: string; statusCode: number }).code = "OVERLOADED";
+    (err as unknown as { code: string; statusCode: number }).statusCode = 429;
+    throw err;
   }
 
   // Queue if busy
@@ -93,11 +111,17 @@ async function acquireOllamaSlot(signal?: AbortSignal): Promise<() => void> {
       handled = true;
       const idx = waitingQueue.indexOf(proceed);
       if (idx !== -1) waitingQueue.splice(idx, 1);
-      reject(new Error("Request aborted while waiting for Ollama concurrency slot"));
+      const err = new Error("Request aborted while waiting for Ollama concurrency slot");
+      (err as unknown as { code: string; statusCode: number }).code = "CLIENT_ABORTED";
+      (err as unknown as { code: string; statusCode: number }).statusCode = 499;
+      reject(err);
     };
 
     if (signal?.aborted) {
-      reject(new Error("Request already aborted"));
+      const err = new Error("Request already aborted");
+      (err as unknown as { code: string; statusCode: number }).code = "CLIENT_ABORTED";
+      (err as unknown as { code: string; statusCode: number }).statusCode = 499;
+      reject(err);
       return;
     }
 
@@ -402,13 +426,20 @@ export async function executeOllamaChat(
   let releaseSlot: (() => void) | null = null;
   try {
     releaseSlot = await acquireOllamaSlot(opts.signal);
-  } catch (e) {
+  } catch (e: unknown) {
+    const errCode = (e as { code?: string })?.code;
+    const isAborted = opts.signal?.aborted || errCode === "CLIENT_ABORTED";
+    const isOverloaded = errCode === "OVERLOADED";
     return {
       success: false,
       error: {
-        code: "TIMEOUT",
-        messageVi: "Yêu cầu đã bị hủy hoặc hệ thống đang quá tải.",
-        statusCode: 429,
+        code: isOverloaded ? "OVERLOADED" : (isAborted ? "TIMEOUT" : "OVERLOADED"),
+        messageVi: isAborted
+          ? "Yêu cầu đã bị hủy bởi người dùng."
+          : (isOverloaded
+            ? "Hệ thống AI đang quá tải với hàng đợi đầy. Vui lòng thử lại sau."
+            : "Yêu cầu đã bị hủy hoặc hệ thống đang quá tải."),
+        statusCode: isAborted ? 499 : 429,
         details: e instanceof Error ? e.message : String(e),
       },
     };
@@ -615,13 +646,20 @@ export async function executeOllamaVision(
   let releaseSlot: (() => void) | null = null;
   try {
     releaseSlot = await acquireOllamaSlot(opts.signal);
-  } catch (e) {
+  } catch (e: unknown) {
+    const errCode = (e as { code?: string })?.code;
+    const isAborted = opts.signal?.aborted || errCode === "CLIENT_ABORTED";
+    const isOverloaded = errCode === "OVERLOADED";
     return {
       success: false,
       error: {
-        code: "TIMEOUT",
-        messageVi: "Yêu cầu đã bị hủy hoặc hệ thống đang quá tải.",
-        statusCode: 429,
+        code: isOverloaded ? "OVERLOADED" : (isAborted ? "TIMEOUT" : "OVERLOADED"),
+        messageVi: isAborted
+          ? "Yêu cầu xử lý hóa đơn đã bị hủy."
+          : (isOverloaded
+            ? "Hệ thống AI đang quá tải với hàng đợi đầy. Vui lòng thử lại sau."
+            : "Yêu cầu đã bị hủy hoặc hệ thống đang quá tải."),
+        statusCode: isAborted ? 499 : 429,
         details: e instanceof Error ? e.message : String(e),
       },
     };

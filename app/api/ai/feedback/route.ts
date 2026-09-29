@@ -27,8 +27,6 @@ function getAiServiceUrl(): string {
   return (process.env.AI_SERVICE_URL ?? "http://127.0.0.1:8000").replace(/\/$/, "");
 }
 
-const _seenFeedbackKeys = new Set<string>();
-
 export async function POST(request: Request) {
   try {
     // 1. Auth guard — user must be authenticated
@@ -103,28 +101,57 @@ export async function POST(request: Request) {
     // Server-side SHA-256 user pseudonymization
     const userIdHash = crypto.createHash("sha256").update(user.id).digest("hex");
 
-    const feedbackDedupKey = rawKey
-      ? `fb_${userIdHash}_${rawKey}`
-      : `fb_${userIdHash}_${suggestedCategory}_${finalCategory}_${Math.floor(Date.now() / 60_000)}`;
+    // 3. Persistent Moderation Queue & Deduplication
+    const inferenceId = (
+      (typeof body.inference_id === "string" ? body.inference_id : "") ||
+      (typeof body.prediction_id === "string" ? body.prediction_id : "") ||
+      rawKey ||
+      `inf_${crypto.randomUUID()}`
+    ).trim();
 
-    if (_seenFeedbackKeys.has(feedbackDedupKey)) {
+    const { getAllModerationSamples, recordFeedbackForModeration } = await import(
+      "@/backend/src/services/feedback-moderation.service"
+    );
+
+    // Verify ownership: User A cannot submit feedback on User B's prediction
+    const allSamples = await getAllModerationSamples();
+    const existingSample = allSamples.find((s) => s.inference_id === inferenceId);
+    if (existingSample && existingSample.user_id_hash !== userIdHash) {
+      return NextResponse.json(
+        { error: "Bạn không có quyền gửi phản hồi cho dự đoán của người dùng khác." },
+        { status: 403 },
+      );
+    }
+
+    // Server-enforced model version: never trust client self-declaration if known
+    const effectiveModelVersion: "v4" | "v3" | "v2" = existingSample
+      ? existingSample.model_version
+      : modelVersion;
+
+    const modResult = await recordFeedbackForModeration({
+      inference_id: inferenceId,
+      user_id_hash: userIdHash,
+      model_version: effectiveModelVersion,
+      confidence_band: confidenceBand,
+      suggested_category: suggestedCategory,
+      final_category: finalCategory,
+      consent_training: typeof body.consent_training === "boolean" ? body.consent_training : false,
+    });
+
+    if (modResult.is_duplicate) {
       return NextResponse.json({
         ok: true,
         is_duplicate: true,
         accepted: isAccepted,
-        model_version: modelVersion,
+        model_version: effectiveModelVersion,
+        confidence_band: confidenceBand,
       });
-    }
-    _seenFeedbackKeys.add(feedbackDedupKey);
-    if (_seenFeedbackKeys.size > 5000) {
-      const firstKey = _seenFeedbackKeys.values().next().value;
-      if (firstKey) _seenFeedbackKeys.delete(firstKey);
     }
 
     // 4. Update in-process product metrics (isolated per version: v2, v3, v4)
     recordClassificationProductEvent({
       event: isAccepted ? "applied" : "overridden",
-      model_version: modelVersion,
+      model_version: effectiveModelVersion,
       confidence_bucket: confidenceBand,
       predicted_category: suggestedCategory,
       final_category: finalCategory,
