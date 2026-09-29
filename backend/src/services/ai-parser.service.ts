@@ -1,5 +1,7 @@
 /**
  * AI Transaction Parser Service — business logic for NLP transaction extraction.
+ *
+ * Provider: Ollama (local/self-hosted) — không dùng Gemini API.
  */
 
 import type { AITransactionParseResult, TransactionType } from "@/frontend/types/finance.types";
@@ -10,7 +12,7 @@ import {
   normalizeTime,
   parseAiJsonObject,
 } from "./ai-output-validation.service";
-import { GEMINI_TEXT_MODELS } from "./gemini-models";
+import { OLLAMA_TEXT_MODELS, DEFAULT_OLLAMA_BASE_URL } from "./ollama-models";
 
 export interface UserWalletInfo {
   id: string;
@@ -27,7 +29,7 @@ export interface UserCategoryInfo {
 }
 
 export interface ParseTransactionOptions {
-  geminiApiKey: string;
+  ollamaBaseUrl?: string;
   rawText: string;
   userWallets: UserWalletInfo[];
   userCategories: UserCategoryInfo[];
@@ -92,7 +94,7 @@ QUY TẮC BẮT BUỘC VÀ NGHIÊM NGẶT:
 10. Mô tả / Tiêu đề ("description"):
     - Tóm tắt ngắn gọn, giữ đúng nội dung giao dịch (Ví dụ: "Ăn trưa", "Đổ xăng", "Lương tháng này", "Mua áo", "Bạn trả lại tiền").
     - Nếu câu không có nội dung rõ ràng (chỉ có số tiền như "50k"), đặt description: null.
-11. BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 OBJECT JSON HỢP LỆ THEO SCHEMA SAU:
+11. BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 OBJECT JSON HỢP LỆ THEO SCHEMA SAU (không kèm giải thích hay markdown):
 {
   "transaction_type": "expense" | "income" | null,
   "amount": number | null,
@@ -108,15 +110,8 @@ QUY TẮC BẮT BUỘC VÀ NGHIÊM NGẶT:
 }`;
 
 export async function parseTransactionWithAI(options: ParseTransactionOptions): Promise<ParseTransactionResult> {
-  const { geminiApiKey, rawText, userWallets, userCategories } = options;
-
-  if (!geminiApiKey || geminiApiKey === "your_gemini_api_key_here") {
-    return {
-      success: false,
-      error: "Dịch vụ AI chưa được cấu hình. Vui lòng thiết lập GEMINI_API_KEY trên máy chủ.",
-      status: 503,
-    };
-  }
+  const { rawText, userWallets, userCategories } = options;
+  const baseUrl = ((options.ollamaBaseUrl ?? "") || DEFAULT_OLLAMA_BASE_URL).replace(/\/$/, "");
 
   const text = rawText.trim();
   if (!text) {
@@ -172,185 +167,189 @@ ${JSON.stringify(userCategories, null, 2)}
 CÂU NGƯỜI DÙNG NHẬP:
 "${text}"
 
-Hãy phân tích câu trên và trả về đúng 1 JSON object.`;
+Hãy phân tích câu trên và trả về đúng 1 JSON object thuần túy (không kèm markdown, không kèm giải thích).`;
 
-  let geminiRes: Response | null = null;
   let usedModel = "";
-  let lastErrorText = "";
+  let lastError = "";
 
-  for (const modelName of GEMINI_TEXT_MODELS) {
+  for (const modelName of OLLAMA_TEXT_MODELS) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`;
-      const res = await fetch(url, {
+      const res = await fetch(`${baseUrl}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: AI_PARSE_SYSTEM_PROMPT }] },
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: userPromptContent }],
-            },
+          model: modelName,
+          messages: [
+            { role: "system", content: AI_PARSE_SYSTEM_PROMPT },
+            { role: "user", content: userPromptContent },
           ],
-          generationConfig: {
-            responseMimeType: "application/json",
-            maxOutputTokens: 1024,
+          stream: false,
+          format: "json",
+          options: {
+            num_predict: 1024,
+            temperature: 0.1, // Low temp for structured output
           },
         }),
         signal: AbortSignal.timeout(25000),
       });
 
       if (res.ok) {
-        geminiRes = res;
+        const data = (await res.json()) as {
+          message?: { content?: string };
+          done?: boolean;
+          error?: string;
+        };
+
+        if (data.error) {
+          lastError = data.error;
+          console.error(`Ollama NLP parse error for model ${modelName}:`, data.error);
+          continue;
+        }
+
+        const rawReply = data.message?.content?.trim();
+        if (!rawReply) {
+          return {
+            success: false,
+            error: "Không nhận được phản hồi hợp lệ từ AI. Vui lòng thử lại hoặc nhập thủ công.",
+            status: 502,
+          };
+        }
+
+        const parsed = parseAiJsonObject(rawReply);
+        if (!parsed) {
+          console.error("Ollama NLP parser returned invalid JSON.");
+          return {
+            success: false,
+            error: "Dữ liệu AI trả về không đúng cấu trúc. Vui lòng nhập rõ ràng hơn hoặc nhập thủ công.",
+            status: 502,
+          };
+        }
+
         usedModel = modelName;
-        break;
+
+        // Validate and sanitize parsed output
+        let transactionType: TransactionType | null = null;
+        if (parsed.transaction_type === "expense" || parsed.transaction_type === "income") {
+          transactionType = parsed.transaction_type;
+        }
+
+        const amount = cleanMoneyAmount(parsed.amount, false);
+
+        let categoryId: string | null = null;
+        let categoryName: string | null = null;
+
+        if (parsed.category_id && typeof parsed.category_id === "string") {
+          const match = userCategories.find((c) => c.id === parsed.category_id && (!transactionType || c.type === transactionType));
+          if (match) {
+            categoryId = match.id;
+            categoryName = match.name;
+          }
+        }
+
+        if (!categoryId && parsed.category_name && typeof parsed.category_name === "string") {
+          const parsedCategoryName = parsed.category_name.toLowerCase();
+          const nameMatch = userCategories.find(
+            (c) => c.name.toLowerCase() === parsedCategoryName && (!transactionType || c.type === transactionType)
+          );
+          if (nameMatch) {
+            categoryId = nameMatch.id;
+            categoryName = nameMatch.name;
+          }
+        }
+
+        let walletId: string | null = null;
+        let walletName: string | null = null;
+
+        if (parsed.wallet_id && typeof parsed.wallet_id === "string") {
+          const match = userWallets.find((w) => w.id === parsed.wallet_id);
+          if (match) {
+            walletId = match.id;
+            walletName = match.name;
+          }
+        }
+
+        if (!walletId && parsed.wallet_name && typeof parsed.wallet_name === "string") {
+          const parsedWalletName = parsed.wallet_name.toLowerCase();
+          const nameMatch = userWallets.find(
+            (w) => w.name.toLowerCase() === parsedWalletName
+          );
+          if (nameMatch) {
+            walletId = nameMatch.id;
+            walletName = nameMatch.name;
+          }
+        }
+
+        const date = normalizeIsoDate(parsed.date) ?? normalizeIsoDate(currentDate);
+        const time = normalizeTime(parsed.time);
+        const description = cleanText(parsed.description, 200);
+
+        const hasMeaningfulData = Boolean(amount || transactionType || categoryId || walletId || description);
+        if (!hasMeaningfulData) {
+          return {
+            success: false,
+            error: "Không đủ thông tin để nhận diện giao dịch. Hãy nhập rõ số tiền và nội dung giao dịch.",
+            status: 200,
+          };
+        }
+
+        const finalResult: AITransactionParseResult = {
+          transaction_type: transactionType,
+          amount,
+          currency: "VND",
+          category_id: categoryId,
+          category_name: categoryName,
+          wallet_id: walletId,
+          wallet_name: walletName,
+          description,
+          date,
+          time,
+          confidence_notes: Array.isArray(parsed.confidence_notes)
+            ? parsed.confidence_notes.flatMap((note) => {
+                const t = cleanText(note, 200);
+                return t ? [t] : [];
+              }).slice(0, 10)
+            : [],
+        };
+
+        return {
+          success: true,
+          data: finalResult,
+          modelUsed: usedModel,
+          status: 200,
+        };
       }
 
       const errBody = await res.text().catch(() => "");
-      console.error(`Gemini Text Parse error for model ${modelName}: ${res.status}`, errBody ? errBody.slice(0, 300) : "");
-      lastErrorText = errBody;
-      geminiRes = res;
+      console.error(`Ollama NLP parse HTTP error for model ${modelName}: ${res.status}`, errBody.slice(0, 300));
+      lastError = errBody;
 
-      // Stop trying only if API key is invalid
-      if (errBody.includes("API_KEY_INVALID") || errBody.includes("API key not valid")) {
+      // Model not found — try next
+      if (res.status === 404) {
+        continue;
+      }
+      if (res.status >= 500) {
         break;
       }
     } catch (err) {
-      console.error(`Failed AI Text Parse request for model ${modelName}:`, err);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`Failed Ollama NLP parse request for model ${modelName}:`, msg);
+      lastError = msg;
+
+      if (msg.includes("ECONNREFUSED") || msg.includes("fetch failed")) {
+        break;
+      }
     }
   }
 
-  if (!geminiRes || !geminiRes.ok) {
-    let userErrorMsg = "Không thể phân tích giao dịch bằng AI lúc này. Bạn vẫn có thể nhập thủ công.";
-    if (lastErrorText.includes("API_KEY_INVALID") || lastErrorText.includes("API key not valid")) {
-      userErrorMsg = "Cấu hình API Key AI không hợp lệ. Vui lòng liên hệ quản trị viên.";
-    } else if (geminiRes?.status === 429 || lastErrorText.includes("quota") || lastErrorText.includes("RESOURCE_EXHAUSTED")) {
-      userErrorMsg = "Dịch vụ AI đang quá tải hạn mức (Quota exceeded). Vui lòng thử lại sau giây lát hoặc nhập thủ công.";
-    } else if (geminiRes?.status === 503 || lastErrorText.includes("overloaded") || lastErrorText.includes("high demand") || lastErrorText.includes("UNAVAILABLE")) {
-      userErrorMsg = "Hệ thống AI hiện đang quá tải lượt truy cập (503 High Demand). Vui lòng thử lại sau giây lát.";
-    }
+  const isUnavailable = lastError.includes("ECONNREFUSED") || lastError.includes("fetch failed");
 
-    return {
-      success: false,
-      error: userErrorMsg,
-      status: geminiRes ? geminiRes.status : 502,
-    };
-  }
-
-  const geminiData = (await geminiRes.json()) as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-      finishReason?: string;
-    }>;
-  };
-
-  const rawReply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-  if (!rawReply) {
-    return {
-      success: false,
-      error: "Không nhận được phản hồi hợp lệ từ AI. Vui lòng thử lại hoặc nhập thủ công.",
-      status: 502,
-    };
-  }
-
-  const parsed = parseAiJsonObject(rawReply);
-  if (!parsed) {
-    console.error("Gemini text parser returned invalid JSON.");
-    return {
-      success: false,
-      error: "Dữ liệu AI trả về không đúng cấu trúc. Vui lòng nhập rõ ràng hơn hoặc nhập thủ công.",
-      status: 502,
-    };
-  }
-
-  // Validate and sanitize parsed output
-  let transactionType: TransactionType | null = null;
-  if (parsed.transaction_type === "expense" || parsed.transaction_type === "income") {
-    transactionType = parsed.transaction_type;
-  }
-
-  const amount = cleanMoneyAmount(parsed.amount, false);
-
-  let categoryId: string | null = null;
-  let categoryName: string | null = null;
-
-  if (parsed.category_id && typeof parsed.category_id === "string") {
-    const match = userCategories.find((c) => c.id === parsed.category_id && (!transactionType || c.type === transactionType));
-    if (match) {
-      categoryId = match.id;
-      categoryName = match.name;
-    }
-  }
-
-  if (!categoryId && parsed.category_name && typeof parsed.category_name === "string") {
-    const parsedCategoryName = parsed.category_name.toLowerCase();
-    const nameMatch = userCategories.find(
-      (c) => c.name.toLowerCase() === parsedCategoryName && (!transactionType || c.type === transactionType)
-    );
-    if (nameMatch) {
-      categoryId = nameMatch.id;
-      categoryName = nameMatch.name;
-    }
-  }
-
-  let walletId: string | null = null;
-  let walletName: string | null = null;
-
-  if (parsed.wallet_id && typeof parsed.wallet_id === "string") {
-    const match = userWallets.find((w) => w.id === parsed.wallet_id);
-    if (match) {
-      walletId = match.id;
-      walletName = match.name;
-    }
-  }
-
-  if (!walletId && parsed.wallet_name && typeof parsed.wallet_name === "string") {
-    const parsedWalletName = parsed.wallet_name.toLowerCase();
-    const nameMatch = userWallets.find(
-      (w) => w.name.toLowerCase() === parsedWalletName
-    );
-    if (nameMatch) {
-      walletId = nameMatch.id;
-      walletName = nameMatch.name;
-    }
-  }
-
-  const date = normalizeIsoDate(parsed.date) ?? normalizeIsoDate(currentDate);
-  const time = normalizeTime(parsed.time);
-  const description = cleanText(parsed.description, 200);
-
-  const hasMeaningfulData = Boolean(amount || transactionType || categoryId || walletId || description);
-  if (!hasMeaningfulData) {
-    return {
-      success: false,
-      error: "Không đủ thông tin để nhận diện giao dịch. Hãy nhập rõ số tiền và nội dung giao dịch.",
-      status: 200,
-    };
-  }
-
-  const finalResult: AITransactionParseResult = {
-    transaction_type: transactionType,
-    amount,
-    currency: "VND",
-    category_id: categoryId,
-    category_name: categoryName,
-    wallet_id: walletId,
-    wallet_name: walletName,
-    description,
-    date,
-    time,
-    confidence_notes: Array.isArray(parsed.confidence_notes)
-      ? parsed.confidence_notes.flatMap((note) => {
-          const text = cleanText(note, 200);
-          return text ? [text] : [];
-        }).slice(0, 10)
-      : [],
-  };
+  const userErrorMsg = isUnavailable
+    ? "Dịch vụ AI nội bộ chưa khởi động. Vui lòng kiểm tra Ollama đang chạy trên máy chủ."
+    : "Không thể phân tích giao dịch bằng AI lúc này. Bạn vẫn có thể nhập thủ công.";
 
   return {
-    success: true,
-    data: finalResult,
-    modelUsed: usedModel,
-    status: 200,
+    success: false,
+    error: userErrorMsg,
+    status: 502,
   };
 }

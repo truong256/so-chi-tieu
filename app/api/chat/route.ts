@@ -7,10 +7,11 @@ import {
   extractBearerToken,
   verifySupabaseAccessToken,
 } from "@/backend/src/services/supabase-auth.service";
+import { DEFAULT_OLLAMA_BASE_URL } from "@/backend/src/services/ollama-models";
 
 export async function POST(request: Request) {
   try {
-    const geminiApiKey = process.env.GEMINI_API_KEY?.trim() ?? "";
+    const ollamaBaseUrl = (process.env.OLLAMA_BASE_URL || DEFAULT_OLLAMA_BASE_URL).trim();
     const token = extractBearerToken(request);
     const startTime = Date.now();
     const verifiedUser = await verifySupabaseAccessToken(token, {
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       clientTime: typeof body.clientTime === "string" ? body.clientTime : undefined,
     };
 
-    const result = await processChat(geminiApiKey, req);
+    const result = await processChat(ollamaBaseUrl, req);
     const latencyMs = Date.now() - startTime;
 
     // Asynchronously log AI telemetry without blocking response
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
         void recordAiUsageLog({
           userId: verifiedUser.id,
           feature: "chat",
-          model: "gemini",
+          model: "ollama-local",
           success: !result.error,
           latencyMs,
           errorCode: result.error ? String(result.status) : null,

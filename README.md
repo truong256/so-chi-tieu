@@ -149,7 +149,7 @@ cp .env.example .env.local
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-key
-GEMINI_API_KEY=your-gemini-api-key
+OLLAMA_BASE_URL=http://127.0.0.1:11434
 ```
 
 ### 4. Thiết lập Cơ sở dữ liệu

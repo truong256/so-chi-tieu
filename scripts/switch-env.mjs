@@ -14,12 +14,12 @@ if (targetMode === 'cloud') {
   fs.copyFileSync(envCloudBakPath, envLocalPath);
   console.log('Restored .env.local to Supabase Cloud settings.');
 } else if (targetMode === 'local') {
-  // Read existing env to preserve GEMINI_API_KEY
-  let geminiKey = '';
+  // Read existing env to preserve OLLAMA_BASE_URL if already set
+  let ollamaBaseUrl = 'http://127.0.0.1:11434';
   if (fs.existsSync(envLocalPath)) {
     const content = fs.readFileSync(envLocalPath, 'utf8');
-    const match = content.match(/GEMINI_API_KEY=([^\r\n]*)/);
-    if (match) geminiKey = match[1].trim();
+    const match = content.match(/OLLAMA_BASE_URL=([^\r\n]*)/);
+    if (match && match[1].trim()) ollamaBaseUrl = match[1].trim();
   }
 
   const localEnv = [
@@ -28,7 +28,7 @@ if (targetMode === 'cloud') {
     'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Mjg3Njk2MDAsImV4cCI6MTk0NDM0NTYwMH0.EYX4t9h8D86wB2l_g3L5QyL3P4x5o9z7n8V1b2M3c4',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Mjg3Njk2MDAsImV4cCI6MTk0NDM0NTYwMH0.EYX4t9h8D86wB2l_g3L5QyL3P4x5o9z7n8V1b2M3c4',
     'SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTYyODc2OTYwMCwiZXhwIjE5NDQzNDU2MDB9.s9qd9UjXvM1mY4x4EwP_f8Qz0X8-f2x4e0_9sX2k5y0',
-    `GEMINI_API_KEY=${geminiKey}`,
+    `OLLAMA_BASE_URL=${ollamaBaseUrl}`,
     '',
   ].join('\n');
 

@@ -7,8 +7,9 @@ import {
   extractBearerToken,
   verifySupabaseAccessToken,
 } from "@/backend/src/services/supabase-auth.service";
+import { DEFAULT_OLLAMA_BASE_URL } from "@/backend/src/services/ollama-models";
 
-export const maxDuration = 35; // Allow up to 35 seconds for image analysis
+export const maxDuration = 65; // Allow up to 65 seconds for vision model image analysis
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
@@ -23,7 +24,7 @@ const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(request: Request) {
   try {
-    const geminiApiKey = process.env.GEMINI_API_KEY?.trim() ?? "";
+    const ollamaBaseUrl = (process.env.OLLAMA_BASE_URL || DEFAULT_OLLAMA_BASE_URL).trim();
 
     const token = extractBearerToken(request);
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -115,7 +116,7 @@ export async function POST(request: Request) {
 
     const startTime = Date.now();
     const result = await parseReceiptWithAI({
-      geminiApiKey,
+      ollamaBaseUrl,
       base64Data,
       mimeType,
       categoriesList,
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
         void recordAiUsageLog({
           userId: verifiedUser.id,
           feature: "receipt_parse",
-          model: result.modelUsed || "gemini",
+          model: result.modelUsed || "ollama-vision",
           success: result.success,
           latencyMs,
           errorCode: !result.success ? "RECEIPT_ERROR" : null,

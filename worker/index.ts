@@ -2,6 +2,7 @@
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 import { processChat } from "../backend/src/services/ai-chat.service";
+import { DEFAULT_OLLAMA_BASE_URL } from "../backend/src/services/ollama-models";
 import type { AiChatRequest } from "../backend/src/types/ai.types";
 import { asRecord, HttpInputError, readJsonBody } from "../backend/src/services/http-input.service";
 import { normalizeClientErrorReport } from "../backend/src/services/client-error.service";
@@ -22,7 +23,7 @@ interface Env {
   DB: D1Database;
   NEXT_PUBLIC_SUPABASE_URL?: string;
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
-  GEMINI_API_KEY?: string;
+  OLLAMA_BASE_URL?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -88,7 +89,7 @@ const worker = {
     // --- AI CHAT ENDPOINT ---
     if (url.pathname === "/api/chat" && request.method === "POST") {
       try {
-        const geminiApiKey = (env.GEMINI_API_KEY || (typeof process !== "undefined" ? process.env.GEMINI_API_KEY : ""))?.trim() ?? "";
+        const ollamaBaseUrl = (env.OLLAMA_BASE_URL || (typeof process !== "undefined" ? process.env.OLLAMA_BASE_URL : "") || DEFAULT_OLLAMA_BASE_URL).trim();
 
         const token = extractBearerToken(request);
         await verifySupabaseAccessToken(token, {
@@ -106,7 +107,7 @@ const worker = {
           clientTime: typeof body.clientTime === "string" ? body.clientTime : undefined,
         };
 
-        const result = await processChat(geminiApiKey, reqPayload);
+        const result = await processChat(ollamaBaseUrl, reqPayload);
 
         if (result.error) {
           return Response.json({ error: result.error }, { status: result.status });

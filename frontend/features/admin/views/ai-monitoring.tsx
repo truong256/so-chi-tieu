@@ -111,7 +111,7 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
             <AdminStatCard
               label={`Tổng yêu cầu (${periodLabel})`}
               value={data.totalRequests.toLocaleString("vi-VN")}
-              sublabel="Các yêu cầu gọi mô hình Gemini"
+              sublabel="Các yêu cầu gọi mô hình AI nội bộ (Ollama)"
             />
             <AdminStatCard
               label="Tỷ lệ thành công"

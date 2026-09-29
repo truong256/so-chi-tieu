@@ -2722,7 +2722,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 <div className="smart-entry ai-quick-entry">
                   <div className="ai-entry-header">
                     <label className="ai-entry-label">NHẬP NHANH BẰNG AI</label>
-                    <span className="ai-live-tag">GEMINI AI</span>
+                    <span className="ai-live-tag">LOCAL AI</span>
                   </div>
                   <p className="ai-entry-desc">
                     Nhập giao dịch bằng ngôn ngữ tự nhiên. AI sẽ nhận diện số tiền, khoản thu/chi, danh mục, ví và thời gian.

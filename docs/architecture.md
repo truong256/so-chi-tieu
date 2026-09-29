@@ -32,7 +32,7 @@ so-chi-tieu/
 | **Styling** | TailwindCSS v4 + Vanilla CSS | Giao diện hiện đại, Dark/Light theme, Animations |
 | **Backend / Edge Runtime** | Cloudflare Workers + Vinext (Vite 8) | Edge API handling, Serverless execution, Image optimization |
 | **Database & Auth** | Supabase (PostgreSQL + Supabase Auth) | Lưu trữ dữ liệu tài chính, phân quyền RLS, quản lý phiên đăng nhập |
-| **AI Copilot** | Google Gemini API (Flash model fallback) | Xử lý ngôn ngữ tự nhiên (NLP), chatbot tài chính, trích xuất hóa đơn (OCR) |
+| **AI Copilot** | Ollama (local/self-hosted LLM) | Xử lý ngôn ngữ tự nhiên (NLP), chatbot tài chính, trích xuất hóa đơn (OCR) |
 | **Data Export** | OOXML writer + fflate | Xuất báo cáo tài chính ra định dạng Excel mà không cần parser bảng tính phía client |
 | **Language & Tooling** | TypeScript 5.9 + ESLint 9 | Type-safety toàn diện từ frontend tới backend |
 
@@ -61,7 +61,7 @@ app/api/* (Next.js Route Adapter) / worker/index.ts (Cloudflare Worker)
     ↓
 backend/src/services/ (ai-chat.service, ai-parser.service, receipt-parser.service)
     ↓
-Google Gemini API (Generative Language API)
+Ollama (local/self-hosted — llama3.2:3b / llava:7b)
     ↓ (Structured JSON Sanitization & Validation)
 Trả về kết quả có cấu trúc cho Frontend
 ```
@@ -123,7 +123,7 @@ Hệ thống hỗ trợ 2 Actor độc lập với vai trò và không gian ho�
 1. **Separation of Concerns**: Phân tách triệt để UI (`frontend/`), Business Logic (`backend/`), Database (`database/`) và Config (`config/`).
 2. **Thin Adapter Routing**: Thư mục `app/` chỉ đóng vai trò adapter định tuyến cho Next.js App Router, toàn bộ logic cốt lõi nằm trong `frontend/` và `backend/`.
 3. **Type Safety**: Chia sẻ types rõ ràng qua `@frontend/types` và `@backend/src/types`.
-4. **Resilience & Fallback**: Các dịch vụ AI dùng chung danh sách Flash model trong `gemini-models.ts`, ưu tiên Gemini 3.8 Flash và alias `gemini-flash-latest`; lỗi model/quota được xử lý mà không làm hỏng dashboard.
+4. **Resilience & Fallback**: Các dịch vụ AI dùng chung danh sách model trong `ollama-models.ts`, ưu tiên llama3.2:3b (text) và llava:7b (vision); lỗi model/kết nối được xử lý mà không làm hỏng dashboard.
 5. **Anti-Self-Escalation**: Bảng `user_roles` áp dụng RLS nghiêm ngặt, chỉ cho phép đọc vai trò của chính mình. Người dùng không thể tự nâng cấp quyền qua API, Supabase REST hay metadata.
 6. **Financial Data Privacy**: Dữ liệu tài chính người dùng được cô lập tuyệt đối; giao diện Admin chỉ đọc số liệu tổng hợp.
 7. **Unified Minimalist UI**: Giao diện Admin đồng bộ toàn diện với Design System của User, loại bỏ tối đa các icon trang trí không cần thiết, ưu tiên typography và khoảng trắng.

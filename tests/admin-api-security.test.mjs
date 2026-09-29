@@ -68,7 +68,7 @@ test("system settings protects secrets from being saved or modified via UI", asy
   // 2. Service level blocks setting disallowed or sensitive keys
   await assert.rejects(
     async () => {
-      await updateSystemSetting("admin-1", "GEMINI_API_KEY", "stolen-key");
+      await updateSystemSetting("admin-1", "OLLAMA_BASE_URL", "http://attacker.com:11434");
     },
     /Khóa cấu hình không hợp lệ/i,
   );

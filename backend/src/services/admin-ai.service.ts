@@ -65,7 +65,7 @@ export async function recordAiUsageLog(input: AiUsageLogInput): Promise<void> {
     await supabase.from("ai_usage_logs").insert({
       user_id: input.userId || null,
       feature: input.feature,
-      model: input.model || "gemini",
+      model: input.model || "ollama-local",
       success: input.success,
       latency_ms: Math.max(0, Math.round(input.latencyMs)),
       error_code: input.errorCode || null,

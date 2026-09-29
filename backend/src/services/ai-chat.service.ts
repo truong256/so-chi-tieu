@@ -1,10 +1,12 @@
 /**
  * AI Chat Service — business logic cho Financial Copilot chatbot.
  * Được dùng bởi cả Next.js route handler và Cloudflare Worker.
+ *
+ * Provider: Ollama (local/self-hosted) — không dùng Gemini API.
  */
 
 import type { ChatMessage, FinancialContext, AiChatRequest, AiChatResult } from "../types/ai.types";
-import { GEMINI_TEXT_MODELS } from "./gemini-models";
+import { OLLAMA_TEXT_MODELS, DEFAULT_OLLAMA_BASE_URL } from "./ollama-models";
 
 export { type ChatMessage, type FinancialContext, type AiChatRequest, type AiChatResult };
 
@@ -87,7 +89,7 @@ export function buildContextText(ctx: FinancialContext | null, currentPage?: str
   return lines.join("\n");
 }
 
-// Rule-based pre-filter for obvious off-topic questions — avoids wasting Gemini API call
+// Rule-based pre-filter for obvious off-topic questions — avoids wasting local AI call
 const OFF_TOPIC_PATTERNS = [
   /\b(viết code|lập trình|python|javascript|java|c\+\+|golang|rust|sql query)\b/i,
   /\b(thời tiết|weather|nhiệt độ|mưa|nắng|bão)\b/i,
@@ -200,17 +202,15 @@ function sanitizeFinancialContext(value: unknown): FinancialContext | null {
 
 /**
  * Core chat processing function.
- * Accepts geminiApiKey explicitly so it works in both Next.js (process.env) and Cloudflare Worker (env.*).
+ * Accepts ollamaBaseUrl explicitly so it works in both Next.js (process.env) and Cloudflare Worker (env.*).
  */
 export async function processChat(
-  geminiApiKey: string,
+  ollamaBaseUrl: string,
   req: AiChatRequest
 ): Promise<AiChatResult> {
   const { message, history, financialContext, currentPage, clientTime } = req;
 
-  if (!geminiApiKey || geminiApiKey === "your_gemini_api_key_here") {
-    return { error: "AI service is not configured. Please set GEMINI_API_KEY.", status: 503 };
-  }
+  const baseUrl = (ollamaBaseUrl || DEFAULT_OLLAMA_BASE_URL).replace(/\/$/, "");
 
   const userMessage = typeof message === "string" ? message.trim() : "";
   if (!userMessage) {
@@ -236,84 +236,95 @@ export async function processChat(
     ? `${FINANCE_SYSTEM_PROMPT}\n\n${contextText}`
     : FINANCE_SYSTEM_PROMPT;
 
-  const contents: ChatMessage[] = [
-    ...safeHistory,
-    {
-      role: "user",
-      parts: [{ text: userMessage }],
-    },
+  // Build Ollama-compatible messages array (OpenAI format)
+  const ollamaMessages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+    { role: "system", content: systemWithContext },
   ];
 
-  let geminiRes: Response | null = null;
-  let lastErrorText = "";
+  // Convert history (Gemini format: role "user"/"model") to Ollama format (role "user"/"assistant")
+  for (const h of safeHistory) {
+    const hRole = h.role === "model" ? "assistant" : "user";
+    const hText = Array.isArray(h.parts) ? cleanText(h.parts[0]?.text, MAX_CHAT_MESSAGE_LENGTH) : "";
+    if (hText) {
+      ollamaMessages.push({ role: hRole, content: hText });
+    }
+  }
 
-  for (const modelName of GEMINI_TEXT_MODELS) {
+  ollamaMessages.push({ role: "user", content: userMessage });
+
+  let lastError = "";
+
+  for (const modelName of OLLAMA_TEXT_MODELS) {
     try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: systemWithContext }] },
-            contents,
-            generationConfig: { maxOutputTokens: 1024 },
-            safetySettings: [
-              { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-              { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-            ],
-          }),
-          signal: AbortSignal.timeout(25000),
-        }
-      );
+      const res = await fetch(`${baseUrl}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: modelName,
+          messages: ollamaMessages,
+          stream: false,
+          options: {
+            num_predict: 1024,
+            temperature: 0.7,
+          },
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
 
       if (res.ok) {
-        geminiRes = res;
-        break;
+        const data = (await res.json()) as {
+          message?: { content?: string };
+          done?: boolean;
+          error?: string;
+        };
+
+        if (data.error) {
+          lastError = data.error;
+          console.error(`Ollama chat error for model ${modelName}:`, data.error);
+          continue;
+        }
+
+        const reply = data.message?.content?.trim();
+        if (!reply) {
+          return { error: "AI trả về phản hồi rỗng. Vui lòng thử lại.", status: 502 };
+        }
+
+        return { reply, status: 200 };
       }
 
       const errBody = await res.text().catch(() => "");
-      console.error(`Gemini API error for model ${modelName}: ${res.status}`, errBody ? errBody.slice(0, 300) : "");
-      lastErrorText = errBody;
-      geminiRes = res;
+      console.error(`Ollama chat HTTP error for model ${modelName}: ${res.status}`, errBody.slice(0, 300));
+      lastError = errBody;
 
-      // Stop trying only if API key is invalid
-      if (errBody.includes("API_KEY_INVALID") || errBody.includes("API key not valid")) {
+      // If model not found, try next model
+      if (res.status === 404 || errBody.includes("model") && errBody.includes("not found")) {
+        continue;
+      }
+
+      // For server errors, break immediately
+      if (res.status >= 500) {
         break;
       }
     } catch (e) {
-      console.error(`Failed request for model ${modelName}:`, e);
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(`Failed Ollama chat request for model ${modelName}:`, msg);
+      lastError = msg;
+
+      // Network/connection error — Ollama service unavailable
+      if (msg.includes("ECONNREFUSED") || msg.includes("fetch failed") || msg.includes("network")) {
+        break;
+      }
     }
   }
 
-  if (!geminiRes || !geminiRes.ok) {
-    let userErrorMsg = "Không thể kết nối với Trợ lý AI. Vui lòng thử lại.";
-    if (lastErrorText.includes("API_KEY_INVALID") || lastErrorText.includes("API key not valid")) {
-      userErrorMsg = "API Key không hợp lệ. Vui lòng kiểm tra lại GEMINI_API_KEY trong file .env.local.";
-    } else if (geminiRes?.status === 429 || lastErrorText.includes("quota") || lastErrorText.includes("429")) {
-      userErrorMsg = "API đã hết hạn mức sử dụng (Quota exceeded). Vui lòng thử lại sau hoặc nâng cấp tài khoản.";
-    } else if (geminiRes?.status === 503 || lastErrorText.includes("overloaded") || lastErrorText.includes("high demand") || lastErrorText.includes("UNAVAILABLE")) {
-      userErrorMsg = "Hệ thống AI hiện đang quá tải lượt truy cập (503 High Demand). Vui lòng thử lại sau giây lát.";
-    }
-    return { error: userErrorMsg, status: 502 };
-  }
+  const isUnavailable =
+    lastError.includes("ECONNREFUSED") ||
+    lastError.includes("fetch failed") ||
+    lastError.includes("network");
 
-  const geminiData = (await geminiRes.json()) as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-      finishReason?: string;
-    }>;
-  };
+  const userErrorMsg = isUnavailable
+    ? "Dịch vụ AI nội bộ chưa khởi động. Vui lòng kiểm tra Ollama đang chạy trên máy chủ."
+    : "Không thể kết nối với Trợ lý AI. Vui lòng thử lại.";
 
-  const candidate = geminiData.candidates?.[0];
-  const reply = candidate?.content?.parts?.[0]?.text?.trim();
-
-  if (!reply) {
-    if (candidate?.finishReason === "SAFETY") {
-      return { error: "Nội dung bị chặn bởi bộ lọc an toàn.", status: 400 };
-    }
-    return { error: "AI trả về phản hồi rỗng. Vui lòng thử lại.", status: 502 };
-  }
-
-  return { reply, status: 200 };
+  return { error: userErrorMsg, status: 502 };
 }

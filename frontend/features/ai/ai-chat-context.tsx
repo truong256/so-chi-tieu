@@ -23,7 +23,7 @@ export interface ChatMessage {
   isError?: boolean;
 }
 
-export interface GeminiHistoryMessage {
+export interface AiHistoryMessage {
   role: "user" | "model";
   parts: Array<{ text: string }>;
 }
@@ -108,7 +108,7 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
     setMessages(prev => [...prev, userMsg]);
     setLoading(true);
 
-    const historyForApi: GeminiHistoryMessage[] = messages
+    const historyForApi: AiHistoryMessage[] = messages
       .filter(m => !m.isError)
       .map(m => ({
         role: m.role === "user" ? "user" : "model",

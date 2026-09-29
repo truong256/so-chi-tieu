@@ -233,7 +233,7 @@ export default function SystemSettingsView({ getAuthToken }: SystemSettingsViewP
               <div className="guide-bullet">
                 <strong>1. Bảo vệ khóa bí mật (Secrets):</strong>
                 <p>
-                  Các khóa như Gemini API và khóa dịch vụ máy chủ được lưu trữ nghiêm ngặt trong biến môi trường máy chủ (.env.local hoặc Worker Secret). Không thể xem hoặc thay đổi chúng qua giao diện để tránh rò rỉ.
+                  Các khóa như OLLAMA_BASE_URL và khóa dịch vụ máy chủ được lưu trữ nghiêm ngặt trong biến môi trường máy chủ (.env.local hoặc Worker Secret). Không thể xem hoặc thay đổi chúng qua giao diện để tránh rò rỉ.
                 </p>
               </div>
 

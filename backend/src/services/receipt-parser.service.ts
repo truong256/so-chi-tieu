@@ -1,5 +1,10 @@
 /**
  * AI Receipt Parser Service — business logic for multimodal image receipt extraction.
+ *
+ * Provider: Ollama (local/self-hosted, vision models) — không dùng Gemini API.
+ *
+ * NOTE: Receipt/image parsing requires an Ollama vision model (e.g. llava:7b).
+ * Pull with: ollama pull llava:7b
  */
 
 import type { ParsedReceiptResult, ReceiptItem, TransactionType } from "@/frontend/types/finance.types";
@@ -10,10 +15,10 @@ import {
   normalizeTime,
   parseAiJsonObject,
 } from "./ai-output-validation.service";
-import { GEMINI_VISION_MODELS } from "./gemini-models";
+import { OLLAMA_VISION_MODELS, DEFAULT_OLLAMA_BASE_URL } from "./ollama-models";
 
 export interface ParseReceiptOptions {
-  geminiApiKey: string;
+  ollamaBaseUrl?: string;
   base64Data: string;
   mimeType: string;
   categoriesList?: string[];
@@ -60,7 +65,7 @@ QUY TẮC BẮT BUỘC VÀ NGHIÊM NGẶT:
     - "total_price": Thành tiền của mặt hàng đó (number hoặc null)
     Nếu hóa đơn không có bảng chi tiết từng món hoặc bị mờ, trả về mảng rỗng [].
 
-BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON HỢP LỆ VỚI CÁC TRƯỜNG THEO ĐÚNG SCHEMA SAU:
+BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON HỢP LỆ (không kèm markdown, không kèm giải thích):
 {
   "document_type": "receipt" | "invoice" | "other" | "unknown",
   "is_receipt": true | false,
@@ -88,15 +93,8 @@ BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON HỢP LỆ VỚI
 }`;
 
 export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<ParseReceiptResult> {
-  const { geminiApiKey, base64Data, mimeType, categoriesList = [], walletsList = [] } = options;
-
-  if (!geminiApiKey || geminiApiKey === "your_gemini_api_key_here") {
-    return {
-      success: false,
-      error: "Dịch vụ AI chưa được cấu hình. Vui lòng thiết lập GEMINI_API_KEY trên máy chủ.",
-      status: 503,
-    };
-  }
+  const { base64Data, mimeType, categoriesList = [], walletsList = [] } = options;
+  const baseUrl = ((options.ollamaBaseUrl ?? "") || DEFAULT_OLLAMA_BASE_URL).replace(/\/$/, "");
 
   if (!base64Data) {
     return {
@@ -127,193 +125,195 @@ export async function parseReceiptWithAI(options: ParseReceiptOptions): Promise<
     ? `\nUSER_WALLETS (Danh sách ví của người dùng):\n${JSON.stringify(safeWallets, null, 2)}`
     : "";
 
-  const userPromptText = `Hãy phân tích hình ảnh hóa đơn/biên lai được đính kèm và trích xuất dữ liệu theo đúng định dạng JSON yêu cầu.${categoriesPromptText}${walletsPromptText}\n\nChỉ trả về JSON thuần túy (không kèm giải thích hay văn bản phụ).`;
+  const userPromptText = `Hãy phân tích hình ảnh hóa đơn/biên lai được đính kèm và trích xuất dữ liệu theo đúng định dạng JSON yêu cầu.${categoriesPromptText}${walletsPromptText}\n\nChỉ trả về JSON thuần túy (không kèm giải thích hay văn bản phụ, không kèm markdown code block).`;
 
-  let geminiRes: Response | null = null;
-  let lastErrorText = "";
+  let lastError = "";
   let usedModel = "";
 
-  for (const modelName of GEMINI_VISION_MODELS) {
+  for (const modelName of OLLAMA_VISION_MODELS) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`;
-
-      const res = await fetch(url, {
+      // Ollama vision models support images via /api/generate with images array,
+      // or /api/chat with image content parts.
+      const res = await fetch(`${baseUrl}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: RECEIPT_SYSTEM_PROMPT }] },
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  inlineData: {
-                    mimeType: mimeType.replace("image/jpg", "image/jpeg"),
-                    data: base64Data,
-                  },
-                },
-                {
-                  text: userPromptText,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            responseMimeType: "application/json",
-            maxOutputTokens: 2048,
+          model: modelName,
+          system: RECEIPT_SYSTEM_PROMPT,
+          prompt: userPromptText,
+          images: [base64Data],
+          stream: false,
+          format: "json",
+          options: {
+            num_predict: 2048,
+            temperature: 0.1,
           },
         }),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(60000), // 60s for vision tasks
       });
 
       if (res.ok) {
-        geminiRes = res;
+        const data = (await res.json()) as {
+          response?: string;
+          done?: boolean;
+          error?: string;
+        };
+
+        if (data.error) {
+          lastError = data.error;
+          console.error(`Ollama OCR error for model ${modelName}:`, data.error);
+          continue;
+        }
+
+        const rawReply = data.response?.trim();
+
+        if (!rawReply) {
+          return {
+            success: false,
+            error: "AI không thể đọc được nội dung từ ảnh này. Vui lòng chụp lại ảnh rõ nét và đủ sáng hơn.",
+            status: 422,
+          };
+        }
+
+        const parsed = parseAiJsonObject(rawReply);
+        if (!parsed) {
+          console.error("Ollama receipt parser returned invalid JSON.");
+          return {
+            success: false,
+            error: "Dữ liệu AI trả về không đúng cấu trúc. Vui lòng thử lại hoặc chọn ảnh khác.",
+            status: 502,
+          };
+        }
+
         usedModel = modelName;
-        break;
+
+        const isReceipt = parsed.is_receipt === true || parsed.document_type === "receipt" || parsed.document_type === "invoice";
+        const allowedDocumentTypes = new Set<ParsedReceiptResult["document_type"]>(["receipt", "invoice", "other", "unknown"]);
+        const documentType: ParsedReceiptResult["document_type"] =
+          typeof parsed.document_type === "string" && allowedDocumentTypes.has(parsed.document_type as ParsedReceiptResult["document_type"])
+            ? parsed.document_type as ParsedReceiptResult["document_type"]
+            : (isReceipt ? "receipt" : "other");
+
+        const total = cleanMoneyAmount(parsed.total, false);
+        const subtotal = cleanMoneyAmount(parsed.subtotal);
+        const discount = cleanMoneyAmount(parsed.discount);
+        const tax = cleanMoneyAmount(parsed.tax);
+        const date = normalizeIsoDate(parsed.date);
+        const time = normalizeTime(parsed.time);
+
+        const items: ReceiptItem[] = [];
+        if (Array.isArray(parsed.items)) {
+          for (const rawItem of parsed.items.slice(0, 100)) {
+            if (rawItem && typeof rawItem === "object" && !Array.isArray(rawItem)) {
+              const item = rawItem as Record<string, unknown>;
+              const name = cleanText(item.name, 200);
+              if (!name) continue;
+              items.push({
+                name,
+                quantity: cleanMoneyAmount(item.quantity),
+                unit_price: cleanMoneyAmount(item.unit_price),
+                total_price: cleanMoneyAmount(item.total_price),
+              });
+            }
+          }
+        }
+
+        let category: string | null = null;
+        if (typeof parsed.category === "string" && parsed.category.trim()) {
+          const rawCat = parsed.category.trim().toLowerCase();
+          const matched = safeCategories.find(
+            (c) => c.toLowerCase() === rawCat || c.toLowerCase().includes(rawCat) || rawCat.includes(c.toLowerCase())
+          );
+          if (matched) category = matched;
+        }
+
+        const warnings: string[] = [];
+        if (!total || total <= 0) {
+          warnings.push("Không đọc được tổng tiền rõ ràng. Vui lòng kiểm tra và nhập lại số tiền.");
+        }
+        if (!date) {
+          warnings.push("Chưa xác định được ngày giao dịch trên hóa đơn.");
+        }
+        if (!category) {
+          warnings.push("AI chưa xác định được danh mục phù hợp. Vui lòng chọn danh mục.");
+        }
+        if (!parsed.merchant) {
+          warnings.push("Chưa đọc được tên cửa hàng/đơn vị.");
+        }
+
+        const result: ParsedReceiptResult = {
+          document_type: documentType,
+          is_receipt: isReceipt,
+          merchant: cleanText(parsed.merchant, 200),
+          merchant_address: cleanText(parsed.merchant_address, 300),
+          transaction_type: (parsed.transaction_type === "income" ? "income" : "expense") as TransactionType,
+          date,
+          time,
+          currency: "VND",
+          subtotal,
+          discount,
+          tax,
+          total,
+          payment_method: cleanText(parsed.payment_method, 100),
+          category,
+          description: cleanText(parsed.description, 300),
+          items,
+          warnings,
+        };
+
+        return {
+          success: true,
+          data: result,
+          modelUsed: usedModel,
+          status: 200,
+        };
       }
 
       const errBody = await res.text().catch(() => "");
-      console.error(`Gemini OCR error for model ${modelName}: ${res.status}`, errBody ? errBody.slice(0, 300) : "");
-      lastErrorText = errBody;
-      geminiRes = res;
+      console.error(`Ollama OCR HTTP error for model ${modelName}: ${res.status}`, errBody.slice(0, 300));
+      lastError = errBody;
 
-      // Stop trying only if API key is invalid or image data is fundamentally invalid
-      if (
-        errBody.includes("API_KEY_INVALID") ||
-        errBody.includes("API key not valid") ||
-        (res.status === 400 && errBody.includes("IMAGE_OTHER"))
-      ) {
+      // Model not found — try next
+      if (res.status === 404) {
+        continue;
+      }
+      if (res.status >= 500) {
         break;
       }
     } catch (err) {
-      console.error(`Failed OCR request for model ${modelName}:`, err);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`Failed Ollama OCR request for model ${modelName}:`, msg);
+      lastError = msg;
+
+      if (msg.includes("ECONNREFUSED") || msg.includes("fetch failed")) {
+        break;
+      }
     }
   }
 
-  if (!geminiRes || !geminiRes.ok) {
-    let userErrorMsg = "Không thể phân tích hóa đơn lúc này. Vui lòng thử lại hoặc nhập thủ công.";
-    if (lastErrorText.includes("API_KEY_INVALID") || lastErrorText.includes("API key not valid")) {
-      userErrorMsg = "Cấu hình API Key AI không hợp lệ. Vui lòng liên hệ quản trị viên.";
-    } else if (geminiRes?.status === 429 || lastErrorText.includes("quota") || lastErrorText.includes("RESOURCE_EXHAUSTED")) {
-      userErrorMsg = "Dịch vụ AI đang quá tải hạn mức (Quota exceeded). Vui lòng thử lại sau giây lát.";
-    } else if (geminiRes?.status === 503 || lastErrorText.includes("overloaded") || lastErrorText.includes("high demand") || lastErrorText.includes("UNAVAILABLE")) {
-      userErrorMsg = "Hệ thống AI hiện đang quá tải lượt truy cập (503 High Demand). Vui lòng thử lại sau giây lát.";
-    } else if (geminiRes?.status === 400 && lastErrorText.includes("IMAGE_OTHER")) {
-      userErrorMsg = "Tệp hình ảnh không hợp lệ hoặc bị hỏng. Vui lòng chọn ảnh khác.";
-    }
+  const isUnavailable = lastError.includes("ECONNREFUSED") || lastError.includes("fetch failed");
 
+  if (isUnavailable) {
     return {
       success: false,
-      error: userErrorMsg,
-      status: geminiRes ? geminiRes.status : 502,
-    };
-  }
-
-  const geminiData = (await geminiRes.json()) as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-      finishReason?: string;
-    }>;
-  };
-
-  const rawReply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-  if (!rawReply) {
-    return {
-      success: false,
-      error: "AI không thể đọc được nội dung từ ảnh này. Vui lòng chụp lại ảnh rõ nét và đủ sáng hơn.",
-      status: 422,
-    };
-  }
-
-  const parsed = parseAiJsonObject(rawReply);
-  if (!parsed) {
-    console.error("Gemini receipt parser returned invalid JSON.");
-    return {
-      success: false,
-      error: "Dữ liệu AI trả về không đúng cấu trúc. Vui lòng thử lại hoặc chọn ảnh khác.",
+      error: "Dịch vụ AI nội bộ chưa khởi động. Vui lòng kiểm tra Ollama đang chạy trên máy chủ.",
       status: 502,
     };
   }
 
-  const isReceipt = parsed.is_receipt === true || parsed.document_type === "receipt" || parsed.document_type === "invoice";
-  const allowedDocumentTypes = new Set<ParsedReceiptResult["document_type"]>(["receipt", "invoice", "other", "unknown"]);
-  const documentType: ParsedReceiptResult["document_type"] =
-    typeof parsed.document_type === "string" && allowedDocumentTypes.has(parsed.document_type as ParsedReceiptResult["document_type"])
-      ? parsed.document_type as ParsedReceiptResult["document_type"]
-      : (isReceipt ? "receipt" : "other");
-
-  const total = cleanMoneyAmount(parsed.total, false);
-  const subtotal = cleanMoneyAmount(parsed.subtotal);
-  const discount = cleanMoneyAmount(parsed.discount);
-  const tax = cleanMoneyAmount(parsed.tax);
-  const date = normalizeIsoDate(parsed.date);
-  const time = normalizeTime(parsed.time);
-
-  const items: ReceiptItem[] = [];
-  if (Array.isArray(parsed.items)) {
-    for (const rawItem of parsed.items.slice(0, 100)) {
-      if (rawItem && typeof rawItem === "object" && !Array.isArray(rawItem)) {
-        const item = rawItem as Record<string, unknown>;
-        const name = cleanText(item.name, 200);
-        if (!name) continue;
-        items.push({
-          name,
-          quantity: cleanMoneyAmount(item.quantity),
-          unit_price: cleanMoneyAmount(item.unit_price),
-          total_price: cleanMoneyAmount(item.total_price),
-        });
-      }
-    }
+  if (lastError.includes("does not support vision") || lastError.includes("image")) {
+    return {
+      success: false,
+      error: "Mô hình AI hiện tại không hỗ trợ phân tích ảnh. Vui lòng cài đặt model llava: ollama pull llava:7b",
+      status: 503,
+    };
   }
-
-  let category: string | null = null;
-  if (typeof parsed.category === "string" && parsed.category.trim()) {
-    const rawCat = parsed.category.trim().toLowerCase();
-    const matched = safeCategories.find(
-      (c) => c.toLowerCase() === rawCat || c.toLowerCase().includes(rawCat) || rawCat.includes(c.toLowerCase())
-    );
-    if (matched) category = matched;
-  }
-
-  const warnings: string[] = [];
-  if (!total || total <= 0) {
-    warnings.push("Không đọc được tổng tiền rõ ràng. Vui lòng kiểm tra và nhập lại số tiền.");
-  }
-  if (!date) {
-    warnings.push("Chưa xác định được ngày giao dịch trên hóa đơn.");
-  }
-  if (!category) {
-    warnings.push("AI chưa xác định được danh mục phù hợp. Vui lòng chọn danh mục.");
-  }
-  if (!parsed.merchant) {
-    warnings.push("Chưa đọc được tên cửa hàng/đơn vị.");
-  }
-
-  const result: ParsedReceiptResult = {
-    document_type: documentType,
-    is_receipt: isReceipt,
-    merchant: cleanText(parsed.merchant, 200),
-    merchant_address: cleanText(parsed.merchant_address, 300),
-    transaction_type: (parsed.transaction_type === "income" ? "income" : "expense") as TransactionType,
-    date,
-    time,
-    currency: "VND",
-    subtotal,
-    discount,
-    tax,
-    total,
-    payment_method: cleanText(parsed.payment_method, 100),
-    category,
-    description: cleanText(parsed.description, 300),
-    items,
-    warnings,
-  };
 
   return {
-    success: true,
-    data: result,
-    modelUsed: usedModel,
-    status: 200,
+    success: false,
+    error: "Không thể phân tích hóa đơn lúc này. Vui lòng thử lại hoặc nhập thủ công.",
+    status: 502,
   };
 }
+
+

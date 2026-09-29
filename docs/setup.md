@@ -9,7 +9,7 @@ Tài liệu hướng dẫn chi tiết cách thiết lập môi trường phát t
 - **Node.js**: Phiên bản `>=22.13.0` (Khuyến nghị dùng Node 22 LTS).
 - **Trình quản lý gói**: `npm` (đi kèm Node.js).
 - **Tài khoản Supabase**: Đã tạo project và lấy URL + Anon/Publishable Key.
-- **Google Gemini API Key**: Lấy từ [Google AI Studio](https://aistudio.google.com/apikey).
+- **Ollama (local AI)**: Cài đặt tại [ollama.ai](https://ollama.ai), sau đó pull model: `ollama pull llama3.2:3b` (chat) và `ollama pull llava:7b` (receipt OCR).
 
 ---
 
@@ -36,7 +36,7 @@ Mở tệp `.env.local` và điền các thông tin:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-or-anon-key
-GEMINI_API_KEY=your-gemini-api-key
+OLLAMA_BASE_URL=http://127.0.0.1:11434
 ```
 
 ### Bước 4: Thiết lập Database trên Supabase
