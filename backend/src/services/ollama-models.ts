@@ -13,14 +13,16 @@ export const OLLAMA_TEXT_MODELS = [
   "llama3.2:3b",       // Primary: fast, good Vietnamese support
   "llama3.2:1b",       // Fallback: smaller/faster
   "qwen2.5:3b",        // Fallback: strong multilingual (Vietnamese)
+  "qwen2.5-coder:7b",  // Installed developer/coder local model
   "mistral:7b",        // Fallback: larger but more capable
 ];
 
 /** Vision models — used by AI Receipt Parser (OCR + extraction). */
 export const OLLAMA_VISION_MODELS = [
-  "llava:7b",          // Primary vision model with image understanding
-  "llava:13b",         // Fallback: more capable
-  "moondream",         // Fallback: lightweight vision model
+  "llava:7b",              // Primary vision model with image understanding
+  "llava:13b",             // Fallback: more capable
+  "llama3.2-vision:11b",   // Multimodal vision fallback
+  "moondream",             // Fallback: lightweight vision model
 ];
 
 /** Default Ollama base URL (can be overridden via env). */

@@ -216,7 +216,7 @@ export type ReceiptScanStep = "select" | "preview" | "loading" | "result" | "err
 export type AITransactionParseResult = {
   transaction_type: TransactionType | null;
   amount: number | null;
-  currency: "VND";
+  currency: string;
   category_id: string | null;
   category_name: string | null;
   wallet_id: string | null;
@@ -225,5 +225,15 @@ export type AITransactionParseResult = {
   date: string | null; // YYYY-MM-DD
   time: string | null; // HH:mm
   confidence_notes?: string[];
+  is_draft?: boolean;
+  is_transfer?: boolean;
+  from_wallet_id?: string | null;
+  to_wallet_id?: string | null;
+  from_wallet_name?: string | null;
+  to_wallet_name?: string | null;
+  needs_confirmation?: boolean;
+  confirmation_fields?: string[];
+  multiple_transactions_detected?: boolean;
+  draft_items?: AITransactionParseResult[];
 };
 

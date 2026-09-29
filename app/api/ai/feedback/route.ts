@@ -27,6 +27,8 @@ function getAiServiceUrl(): string {
   return (process.env.AI_SERVICE_URL ?? "http://127.0.0.1:8000").replace(/\/$/, "");
 }
 
+const _seenFeedbackKeys = new Set<string>();
+
 export async function POST(request: Request) {
   try {
     // 1. Auth guard — user must be authenticated
@@ -69,9 +71,15 @@ export async function POST(request: Request) {
     const confidenceBand: "HIGH" | "MEDIUM" | "LOW" =
       rawBand === "HIGH" || rawBand === "LOW" ? rawBand : "MEDIUM";
 
-    if (!suggestedCategory || !finalCategory) {
+    // Check category length and valid characters
+    if (
+      suggestedCategory.length > 80 ||
+      finalCategory.length > 80 ||
+      /[<>{}\\]/.test(suggestedCategory) ||
+      /[<>{}\\]/.test(finalCategory)
+    ) {
       return NextResponse.json(
-        { error: "Trường 'suggested_category' và 'final_category' là bắt buộc." },
+        { error: "Tên danh mục không hợp lệ hoặc chứa ký tự đặc biệt." },
         { status: 400 },
       );
     }
@@ -84,8 +92,34 @@ export async function POST(request: Request) {
       ? Math.max(0, Math.round(body.latency_ms))
       : undefined;
 
-    // 3. Server-side SHA-256 user pseudonymization
+    // 3. Deduplication / Idempotency check: prevent duplicate feedback on retry
+    const rawKey = (
+      request.headers.get("x-idempotency-key") ||
+      (typeof body.idempotency_key === "string" ? body.idempotency_key : "") ||
+      (typeof body.client_event_id === "string" ? body.client_event_id : "") ||
+      (typeof body.inference_id === "string" ? body.inference_id : "")
+    ).trim();
+
+    // Server-side SHA-256 user pseudonymization
     const userIdHash = crypto.createHash("sha256").update(user.id).digest("hex");
+
+    const feedbackDedupKey = rawKey
+      ? `fb_${userIdHash}_${rawKey}`
+      : `fb_${userIdHash}_${suggestedCategory}_${finalCategory}_${Math.floor(Date.now() / 60_000)}`;
+
+    if (_seenFeedbackKeys.has(feedbackDedupKey)) {
+      return NextResponse.json({
+        ok: true,
+        is_duplicate: true,
+        accepted: isAccepted,
+        model_version: modelVersion,
+      });
+    }
+    _seenFeedbackKeys.add(feedbackDedupKey);
+    if (_seenFeedbackKeys.size > 5000) {
+      const firstKey = _seenFeedbackKeys.values().next().value;
+      if (firstKey) _seenFeedbackKeys.delete(firstKey);
+    }
 
     // 4. Update in-process product metrics (isolated per version: v2, v3, v4)
     recordClassificationProductEvent({

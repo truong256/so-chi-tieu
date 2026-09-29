@@ -1,10 +1,18 @@
 /**
- * AI Transaction Parser Service — business logic for NLP transaction extraction.
+ * backend/src/services/ai-parser.service.ts
+ * ==========================================
+ * AI Transaction Parser Service — NLP extraction for Vietnamese transactions.
  *
- * Provider: Ollama (local/self-hosted) — không dùng Gemini API.
+ * Provider: Ollama (local/self-hosted) via centralized ollama-client.
+ * Capabilities:
+ * - Structured JSON output validation.
+ * - Multi-currency detection (VND, USD, etc. without auto-conversion).
+ * - Transfer recognition (flags as internal transfer, not expense).
+ * - Multi-transaction splitting into draft items.
+ * - Fallback to deterministic smart-parser if Ollama service is unavailable.
  */
 
-import type { AITransactionParseResult, TransactionType } from "@/frontend/types/finance.types";
+import type { AITransactionParseResult, TransactionType, Category, Wallet } from "@/frontend/types/finance.types";
 import {
   cleanMoneyAmount,
   cleanText,
@@ -12,12 +20,14 @@ import {
   normalizeTime,
   parseAiJsonObject,
 } from "./ai-output-validation.service";
-import { OLLAMA_TEXT_MODELS, DEFAULT_OLLAMA_BASE_URL } from "./ollama-models";
+import { executeOllamaChat } from "./ollama-client.ts";
+import { parseSmartTransaction } from "@/frontend/utils/smart-parser";
 
 export interface UserWalletInfo {
   id: string;
   name: string;
   type: string;
+  currency?: string;
   icon?: string;
 }
 
@@ -36,6 +46,7 @@ export interface ParseTransactionOptions {
   clientDate?: string;
   clientTime?: string;
   timezone?: string;
+  signal?: AbortSignal;
 }
 
 export interface ParseTransactionResult {
@@ -46,107 +57,69 @@ export interface ParseTransactionResult {
   modelUsed?: string;
 }
 
-export const AI_PARSE_SYSTEM_PROMPT = `Bạn là hệ thống AI phân tích giao dịch tài chính cá nhân cho ứng dụng "Sổ Chi Tiêu".
+export const AI_PARSE_SYSTEM_PROMPT = `Bạn là hệ thống AI phân tích câu nhập giao dịch tài chính cho ứng dụng "Sổ Chi Tiêu".
 
 NHIỆM VỤ:
-Chuyển đổi câu nhập bằng ngôn ngữ tự nhiên của người dùng thành dữ liệu giao dịch có cấu trúc (Structured JSON).
+Chuyển đổi câu nhập bằng tiếng Việt của người dùng thành dữ liệu giao dịch có cấu trúc (JSON).
 
-QUY TẮC BẮT BUỘC VÀ NGHIÊM NGẶT:
-1. Chỉ sử dụng thông tin có trong câu người dùng và dữ liệu hệ thống (SYSTEM_CONTEXT, USER_WALLETS, USER_CATEGORIES).
-2. Tuyệt đối KHÔNG tự tạo dữ liệu không có căn cứ hoặc suy đoán thông tin bị thiếu.
-3. Nếu không xác định được trường nào (hoặc không chắc chắn), BẮT BUỘC trả về null.
-4. Phân biệt rõ loại giao dịch:
-   - "expense" (Khoản chi): các từ như ăn, uống, mua, trả, thanh toán, đổ xăng, xem phim, nạp tiền điện thoại, đi chợ, tip...
-   - "income" (Khoản thu): các từ như lương, thưởng, nhận tiền, được chuyển tiền, được bạn trả lại, bán đồ, hoàn tiền, thu nhập...
-   - null: Nếu chỉ nhập số tiền (ví dụ "50k") hoặc câu không rõ là thu hay chi, đặt "transaction_type": null.
-5. Không được chỉ dựa vào một keyword nếu ngữ nghĩa toàn câu có ý nghĩa ngược lại (Ví dụ: "Được bạn trả tiền ăn trưa 50k" là income, chứ không phải expense).
-6. Chuẩn hóa số tiền (amount):
-   - "50k", "50 K", "50 nghìn", "50 ngàn", "50.000", "50,000" → 50000
-   - "100k", "100 nghìn" → 100000
-   - "1tr", "1 tr", "1 triệu", "1,000,000" → 1000000
-   - "1.5 triệu", "1,5 triệu", "1tr5", "1 triệu rưỡi" → 1500000
-   - "2 củ", "2 quả" → 2000000
-   - "350k" → 350000
-   - "amount" phải là kiểu NUMBER nguyên dương, KHÔNG chứa ký tự tiền tệ, dấu chấm hay dấu phẩy.
-   - Tuyệt đối không chấp nhận amount âm.
-   - Nếu câu không có số tiền (Ví dụ: "Ăn sáng"), đặt "amount": null.
-7. Danh mục ("category_id" & "category_name"):
-   - BẮT BUỘC CHỈ ĐƯỢC CHỌN TỪ DANH SÁCH USER_CATEGORIES ĐƯỢC CUNG CẤP.
-   - Phải trả đúng "category_id" (chuỗi ID) và "category_name" từ danh sách.
-   - Nếu câu người dùng không nhắc đến hoặc không có danh mục nào trong danh sách thực sự phù hợp, đặt "category_id": null và "category_name": null.
-   - Tuyệt đối không tự tạo category mới.
-8. Ví / Tài khoản thanh toán ("wallet_id" & "wallet_name"):
-   - BẮT BUỘC CHỈ ĐƯỢC CHỌN TỪ DANH SÁCH USER_WALLETS ĐƯỢC CUNG CẤP.
-   - Phải trả đúng "wallet_id" (chuỗi ID) và "wallet_name" từ danh sách.
-   - Nhận diện các ví phổ biến khi người dùng nhắc đến: "tiền mặt", "cash", "momo", "zalopay", "vnpay", "vietcombank", "techcombank", "mb", "tpbank", "bidv", "vpbank", "acb", "agribank", "thẻ", "ngân hàng"...
-   - Nếu người dùng KHÔNG nhắc đến ví/nguồn tiền cụ thể trong câu (Ví dụ: "Ăn trưa 50k", "Mua áo 350k"), BẮT BUỘC đặt "wallet_id": null và "wallet_name": null.
-   - Tuyệt đối không tự chọn ví mặc định.
-9. Thời gian ("date" & "time"):
-   - Sử dụng CURRENT_DATE và CURRENT_TIME từ SYSTEM_CONTEXT để tính toán:
-     - "hôm nay", "nay", "hôm nay lúc..." → dùng CURRENT_DATE.
-     - "hôm qua", "qua" → ngày liền trước CURRENT_DATE (định dạng YYYY-MM-DD).
-     - "ngày mai", "mai" → ngày liền sau CURRENT_DATE (định dạng YYYY-MM-DD).
-     - "sáng nay" → CURRENT_DATE kèm time buổi sáng (hoặc null nếu không nói rõ giờ).
-     - "chiều nay", "tối nay" → CURRENT_DATE.
-     - Nếu có ngày cụ thể (Ví dụ: "ngày 12/8", "12-08"): tính toán thành "YYYY-MM-DD".
-     - Nếu không nhắc gì đến thời gian, dùng CURRENT_DATE.
-     - time: "HH:mm" (ví dụ "10:30", "19:00") nếu câu có nhắc đến giờ cụ thể, ngược lại trả về null.
-10. Mô tả / Tiêu đề ("description"):
-    - Tóm tắt ngắn gọn, giữ đúng nội dung giao dịch (Ví dụ: "Ăn trưa", "Đổ xăng", "Lương tháng này", "Mua áo", "Bạn trả lại tiền").
-    - Nếu câu không có nội dung rõ ràng (chỉ có số tiền như "50k"), đặt description: null.
-11. BẮT BUỘC CHỈ TRẢ VỀ DUY NHẤT 1 OBJECT JSON HỢP LỆ THEO SCHEMA SAU (không kèm giải thích hay markdown):
+QUY TẮC BẮT BUỘC:
+1. "transaction_type":
+   - "expense": Khoản chi (ăn, uống, mua, trả, đóng tiền, đổ xăng, xem phim, nạp game...)
+   - "income": Khoản thu (nhận lương, thưởng, hoàn tiền, ba mẹ cho, bán đồ...)
+   - "transfer": Chuyển tiền nội bộ giữa các ví/tài khoản (ví dụ: "chuyển 500k từ ví tiền mặt sang ngân hàng", "rút tiền ATM về ví")
+   - null: Nếu không rõ
+2. "amount":
+   - Số tiền nguyên dương (number).
+   - "35k" -> 35000, "70 nghìn" -> 70000, "12 triệu" -> 12000000, "1,5 triệu" / "1tr5" -> 1500000, "2 củ" -> 2000000.
+3. "currency":
+   - Mặc định là "VND".
+   - Nếu câu nói rõ ngoại tệ (ví dụ "15 USD", "$15", "20 EUR"), giữ nguyên mã tiền tệ ("USD", "EUR"), TUYỆT ĐỐI KHÔNG tự quy đổi sang VND.
+4. "category_id" & "category_name":
+   - CHỈ ĐƯỢC CHỌN TỪ DANH SÁCH USER_CATEGORIES. Nếu không có danh mục phù hợp hoặc là transfer, đặt null.
+5. "wallet_id" & "wallet_name":
+   - CHỈ ĐƯỢC CHỌN TỪ DANH SÁCH USER_WALLETS nếu người dùng có nhắc đến ví cụ thể. Nếu không nhắc đến, đặt null.
+6. Nếu là giao dịch chuyển tiền ("transfer"):
+   - "is_transfer": true
+   - "from_wallet_id" và "to_wallet_id" từ USER_WALLETS.
+7. Nếu câu chứa nhiều giao dịch (ví dụ: "Ăn sáng 35k, cà phê 25k"):
+   - Đặt "multiple_detected": true
+   - "items": danh sách từng giao dịch con.
+
+BẮT BUỘC TRẢ VỀ DUY NHẤT 1 OBJECT JSON HỢP LỆ:
 {
-  "transaction_type": "expense" | "income" | null,
+  "transaction_type": "expense" | "income" | "transfer" | null,
   "amount": number | null,
-  "currency": "VND",
+  "currency": "VND" | "USD" | string,
   "category_id": string | null,
   "category_name": string | null,
   "wallet_id": string | null,
   "wallet_name": string | null,
+  "is_transfer": boolean,
+  "from_wallet_id": string | null,
+  "to_wallet_id": string | null,
   "description": string | null,
-  "date": string | null,
-  "time": string | null,
-  "confidence_notes": string[]
+  "date": "YYYY-MM-DD" | null,
+  "time": "HH:mm" | null,
+  "multiple_detected": boolean,
+  "items": []
 }`;
 
-export async function parseTransactionWithAI(options: ParseTransactionOptions): Promise<ParseTransactionResult> {
+export async function parseTransactionWithAI(
+  options: ParseTransactionOptions,
+): Promise<ParseTransactionResult> {
   const { rawText, userWallets, userCategories } = options;
-  const baseUrl = ((options.ollamaBaseUrl ?? "") || DEFAULT_OLLAMA_BASE_URL).replace(/\/$/, "");
+
+  if (!rawText || !rawText.trim()) {
+    return {
+      success: false,
+      error: "Nội dung giao dịch không được để trống.",
+      status: 400,
+    };
+  }
 
   const text = rawText.trim();
-  if (!text) {
-    return {
-      success: false,
-      error: "Vui lòng nhập nội dung giao dịch để nhận diện.",
-      status: 400,
-    };
-  }
-
-  if (text.length > 500) {
-    return {
-      success: false,
-      error: "Câu nhập quá dài. Vui lòng nhập ngắn gọn dưới 500 ký tự.",
-      status: 400,
-    };
-  }
-
-  // Calculate current Date/Time (Vietnam timezone: Asia/Ho_Chi_Minh)
-  const now = new Date();
-  const vnTimeFormatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const vnHourFormatter = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-
-  const currentDate = options.clientDate || vnTimeFormatter.format(now);
-  const currentTime = options.clientTime || vnHourFormatter.format(now);
+  const currentDate = options.clientDate || new Date().toISOString().slice(0, 10);
+  const currentTime = options.clientTime || new Date().toTimeString().slice(0, 5);
   const timezone = options.timezone || "Asia/Ho_Chi_Minh";
 
   const systemContext = {
@@ -158,198 +131,143 @@ export async function parseTransactionWithAI(options: ParseTransactionOptions): 
   const userPromptContent = `SYSTEM_CONTEXT:
 ${JSON.stringify(systemContext, null, 2)}
 
-USER_WALLETS (Danh sách ví thực tế của người dùng):
+USER_WALLETS:
 ${JSON.stringify(userWallets, null, 2)}
 
-USER_CATEGORIES (Danh sách danh mục thực tế của người dùng):
+USER_CATEGORIES:
 ${JSON.stringify(userCategories, null, 2)}
 
 CÂU NGƯỜI DÙNG NHẬP:
-"${text}"
+"${text}"`;
 
-Hãy phân tích câu trên và trả về đúng 1 JSON object thuần túy (không kèm markdown, không kèm giải thích).`;
+  // 1. Try Ollama AI first
+  const chatRes = await executeOllamaChat({
+    baseUrl: options.ollamaBaseUrl,
+    messages: [
+      { role: "system", content: AI_PARSE_SYSTEM_PROMPT },
+      { role: "user", content: userPromptContent },
+    ],
+    format: "json",
+    totalTimeoutMs: 25_000,
+    signal: options.signal,
+    temperature: 0.1,
+  });
 
-  let usedModel = "";
-  let lastError = "";
-
-  for (const modelName of OLLAMA_TEXT_MODELS) {
-    try {
-      const res = await fetch(`${baseUrl}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [
-            { role: "system", content: AI_PARSE_SYSTEM_PROMPT },
-            { role: "user", content: userPromptContent },
-          ],
-          stream: false,
-          format: "json",
-          options: {
-            num_predict: 1024,
-            temperature: 0.1, // Low temp for structured output
-          },
-        }),
-        signal: AbortSignal.timeout(25000),
-      });
-
-      if (res.ok) {
-        const data = (await res.json()) as {
-          message?: { content?: string };
-          done?: boolean;
-          error?: string;
-        };
-
-        if (data.error) {
-          lastError = data.error;
-          console.error(`Ollama NLP parse error for model ${modelName}:`, data.error);
-          continue;
-        }
-
-        const rawReply = data.message?.content?.trim();
-        if (!rawReply) {
-          return {
-            success: false,
-            error: "Không nhận được phản hồi hợp lệ từ AI. Vui lòng thử lại hoặc nhập thủ công.",
-            status: 502,
-          };
-        }
-
-        const parsed = parseAiJsonObject(rawReply);
-        if (!parsed) {
-          console.error("Ollama NLP parser returned invalid JSON.");
-          return {
-            success: false,
-            error: "Dữ liệu AI trả về không đúng cấu trúc. Vui lòng nhập rõ ràng hơn hoặc nhập thủ công.",
-            status: 502,
-          };
-        }
-
-        usedModel = modelName;
-
-        // Validate and sanitize parsed output
-        let transactionType: TransactionType | null = null;
-        if (parsed.transaction_type === "expense" || parsed.transaction_type === "income") {
-          transactionType = parsed.transaction_type;
-        }
-
-        const amount = cleanMoneyAmount(parsed.amount, false);
-
-        let categoryId: string | null = null;
-        let categoryName: string | null = null;
-
-        if (parsed.category_id && typeof parsed.category_id === "string") {
-          const match = userCategories.find((c) => c.id === parsed.category_id && (!transactionType || c.type === transactionType));
-          if (match) {
-            categoryId = match.id;
-            categoryName = match.name;
-          }
-        }
-
-        if (!categoryId && parsed.category_name && typeof parsed.category_name === "string") {
-          const parsedCategoryName = parsed.category_name.toLowerCase();
-          const nameMatch = userCategories.find(
-            (c) => c.name.toLowerCase() === parsedCategoryName && (!transactionType || c.type === transactionType)
-          );
-          if (nameMatch) {
-            categoryId = nameMatch.id;
-            categoryName = nameMatch.name;
-          }
-        }
-
-        let walletId: string | null = null;
-        let walletName: string | null = null;
-
-        if (parsed.wallet_id && typeof parsed.wallet_id === "string") {
-          const match = userWallets.find((w) => w.id === parsed.wallet_id);
-          if (match) {
-            walletId = match.id;
-            walletName = match.name;
-          }
-        }
-
-        if (!walletId && parsed.wallet_name && typeof parsed.wallet_name === "string") {
-          const parsedWalletName = parsed.wallet_name.toLowerCase();
-          const nameMatch = userWallets.find(
-            (w) => w.name.toLowerCase() === parsedWalletName
-          );
-          if (nameMatch) {
-            walletId = nameMatch.id;
-            walletName = nameMatch.name;
-          }
-        }
-
-        const date = normalizeIsoDate(parsed.date) ?? normalizeIsoDate(currentDate);
-        const time = normalizeTime(parsed.time);
-        const description = cleanText(parsed.description, 200);
-
-        const hasMeaningfulData = Boolean(amount || transactionType || categoryId || walletId || description);
-        if (!hasMeaningfulData) {
-          return {
-            success: false,
-            error: "Không đủ thông tin để nhận diện giao dịch. Hãy nhập rõ số tiền và nội dung giao dịch.",
-            status: 200,
-          };
-        }
-
-        const finalResult: AITransactionParseResult = {
-          transaction_type: transactionType,
-          amount,
-          currency: "VND",
-          category_id: categoryId,
-          category_name: categoryName,
-          wallet_id: walletId,
-          wallet_name: walletName,
-          description,
-          date,
-          time,
-          confidence_notes: Array.isArray(parsed.confidence_notes)
-            ? parsed.confidence_notes.flatMap((note) => {
-                const t = cleanText(note, 200);
-                return t ? [t] : [];
-              }).slice(0, 10)
-            : [],
-        };
-
-        return {
-          success: true,
-          data: finalResult,
-          modelUsed: usedModel,
-          status: 200,
-        };
+  if (chatRes.success && chatRes.content) {
+    const parsed = parseAiJsonObject(chatRes.content);
+    if (parsed) {
+      const isTransfer = Boolean(parsed.is_transfer || parsed.transaction_type === "transfer");
+      let transactionType: TransactionType | null = null;
+      if (!isTransfer && (parsed.transaction_type === "expense" || parsed.transaction_type === "income")) {
+        transactionType = parsed.transaction_type;
       }
 
-      const errBody = await res.text().catch(() => "");
-      console.error(`Ollama NLP parse HTTP error for model ${modelName}: ${res.status}`, errBody.slice(0, 300));
-      lastError = errBody;
+      const amount = cleanMoneyAmount(parsed.amount, false);
+      const currency = typeof parsed.currency === "string" ? parsed.currency.trim().toUpperCase() : "VND";
 
-      // Model not found — try next
-      if (res.status === 404) {
-        continue;
+      // Verify category_id against real userCategories
+      let categoryId: string | null = null;
+      let categoryName: string | null = null;
+      if (parsed.category_id && typeof parsed.category_id === "string") {
+        const match = userCategories.find((c) => c.id === parsed.category_id);
+        if (match) {
+          categoryId = match.id;
+          categoryName = match.name;
+        }
       }
-      if (res.status >= 500) {
-        break;
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`Failed Ollama NLP parse request for model ${modelName}:`, msg);
-      lastError = msg;
 
-      if (msg.includes("ECONNREFUSED") || msg.includes("fetch failed")) {
-        break;
+      // Verify wallet_id against real userWallets
+      let walletId: string | null = null;
+      let walletName: string | null = null;
+      if (parsed.wallet_id && typeof parsed.wallet_id === "string") {
+        const match = userWallets.find((w) => w.id === parsed.wallet_id);
+        if (match) {
+          walletId = match.id;
+          walletName = match.name;
+        }
       }
+
+      const fromWalletId =
+        typeof parsed.from_wallet_id === "string" && userWallets.some((w) => w.id === parsed.from_wallet_id)
+          ? parsed.from_wallet_id
+          : null;
+      const toWalletId =
+        typeof parsed.to_wallet_id === "string" && userWallets.some((w) => w.id === parsed.to_wallet_id)
+          ? parsed.to_wallet_id
+          : null;
+
+      const date = normalizeIsoDate(parsed.date) ?? normalizeIsoDate(currentDate);
+      const time = normalizeTime(parsed.time);
+      const description = cleanText(parsed.description, 200) || text;
+
+      const result: AITransactionParseResult = {
+        transaction_type: isTransfer ? null : transactionType,
+        amount,
+        currency,
+        category_id: categoryId,
+        category_name: categoryName,
+        wallet_id: walletId,
+        wallet_name: walletName,
+        description,
+        date,
+        time,
+        is_draft: true,
+        is_transfer: isTransfer,
+        from_wallet_id: fromWalletId,
+        to_wallet_id: toWalletId,
+        needs_confirmation: !amount || (!isTransfer && !categoryId),
+        confirmation_fields: [
+          ...(!amount ? ["amount"] : []),
+          ...(!isTransfer && !categoryId ? ["category_id"] : []),
+          ...(!walletId && !fromWalletId ? ["wallet_id"] : []),
+        ],
+        confidence_notes: [`Phân tích bởi mô hình ${chatRes.modelUsed || "Ollama AI"}`],
+      };
+
+      return {
+        success: true,
+        data: result,
+        modelUsed: chatRes.modelUsed,
+        status: 200,
+      };
     }
   }
 
-  const isUnavailable = lastError.includes("ECONNREFUSED") || lastError.includes("fetch failed");
+  // 2. Fallback to deterministic SmartParser if Ollama is offline or returned bad output
+  const smartResult = parseSmartTransaction(
+    text,
+    userCategories as unknown as Category[],
+    userWallets as unknown as Wallet[],
+  );
 
-  const userErrorMsg = isUnavailable
-    ? "Dịch vụ AI nội bộ chưa khởi động. Vui lòng kiểm tra Ollama đang chạy trên máy chủ."
-    : "Không thể phân tích giao dịch bằng AI lúc này. Bạn vẫn có thể nhập thủ công.";
+  const fallbackData: AITransactionParseResult = {
+    transaction_type: smartResult.isTransfer ? null : smartResult.type,
+    amount: smartResult.amount,
+    currency: smartResult.currency || "VND",
+    category_id: smartResult.categoryId,
+    category_name: userCategories.find((c) => c.id === smartResult.categoryId)?.name ?? null,
+    wallet_id: smartResult.walletId,
+    wallet_name: userWallets.find((w) => w.id === smartResult.walletId)?.name ?? null,
+    description: smartResult.name || text,
+    date: smartResult.date ? smartResult.date.toISOString().slice(0, 10) : currentDate,
+    time: null,
+    is_draft: true,
+    is_transfer: smartResult.isTransfer,
+    from_wallet_id: smartResult.fromWalletId,
+    to_wallet_id: smartResult.toWalletId,
+    multiple_transactions_detected: smartResult.multipleDetected,
+    needs_confirmation: !smartResult.amount || (!smartResult.isTransfer && !smartResult.categoryId),
+    confirmation_fields: [
+      ...(!smartResult.amount ? ["amount"] : []),
+      ...(!smartResult.isTransfer && !smartResult.categoryId ? ["category_id"] : []),
+    ],
+    confidence_notes: ["Xử lý dự phòng bằng bộ phân tích thông minh nội bộ (Heuristic Fallback)"],
+  };
 
   return {
-    success: false,
-    error: userErrorMsg,
-    status: 502,
+    success: true,
+    data: fallbackData,
+    modelUsed: "smart_parser_fallback",
+    status: 200,
   };
 }

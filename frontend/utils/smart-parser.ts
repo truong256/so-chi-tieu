@@ -4,6 +4,7 @@ export type SmartTransactionResult = {
   type: TransactionType | null;
   name: string;
   amount: number | null;
+  currency?: string;
   categoryId: string | null;
   walletId: string | null;
   date: Date | null;
@@ -15,6 +16,11 @@ export type SmartTransactionResult = {
     date: number;
   };
   summaryText: string;
+  isTransfer?: boolean;
+  fromWalletId?: string | null;
+  toWalletId?: string | null;
+  multipleDetected?: boolean;
+  subItems?: SmartTransactionResult[];
 };
 
 const EXPENSE_RULES = [
@@ -161,10 +167,29 @@ function matchesPrefixNoAccent(text: string, prefix: string): boolean {
   return regex.test(normText);
 }
 
-export function parseVietnameseAmount(text: string): { amount: number | null, score: number, matchedStr: string } {
+export function parseVietnameseAmount(text: string): { amount: number | null, currency: string, score: number, matchedStr: string } {
+  // 0. Foreign currencies (e.g. 15 USD, 20 đô, $15, 50 EUR)
+  const usdPrefix = text.match(/\$\s*(\d+(?:[.,]\d+)?)\b/i);
+  if (usdPrefix) {
+    const num = Number(usdPrefix[1].replace(",", "."));
+    return { amount: num, currency: "USD", score: 100, matchedStr: usdPrefix[0] };
+  }
+  const regexUsd = /(\d+(?:[.,]\d+)?)\s*(?:usd|đô|dollar|\$)\b/i;
+  const matchUsd = text.match(regexUsd);
+  if (matchUsd) {
+    const num = Number(matchUsd[1].replace(",", "."));
+    return { amount: num, currency: "USD", score: 100, matchedStr: matchUsd[0] };
+  }
+  const regexEur = /(\d+(?:[.,]\d+)?)\s*(?:eur|euro|€)\b/i;
+  const matchEur = text.match(regexEur);
+  if (matchEur) {
+    const num = Number(matchEur[1].replace(",", "."));
+    return { amount: num, currency: "EUR", score: 100, matchedStr: matchEur[0] };
+  }
+
   const halfMillion = text.match(/(\d+(?:[.,]\d+)?)\s*(?:triệu|tr)\s*rưỡi\b/i);
   if (halfMillion) {
-    return { amount: Math.round(Number(halfMillion[1].replace(",", ".")) * 1_000_000 + 500_000), score: 100, matchedStr: halfMillion[0] };
+    return { amount: Math.round(Number(halfMillion[1].replace(",", ".")) * 1_000_000 + 500_000), currency: "VND", score: 100, matchedStr: halfMillion[0] };
   }
   // 1. Check "X triệu Y" / "X tr Y" (e.g. 1 triệu 500 = 1,500,000)
   const regexTrY = /(\d+(?:\.\d+)?)\s*(?:triệu|tr)\s+(\d{1,3})\b/i;
@@ -174,7 +199,7 @@ export function parseVietnameseAmount(text: string): { amount: number | null, sc
     let suffix = matchTrY[2];
     if (suffix.length === 1) suffix = suffix + "00";
     if (suffix.length === 2) suffix = suffix + "0";
-    return { amount: Math.round(tr * 1000000 + Number(suffix) * 1000), score: 100, matchedStr: matchTrY[0] };
+    return { amount: Math.round(tr * 1000000 + Number(suffix) * 1000), currency: "VND", score: 100, matchedStr: matchTrY[0] };
   }
 
   // 2. Check "XtrY" no space (e.g. 1tr5 = 1,500,000)
@@ -185,7 +210,7 @@ export function parseVietnameseAmount(text: string): { amount: number | null, sc
     let suffix = matchTrY2[2];
     if (suffix.length === 1) suffix = suffix + "00";
     if (suffix.length === 2) suffix = suffix + "0";
-    return { amount: Math.round(tr * 1000000 + Number(suffix) * 1000), score: 100, matchedStr: matchTrY2[0] };
+    return { amount: Math.round(tr * 1000000 + Number(suffix) * 1000), currency: "VND", score: 100, matchedStr: matchTrY2[0] };
   }
 
   // 3. Match generic multipliers (k, nghìn, ngàn, tr, triệu)
@@ -197,7 +222,7 @@ export function parseVietnameseAmount(text: string): { amount: number | null, sc
     const multiplier = ["tỷ", "tỉ", "ty"].includes(unit) ? 1_000_000_000
       : ["tr", "triệu", "củ"].includes(unit) ? 1_000_000 : 1_000;
     const amount = Math.round(num * multiplier);
-    return { amount: Number.isSafeInteger(amount) && amount <= 1_000_000_000_000_000 ? amount : null, score: 100, matchedStr: matchUnit[0] };
+    return { amount: Number.isSafeInteger(amount) && amount <= 1_000_000_000_000_000 ? amount : null, currency: "VND", score: 100, matchedStr: matchUnit[0] };
   }
 
   // 4. Match plain numbers (e.g. 50000, 50.000, 50,000)
@@ -206,14 +231,20 @@ export function parseVietnameseAmount(text: string): { amount: number | null, sc
   if (matches.length > 0) {
     const best = matches[0][0];
     const num = Number(best.replace(/[.,]/g, ""));
-    return { amount: Number.isSafeInteger(num) && num <= 1_000_000_000_000_000 ? num : null, score: 90, matchedStr: best };
+    return { amount: Number.isSafeInteger(num) && num <= 1_000_000_000_000_000 ? num : null, currency: "VND", score: 90, matchedStr: best };
   }
 
-  return { amount: null, score: 0, matchedStr: "" };
+  return { amount: null, currency: "VND", score: 0, matchedStr: "" };
 }
 
-function detectType(text: string): { type: TransactionType | null, score: number, typeMatchedStr: string } {
+function detectType(text: string): { type: TransactionType | "transfer" | null, score: number, typeMatchedStr: string } {
   const t = text;
+  // Transfer indicators (NEVER treat internal transfers as expense)
+  const transferPattern = /(?:chuyển|chuyen|rút|rut|nạp|nap)\s+.*?(?:từ|tu)\s+.*?(?:sang|vào|vao|về|ve)|(?:chuyển tiền|chuyen tien|chuyển khoản từ|chuyen khoan tu)|(?:chuyển|chuyen)\s+\d+.*?(?:sang|vào|vao)/i;
+  if (transferPattern.test(t)) {
+    return { type: "transfer", score: 100, typeMatchedStr: t.match(transferPattern)?.[0] || "chuyển khoản" };
+  }
+
   // Income indicators
   const strongIncome = /(nhận lương|được thưởng|mẹ cho|ba cho|ông cho|bà cho|ba mẹ cho|bố mẹ cho|được cho|được hỗ trợ|hoàn tiền|cashback|được .{1,40} trả lại)/i;
   if (strongIncome.test(t)) {
@@ -396,11 +427,64 @@ function formatMoneyVN(amount: number): string {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(amount);
 }
 
-export function parseSmartTransaction(text: string, categories: Category[], wallets: Wallet[]): SmartTransactionResult {
+export function detectTransferWallets(text: string, wallets: Wallet[]): {
+  isTransfer: boolean;
+  fromWalletId: string | null;
+  toWalletId: string | null;
+  fromWalletName: string | null;
+  toWalletName: string | null;
+} {
+  const transferMatch = text.match(/(?:chuyển|chuyen|rút|rut|nạp|nap)\s+.*?(?:từ|tu)\s+(.*?)\s+(?:sang|vào|vao|về|ve)\s+(.*)/i);
+  if (!transferMatch) {
+    // Alternative: "chuyển 500k sang ngân hàng" or "nạp 500k vào momo"
+    const directMatch = text.match(/(?:chuyển|chuyen|nạp|nap)\s+.*?\s+(?:sang|vào|vao|về|ve)\s+(.*)/i);
+    if (directMatch) {
+      const toW = detectWallet(directMatch[1], wallets);
+      return {
+        isTransfer: true,
+        fromWalletId: null,
+        toWalletId: toW.walletId,
+        fromWalletName: null,
+        toWalletName: wallets.find((w) => w.id === toW.walletId)?.name || null,
+      };
+    }
+    return { isTransfer: false, fromWalletId: null, toWalletId: null, fromWalletName: null, toWalletName: null };
+  }
+
+  const fromPart = transferMatch[1];
+  const toPart = transferMatch[2];
+
+  const fromW = detectWallet(fromPart, wallets);
+  const toW = detectWallet(toPart, wallets);
+
+  return {
+    isTransfer: true,
+    fromWalletId: fromW.walletId,
+    toWalletId: toW.walletId,
+    fromWalletName: wallets.find((w) => w.id === fromW.walletId)?.name || null,
+    toWalletName: wallets.find((w) => w.id === toW.walletId)?.name || null,
+  };
+}
+
+export function splitMultiTransactions(text: string): string[] {
+  const clauses = text
+    .split(/[,;\n]|\s+và\s+/i)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (clauses.length <= 1) return [text];
+
+  const clausesWithAmount = clauses.filter((c) => parseVietnameseAmount(c).amount !== null);
+  if (clausesWithAmount.length >= 2) {
+    return clausesWithAmount;
+  }
+  return [text];
+}
+
+function parseSingleSmartTransaction(text: string, categories: Category[], wallets: Wallet[]): SmartTransactionResult {
   const norm = normalizeVietnameseText(text);
 
-  // Parse amount
-  const { amount, score: amountScore, matchedStr: amountStr } = parseVietnameseAmount(norm);
+  // Parse amount & currency
+  const { amount, currency, score: amountScore, matchedStr: amountStr } = parseVietnameseAmount(norm);
   
   // Parse wallet
   const { walletId, score: walletScore, walletMatchedStr } = detectWallet(norm, wallets);
@@ -416,13 +500,26 @@ export function parseSmartTransaction(text: string, categories: Category[], wall
   leftover = leftover.replace(/\s{2,}/g, " ").trim();
 
   // Parse type
-  let { type, score: typeScore } = detectType(leftover);
+  let { type, score: typeScore } = detectType(norm);
+
+  // Check if transfer
+  let isTransfer = false;
+  let fromWalletId: string | null = null;
+  let toWalletId: string | null = null;
+  if (type === "transfer") {
+    isTransfer = true;
+    type = null;
+    const transferWallets = detectTransferWallets(norm, wallets);
+    fromWalletId = transferWallets.fromWalletId || walletId;
+    toWalletId = transferWallets.toWalletId;
+  }
+
   // Parse category (using full normalized text for better context)
-  const { categoryId, score: catScore, catMatchedStr } = detectCategory(norm, type, categories);
+  const { categoryId, score: catScore, catMatchedStr } = detectCategory(norm, isTransfer ? null : type, categories);
 
   // If a strong category matched but type is unknown, infer type from category
   if (catScore >= 50 && !type && categoryId) {
-    const catObj = categories.find(c => c.id === categoryId);
+    const catObj = categories.find((c) => c.id === categoryId);
     if (catObj) {
       type = catObj.kind;
       typeScore = 80;
@@ -432,26 +529,40 @@ export function parseSmartTransaction(text: string, categories: Category[], wall
   // Extract Name
   let name = leftover.replace(/^(tiền|bằng|vào)\s+/i, "").trim();
   if (name.length === 0) {
-    name = catMatchedStr || (type === "income" ? "Khoản thu" : type === "expense" ? "Khoản chi" : "Giao dịch");
+    if (isTransfer) {
+      name = "Chuyển tiền nội bộ";
+    } else {
+      name = catMatchedStr || (type === "income" ? "Khoản thu" : type === "expense" ? "Khoản chi" : "Giao dịch");
+    }
   }
   // Capitalize first letter
   name = name.charAt(0).toUpperCase() + name.slice(1);
 
-  const finalCategoryId = catScore >= 50 ? categoryId : null;
+  const finalCategoryId = !isTransfer && catScore >= 50 ? categoryId : null;
 
   // Generate summary text
   const parts: string[] = [];
-  if (type) parts.push(type === "expense" ? "Khoản chi" : "Khoản thu");
+  if (isTransfer) {
+    parts.push("Chuyển tiền");
+  } else if (type) {
+    parts.push(type === "expense" ? "Khoản chi" : "Khoản thu");
+  }
   if (name) parts.push(name);
-  if (amount) parts.push(formatMoneyVN(amount));
+  if (amount) {
+    parts.push(currency === "VND" ? formatMoneyVN(amount) : `${amount} ${currency}`);
+  }
   
   if (finalCategoryId) {
-    const catName = categories.find(c => c.id === finalCategoryId)?.name;
+    const catName = categories.find((c) => c.id === finalCategoryId)?.name;
     if (catName) parts.push(catName);
   }
   
-  if (walletScore >= 75 && walletId) {
-    const walletName = wallets.find(w => w.id === walletId)?.name;
+  if (isTransfer) {
+    const fromWName = wallets.find((w) => w.id === fromWalletId)?.name || "Ví nguồn";
+    const toWName = wallets.find((w) => w.id === toWalletId)?.name || "Ví đích";
+    parts.push(`Từ ${fromWName} sang ${toWName}`);
+  } else if (walletScore >= 75 && walletId) {
+    const walletName = wallets.find((w) => w.id === walletId)?.name;
     if (walletName) parts.push(walletName);
   }
   
@@ -465,16 +576,44 @@ export function parseSmartTransaction(text: string, categories: Category[], wall
     type,
     name,
     amount,
+    currency,
     categoryId: finalCategoryId,
-    walletId: walletScore >= 75 ? walletId : null,
+    walletId: isTransfer ? fromWalletId : (walletScore >= 75 ? walletId : null),
     date: dateScore >= 75 ? date : null,
     confidence: {
       type: typeScore,
-      category: catScore,
+      category: isTransfer ? 100 : catScore,
       amount: amountScore,
       wallet: walletScore,
       date: dateScore,
     },
-    summaryText
+    summaryText,
+    isTransfer,
+    fromWalletId,
+    toWalletId,
   };
+}
+
+export function parseSmartTransaction(text: string, categories: Category[], wallets: Wallet[]): SmartTransactionResult {
+  const multiParts = splitMultiTransactions(text);
+  if (multiParts.length > 1) {
+    const subItems = multiParts.map((part) => parseSingleSmartTransaction(part, categories, wallets));
+    const first = subItems[0];
+    const names = subItems.map((s) => s.name).join(", ");
+    return {
+      type: first.type,
+      name: names,
+      amount: first.amount,
+      currency: first.currency,
+      categoryId: first.categoryId,
+      walletId: first.walletId,
+      date: first.date,
+      confidence: first.confidence,
+      summaryText: `${subItems.length} giao dịch: ${subItems.map((s) => s.summaryText).join(" | ")}`,
+      multipleDetected: true,
+      subItems,
+    };
+  }
+
+  return parseSingleSmartTransaction(text, categories, wallets);
 }

@@ -235,29 +235,124 @@ export async function POST(request: Request) {
 
     let finalData: AITransactionParseResult;
 
-    if (source === "heuristic") {
+    // Check for multi-transaction splitting first
+    const smartResult = parseSmartTransaction(
+      text,
+      userCategories as unknown as Category[],
+      userWallets as unknown as Wallet[],
+    );
+
+    if (smartResult.isTransfer) {
+      // Transfer detection takes precedence over expense/income classification
+      const fromW = userWallets.find((w) => w.id === smartResult.fromWalletId);
+      const toW = userWallets.find((w) => w.id === smartResult.toWalletId);
+      finalData = {
+        transaction_type: null,
+        amount: smartResult.amount,
+        currency: smartResult.currency || "VND",
+        category_id: null,
+        category_name: null,
+        wallet_id: smartResult.fromWalletId ?? null,
+        wallet_name: fromW?.name ?? null,
+        description: smartResult.name || "Chuyển tiền nội bộ",
+        date: smartResult.date ? smartResult.date.toISOString().slice(0, 10) : clientDate,
+        time: null,
+        is_draft: true,
+        is_transfer: true,
+        from_wallet_id: smartResult.fromWalletId,
+        to_wallet_id: smartResult.toWalletId,
+        from_wallet_name: fromW?.name ?? null,
+        to_wallet_name: toW?.name ?? null,
+        needs_confirmation: !smartResult.fromWalletId || !smartResult.toWalletId || !smartResult.amount,
+        confirmation_fields: [
+          ...(!smartResult.amount ? ["amount"] : []),
+          ...(!smartResult.fromWalletId ? ["from_wallet_id"] : []),
+          ...(!smartResult.toWalletId ? ["to_wallet_id"] : []),
+        ],
+        confidence_notes: [
+          "Phát hiện giao dịch chuyển tiền nội bộ giữa các ví (không phải khoản chi)",
+        ],
+      };
+    } else if (smartResult.multipleDetected && smartResult.subItems && smartResult.subItems.length > 1) {
+      // Multi-transactions detected
+      const draftItems: AITransactionParseResult[] = smartResult.subItems.map((item) => {
+        const cat = userCategories.find((c) => c.id === item.categoryId);
+        const wal = userWallets.find((w) => w.id === item.walletId);
+        const tType: TransactionType | null = item.type === "income" || item.type === "expense" ? item.type : null;
+        return {
+          transaction_type: tType,
+          amount: item.amount,
+          currency: item.currency || "VND",
+          category_id: item.categoryId,
+          category_name: cat?.name ?? null,
+          wallet_id: item.walletId,
+          wallet_name: wal?.name ?? null,
+          description: item.name,
+          date: item.date ? item.date.toISOString().slice(0, 10) : clientDate,
+          time: null,
+          is_draft: true,
+          needs_confirmation: !item.amount || !item.categoryId,
+          confirmation_fields: [
+            ...(!item.amount ? ["amount"] : []),
+            ...(!item.categoryId ? ["category_id"] : []),
+          ],
+        };
+      });
+
+      const first = draftItems[0];
+      finalData = {
+        transaction_type: first.transaction_type,
+        amount: first.amount,
+        currency: first.currency,
+        category_id: first.category_id,
+        category_name: first.category_name ?? null,
+        wallet_id: first.wallet_id,
+        wallet_name: first.wallet_name ?? null,
+        description: smartResult.name,
+        date: first.date,
+        time: null,
+        is_draft: true,
+        multiple_transactions_detected: true,
+        draft_items: draftItems,
+        needs_confirmation: draftItems.some((d) => d.needs_confirmation),
+        confirmation_fields: ["multiple_transactions"],
+        confidence_notes: [
+          `Đã tách thành ${draftItems.length} bản nháp giao dịch để bạn kiểm tra trước khi lưu`,
+        ],
+      };
+    } else if (source === "heuristic") {
       // Run heuristic SmartParser as graceful fallback
-      const smartResult = parseSmartTransaction(
-        text,
-        userCategories as unknown as Category[],
-        userWallets as unknown as Wallet[],
-      );
       predictedCategory = smartResult.categoryId
         ? userCategories.find((c) => c.id === smartResult.categoryId)?.name ?? "khác"
         : "khác";
       confidence = smartResult.confidence.category / 100;
 
+      const validCatId = userCategories.some((c) => c.id === smartResult.categoryId)
+        ? smartResult.categoryId
+        : null;
+      const validWalId = userWallets.some((w) => w.id === smartResult.walletId)
+        ? smartResult.walletId
+        : null;
+      const tType: TransactionType | null = smartResult.type === "income" || smartResult.type === "expense" ? smartResult.type : null;
+
       finalData = {
-        transaction_type: smartResult.type,
+        transaction_type: tType,
         amount: smartResult.amount,
-        currency: "VND",
-        category_id: smartResult.categoryId,
+        currency: smartResult.currency || "VND",
+        category_id: validCatId,
         category_name: predictedCategory,
-        wallet_id: smartResult.walletId,
-        wallet_name: userWallets.find((w) => w.id === smartResult.walletId)?.name ?? null,
+        wallet_id: validWalId,
+        wallet_name: userWallets.find((w) => w.id === validWalId)?.name ?? null,
         description: smartResult.name || text,
         date: smartResult.date ? smartResult.date.toISOString().slice(0, 10) : clientDate,
         time: null,
+        is_draft: true,
+        needs_confirmation: !smartResult.amount || !validCatId,
+        confirmation_fields: [
+          ...(!smartResult.amount ? ["amount"] : []),
+          ...(!validCatId ? ["category_id"] : []),
+          ...(!validWalId ? ["wallet_id"] : []),
+        ],
         confidence_notes: [
           `Nhận diện bằng bộ quy tắc ngoại tuyến (heuristic fallback) — ${Math.round(confidence * 100)}% tin cậy`,
         ],
@@ -272,17 +367,27 @@ export async function POST(request: Request) {
       const matchedWal = matchWalletFromText(text, userWallets);
       const title = cleanTransactionTitle(text, parsedAmt.matchedStr);
 
+      const validCatId = matchedCat && userCategories.some((c) => c.id === matchedCat.id) ? matchedCat.id : null;
+      const validWalId = matchedWal && userWallets.some((w) => w.id === matchedWal.id) ? matchedWal.id : null;
+
       finalData = {
         transaction_type: targetKind,
         amount: parsedAmt.amount,
-        currency: "VND",
-        category_id: matchedCat?.id ?? null,
+        currency: parsedAmt.currency || "VND",
+        category_id: validCatId,
         category_name: matchedCat?.name ?? predictedCategory,
-        wallet_id: matchedWal?.id ?? null,
+        wallet_id: validWalId,
         wallet_name: matchedWal?.name ?? null,
         description: title,
         date: clientDate,
         time: null,
+        is_draft: true,
+        needs_confirmation: !parsedAmt.amount || !validCatId,
+        confirmation_fields: [
+          ...(!parsedAmt.amount ? ["amount"] : []),
+          ...(!validCatId ? ["category_id"] : []),
+          ...(!validWalId ? ["wallet_id"] : []),
+        ],
         confidence_notes: [
           `Phân loại bằng ${source} (độ tin cậy: ${Math.round(confidence * 100)}%)`,
         ],
