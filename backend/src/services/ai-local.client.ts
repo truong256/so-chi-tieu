@@ -33,6 +33,7 @@ export interface ClassifyRequest {
   preferred_version?: string;
   canary?: boolean;
   is_real_traffic?: boolean;
+  idempotency_key?: string;
 }
 
 export interface ClassifyResponse {
@@ -302,6 +303,7 @@ const telemetry = {
   ai_requests_total: {} as Record<string, number>,
   ai_v2_primary_total: {} as Record<string, number>,
   ai_v3_primary_total: {} as Record<string, number>,
+  ai_v4_primary_total: {} as Record<string, number>,
   ai_v3_canary_total: {} as Record<string, number>,
   ai_fallback_total: {} as Record<string, number>,
   ai_error_total: {} as Record<string, number>,
@@ -311,14 +313,16 @@ const telemetry = {
 
 function recordTelemetry(
   endpoint: string,
-  version: "v3" | "v2",
+  version: "v4" | "v3" | "v2",
   isCanary: boolean,
   isFallback: boolean,
   latencyMs: number,
   isError: boolean,
 ) {
   telemetry.ai_requests_total[endpoint] = (telemetry.ai_requests_total[endpoint] ?? 0) + 1;
-  if (version === "v3") {
+  if (version === "v4") {
+    telemetry.ai_v4_primary_total[endpoint] = (telemetry.ai_v4_primary_total[endpoint] ?? 0) + 1;
+  } else if (version === "v3") {
     telemetry.ai_v3_primary_total[endpoint] = (telemetry.ai_v3_primary_total[endpoint] ?? 0) + 1;
   } else {
     telemetry.ai_v2_primary_total[endpoint] = (telemetry.ai_v2_primary_total[endpoint] ?? 0) + 1;
@@ -362,6 +366,7 @@ export function getAiTelemetry() {
     ai_requests_total: { ...telemetry.ai_requests_total },
     ai_v2_primary_total: { ...telemetry.ai_v2_primary_total },
     ai_v3_primary_total: { ...telemetry.ai_v3_primary_total },
+    ai_v4_primary_total: { ...telemetry.ai_v4_primary_total },
     ai_v3_canary_total: { ...telemetry.ai_v3_canary_total },
     ai_fallback_total: { ...telemetry.ai_fallback_total },
     ai_error_total: { ...telemetry.ai_error_total },
@@ -378,7 +383,7 @@ export function getAiTelemetry() {
 
 export interface ClassificationProductEvent {
   event: "shown" | "applied" | "overridden" | "dismissed";
-  model_version: "v3" | "v2";
+  model_version: "v4" | "v3" | "v2";
   confidence_bucket: "HIGH" | "MEDIUM" | "LOW";
   predicted_category: string;
   final_category?: string;
@@ -393,12 +398,19 @@ export function recordClassificationProductEvent(evt: ClassificationProductEvent
   }
 }
 
+export function resetClassificationProductEvents(): void {
+  productEvents.length = 0;
+}
+
 export function getClassificationProductMetrics() {
   const counts: Record<string, number> = {
     shown_total: 0,
     applied_total: 0,
     overridden_total: 0,
     dismissed_total: 0,
+    v4_shown: 0,
+    v4_applied: 0,
+    v4_overridden: 0,
     v3_shown: 0,
     v3_applied: 0,
     v3_overridden: 0,
@@ -409,40 +421,70 @@ export function getClassificationProductMetrics() {
     high_applied: 0,
     high_overridden: 0,
     high_v3_overridden: 0,
+    high_v4_overridden: 0,
   };
 
   for (const ev of productEvents) {
     counts[`${ev.event}_total`] = (counts[`${ev.event}_total`] ?? 0) + 1;
-    if (ev.model_version === "v3") {
+    if (ev.model_version === "v4") {
+      counts[`v4_${ev.event}`] = (counts[`v4_${ev.event}`] ?? 0) + 1;
+    } else if (ev.model_version === "v3") {
       counts[`v3_${ev.event}`] = (counts[`v3_${ev.event}`] ?? 0) + 1;
     } else {
       counts[`v2_${ev.event}`] = (counts[`v2_${ev.event}`] ?? 0) + 1;
     }
     if (ev.confidence_bucket === "HIGH") {
       counts[`high_${ev.event}`] = (counts[`high_${ev.event}`] ?? 0) + 1;
-      if (ev.model_version === "v3" && ev.event === "overridden") {
+      if (ev.model_version === "v4" && ev.event === "overridden") {
+        counts.high_v4_overridden += 1;
+      } else if (ev.model_version === "v3" && ev.event === "overridden") {
         counts.high_v3_overridden += 1;
       }
     }
   }
 
-  const applyRateTotal = counts.shown_total > 0 ? counts.applied_total / counts.shown_total : 0;
-  const applyRateV3 = counts.v3_shown > 0 ? counts.v3_applied / counts.v3_shown : 0;
-  const applyRateV2 = counts.v2_shown > 0 ? counts.v2_applied / counts.v2_shown : 0;
-  const overrideRateV3 = counts.v3_shown > 0 ? counts.v3_overridden / counts.v3_shown : 0;
-  const overrideRateHighV3 = counts.v3_shown > 0 ? counts.high_v3_overridden / counts.v3_shown : 0;
+  const v4Base = counts.v4_shown > 0 ? counts.v4_shown : (counts.v4_applied + counts.v4_overridden);
+  const v3Base = counts.v3_shown > 0 ? counts.v3_shown : (counts.v3_applied + counts.v3_overridden);
+  const v2Base = counts.v2_shown > 0 ? counts.v2_shown : (counts.v2_applied + counts.v2_overridden);
+  const totalBase = counts.shown_total > 0 ? counts.shown_total : (counts.applied_total + counts.overridden_total);
+
+  const applyRateTotal = totalBase > 0 ? counts.applied_total / totalBase : 0;
+  const applyRateV4 = v4Base > 0 ? counts.v4_applied / v4Base : 0;
+  const applyRateV3 = v3Base > 0 ? counts.v3_applied / v3Base : 0;
+  const applyRateV2 = v2Base > 0 ? counts.v2_applied / v2Base : 0;
+
+  const overrideRateV4 = v4Base > 0 ? counts.v4_overridden / v4Base : 0;
+  const overrideRateV3 = v3Base > 0 ? counts.v3_overridden / v3Base : 0;
+  const overrideRateHighV4 = v4Base > 0 ? counts.high_v4_overridden / v4Base : 0;
+  const overrideRateHighV3 = v3Base > 0 ? counts.high_v3_overridden / v3Base : 0;
 
   return {
     counts,
     apply_rate: {
       overall: Number(applyRateTotal.toFixed(4)),
+      v4: Number(applyRateV4.toFixed(4)),
       v3: Number(applyRateV3.toFixed(4)),
       v2: Number(applyRateV2.toFixed(4)),
     },
     override_rate: {
+      v4: Number(overrideRateV4.toFixed(4)),
+      v4_high_confidence: Number(overrideRateHighV4.toFixed(4)),
       v3: Number(overrideRateV3.toFixed(4)),
       v3_high_confidence: Number(overrideRateHighV3.toFixed(4)),
     },
+    // Direct fields for requirement 6
+    v3_shown: counts.v3_shown,
+    v3_applied: counts.v3_applied,
+    v3_overridden: counts.v3_overridden,
+    v4_shown: counts.v4_shown,
+    v4_applied: counts.v4_applied,
+    v4_overridden: counts.v4_overridden,
+    v3_acceptance_rate: Number(applyRateV3.toFixed(4)),
+    v4_acceptance_rate: Number(applyRateV4.toFixed(4)),
+    v3_correction_rate: Number(overrideRateV3.toFixed(4)),
+    v4_correction_rate: Number(overrideRateV4.toFixed(4)),
+    v3_high_confidence_correction_rate: Number(overrideRateHighV3.toFixed(4)),
+    v4_high_confidence_correction_rate: Number(overrideRateHighV4.toFixed(4)),
   };
 }
 
@@ -473,9 +515,14 @@ async function singlePost<TReq, TRes>(
     payload.canary = isCanary;
   }
 
+  const internalToken = (process.env.AI_INTERNAL_SERVICE_TOKEN || process.env.AI_INTERNAL_TELEMETRY_TOKEN || "").trim();
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
+  if (internalToken) {
+    headers["X-AI-Internal-Token"] = internalToken;
+  }
   if (preferredVersion) {
     headers["X-AI-Model-Version"] = preferredVersion;
   }
@@ -577,12 +624,16 @@ async function executeWithCanaryAndFallback<
     if (data.fallback === undefined && data.meta) {
       data.fallback = Boolean(data.meta.fallback_used);
     }
-    recordTelemetry(path, resolvedVersion === "v2" ? "v2" : "v3", resolvedCanary, false, latPrimary, false);
+    const teleVer: "v4" | "v3" | "v2" = resolvedVersion === "v4" ? "v4" : resolvedVersion === "v2" ? "v2" : "v3";
+    recordTelemetry(path, teleVer, resolvedCanary, false, latPrimary, false);
     return { ok: true, data: data as TRes };
   }
 
-  // 2. Fallback execution: If Primary was V3 (or unspecified on non-4xx) and failed, attempt V2 fallback
-  if ((!primaryVersion || primaryVersion === "v3") && primaryRes.status !== 400 && primaryRes.status !== 422) {
+  // 2. Fallback execution: If Primary was V3 (or unspecified on non-4xx) and failed, attempt V2 fallback.
+  // CRITICAL (Requirement 5): Node does NOT perform secondary fallback for /classify.
+  // FastAPI is the single source of truth for V4 canary and internal V4->V3->V2 fallback.
+  // Secondary fallback on /classify causes duplicate inference and duplicate real-traffic telemetry.
+  if (!isClassifyPath && (!primaryVersion || primaryVersion === "v3") && primaryRes.status !== 400 && primaryRes.status !== 422) {
     const fallbackRes = await singlePost<TReq, TRes>(
       path,
       body,
@@ -608,7 +659,7 @@ async function executeWithCanaryAndFallback<
 
   // If all failed
   const latFail = Date.now() - t0;
-  recordTelemetry(path, primaryVersion ?? "v3", isCanary, false, latFail, true);
+  recordTelemetry(path, primaryVersion === "v2" ? "v2" : "v3", isCanary, false, latFail, true);
   return {
     ok: false,
     error: primaryRes.error === "timeout"

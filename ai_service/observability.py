@@ -600,39 +600,61 @@ def record_real_traffic_event(
 
 def get_real_events_status() -> Dict[str, Any]:
     """
-    Calculate progress towards the >=500 valid real-user event promotion gate.
-    Returns current count, promotion gate status (PROMOTION_BLOCKED or READY_FOR_HUMAN_REVIEW),
-    error rates, fallback rates, and p95 latencies for real traffic.
+    Calculate progress towards the >=500 valid V4 canary event promotion gate.
+    Returns:
+    - total_real_events
+    - v3_real_events
+    - v4_real_events
+    - valid_v4_canary_events (successful non-fallback V4 canary inferences)
+    - v4_success_events
+    - v4_failure_events
+    - v4_fallback_events
+    - promotion_gate: PROMOTION_BLOCKED or READY_FOR_HUMAN_REVIEW (based on valid_v4_canary_events >= 500)
     """
-    count = len(_real_event_records)
-    target = 500
-    is_blocked = count < target
-    status_str = "PROMOTION_BLOCKED" if is_blocked else "READY_FOR_HUMAN_REVIEW"
-    reason = (
-        f"Promotion blocked: {count}/{target} valid real events collected. Minimum {target} required before human review."
-        if is_blocked
-        else "Minimum valid real event count reached (>=500). Ready for human review."
-    )
-
+    total_real = len(_real_event_records)
     v4_events = [r for r in _real_event_records if r.get("model_version") == "v4"]
     v3_events = [r for r in _real_event_records if r.get("model_version") == "v3"]
-    v4_failures = [r for r in v4_events if not r.get("success", False)]
-    v4_fallbacks = [r for r in v4_events if r.get("fallback", False)]
-    v4_err_rate = round(len(v4_failures) / len(v4_events), 4) if v4_events else 0.0
-    v4_fb_rate = round(len(v4_fallbacks) / len(v4_events), 4) if v4_events else 0.0
 
-    v4_lats = [r.get("latency_ms", 0.0) for r in v4_events]
+    v4_success_events = len([r for r in v4_events if r.get("success", False) is True])
+    v4_failure_events = len([r for r in v4_events if not r.get("success", False)])
+    v4_fallback_events = len([r for r in v4_events if r.get("fallback", False)])
+
+    # valid_v4_canary_events: strictly authentic real traffic, handled by V4, successfully executed without fallback
+    valid_v4_canary_events = len([
+        r for r in v4_events
+        if r.get("success", False) is True and not r.get("fallback", False)
+    ])
+
+    target = 500
+    is_blocked = valid_v4_canary_events < target
+    status_str = "PROMOTION_BLOCKED" if is_blocked else "READY_FOR_HUMAN_REVIEW"
+    reason = (
+        f"Promotion blocked: {valid_v4_canary_events}/{target} valid V4 canary events collected. "
+        f"Minimum {target} successful non-fallback V4 canary events required before human review."
+        if is_blocked
+        else f"Minimum valid V4 canary event count reached ({valid_v4_canary_events}>={target}). Ready for human review."
+    )
+
+    v4_err_rate = round(v4_failure_events / len(v4_events), 4) if v4_events else 0.0
+    v4_fb_rate = round(v4_fallback_events / len(v4_events), 4) if v4_events else 0.0
+
+    v4_lats = [r.get("latency_ms", 0.0) for r in v4_events if r.get("latency_ms") is not None]
     p95_lat = round(float(np.percentile(v4_lats, 95)), 2) if v4_lats else 0.0
     p99_lat = round(float(np.percentile(v4_lats, 99)), 2) if v4_lats else 0.0
 
     return {
-        "valid_real_events": count,
-        "target_events": target,
-        "progress": f"{count} / {target}",
-        "promotion_gate": status_str,
-        "reason": reason,
+        "total_real_events": total_real,
         "v3_real_events": len(v3_events),
         "v4_real_events": len(v4_events),
+        "valid_v4_canary_events": valid_v4_canary_events,
+        "v4_success_events": v4_success_events,
+        "v4_failure_events": v4_failure_events,
+        "v4_fallback_events": v4_fallback_events,
+        "valid_real_events": valid_v4_canary_events,  # backward compatibility alias
+        "target_events": target,
+        "progress": f"{valid_v4_canary_events} / {target}",
+        "promotion_gate": status_str,
+        "reason": reason,
         "v4_error_rate": v4_err_rate,
         "v4_fallback_rate": v4_fb_rate,
         "v4_latency_p95": p95_lat,

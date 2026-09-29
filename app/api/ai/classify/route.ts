@@ -10,6 +10,7 @@
  */
 
 import { NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { aiClassify } from "@/backend/src/services/ai-local.client";
 import {
   AuthenticationError,
@@ -49,9 +50,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Trường 'text' không được để trống." }, { status: 400 });
     }
 
+    // Extract client idempotency identifier if present (from header or body)
+    const headerKey = request.headers.get("x-idempotency-key") || request.headers.get("x-request-id");
+    const bodyKey = typeof body.idempotency_key === "string" ? body.idempotency_key : typeof body.client_event_id === "string" ? body.client_event_id : undefined;
+    const rawKey = (headerKey || bodyKey || "").trim();
+
+    // Key must have good entropy, be alphanumeric/hyphens/underscores (8..128 chars), and contain NO PII/text
+    let idempotencyKey: string;
+    if (rawKey && /^[a-zA-Z0-9_-]{8,128}$/.test(rawKey)) {
+      idempotencyKey = rawKey;
+    } else {
+      idempotencyKey = `tx_${crypto.randomUUID()}`;
+    }
+
     // 3. Call AI service (fail-safe with deterministic canary routing based on session user.id)
     const result = await aiClassify(
-      { text, user_id: user.id, is_real_traffic: true },
+      {
+        text,
+        user_id: user.id,
+        is_real_traffic: true,
+        idempotency_key: idempotencyKey,
+      },
       { userId: user.id },
     );
 

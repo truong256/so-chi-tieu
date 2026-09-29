@@ -1,7 +1,7 @@
 {
   "model_name": "model_warning_v3",
-  "candidate_evaluated": "model_warning_v4_baseline_audit",
-  "dataset": "realistic_challenge_dataset.json",
+  "candidate_evaluated": "warning_v3_realistic_challenge_audit",
+  "dataset": "realistic_challenge_dataset.json (24 manually structured realistic challenge cases)",
   "total_cases": 24,
   "metrics": {
     "tp": 6,
@@ -33,6 +33,6 @@
     "precision_gte_0_70": false,
     "f1_gte_0_80": false
   },
-  "status": "EXPERIMENTAL_REJECTED",
-  "verdict_reason": "Failed quality gate on realistic human-curated challenge set (F1=0.5714 vs 0.80 required; FPR=41.18%). Learned synthetic shortcuts on transaction amounts and dark web flags. Status remains EXPERIMENTAL."
+  "status": "EXPERIMENTAL",
+  "verdict_reason": "Failed quality gate on realistic challenge set: F1=0.5714 (>=0.80 required), Precision=42.86% (>=70% required), FPR=47.06%. Previous synthetic-data audit raised a shortcut concern, while this 24-case permutation evaluation currently shows the strongest observed sensitivity to transaction_amount, MCC and credit_limit. Model status remains EXPERIMENTAL."
 }

@@ -1,8 +1,8 @@
 """
-model_warning_v4/scripts/evaluate.py
-====================================
+warning_v3_realistic_audit/scripts/evaluate.py
+==============================================
 Comprehensive Realistic Challenge Evaluation and Quality Gate for Warning/Risk Models:
-- Evaluates on human-curated realistic challenge set with zero leakage.
+- Evaluates Warning V3 on manually structured realistic challenge set with zero leakage.
 - Reports:
   * Fraud Recall
   * Precision
@@ -150,14 +150,12 @@ def compute_permutation_importance(engine, feature_keys: List[str]) -> Dict[str,
     rng = np.random.RandomState(42)
 
     for feat in feature_keys:
-        # Create shuffled copy
         permuted_cases = [dict(c) for c in base_cases]
         values = [c.get(feat) for c in permuted_cases]
         rng.shuffle(values)
         for i, val in enumerate(values):
             permuted_cases[i][feat] = val
 
-        # Evaluate on permuted cases
         y_true = [int(c["is_fraud"]) for c in permuted_cases]
         y_pred = []
         y_prob = []
@@ -174,9 +172,9 @@ def compute_permutation_importance(engine, feature_keys: List[str]) -> Dict[str,
     return importances
 
 
-def evaluate_warning_v4_gate():
+def run_warning_v3_realistic_audit():
     print("=" * 80)
-    print("      REALISTIC CHALLENGE EVALUATION & QUALITY GATE (WARNING/RISK)")
+    print("      REALISTIC CHALLENGE AUDIT & QUALITY GATE (WARNING V3)")
     print("=" * 80)
 
     # 1. Evaluate Warning V3 Baseline
@@ -203,7 +201,7 @@ def evaluate_warning_v4_gate():
         "credit_score",
     ]
     v3_importance = compute_permutation_importance(v3_engine, feature_keys)
-    print("\n[Warning V3 Permutation Feature Importance / Shortcut Analysis]")
+    print("\n[Warning V3 Permutation Feature Importance / Sensitivity Analysis]")
     for feat, imp in sorted(v3_importance.items(), key=lambda x: x[1], reverse=True):
         print(f"  {feat:<22}: delta F1 = {imp:.4f}")
 
@@ -218,22 +216,33 @@ def evaluate_warning_v4_gate():
     status = "ACCEPT" if all_passed else "REJECT"
 
     print("\n" + "=" * 80)
-    print(f"QUALITY GATE STATUS FOR WARNING V3 / CURRENT: {status} (EXPERIMENTAL)")
+    print(f"QUALITY GATE STATUS FOR WARNING V3: {status} (EXPERIMENTAL)")
     print("=" * 80)
     for k, v in gate_checks.items():
         sym = "✔ PASS" if v else "✖ FAIL"
         print(f"  [{sym}] {k}")
 
+    # Dynamically format verdict string ensuring exact consistency with calculated metrics
+    fpr_pct_str = f"{v3_metrics['fpr'] * 100:.2f}%"
+    precision_pct_str = f"{v3_metrics['precision'] * 100:.2f}%"
+    verdict_reason = (
+        f"Failed quality gate on realistic challenge set: F1={v3_metrics['f1']:.4f} (>=0.80 required), "
+        f"Precision={precision_pct_str} (>=70% required), FPR={fpr_pct_str}. "
+        f"Previous synthetic-data audit raised a shortcut concern, while this 24-case permutation evaluation "
+        f"currently shows the strongest observed sensitivity to transaction_amount, MCC and credit_limit. "
+        f"Model status remains EXPERIMENTAL."
+    )
+
     report = {
         "model_name": "model_warning_v3",
-        "candidate_evaluated": "model_warning_v4_baseline_audit",
-        "dataset": "realistic_challenge_dataset.json",
+        "candidate_evaluated": "warning_v3_realistic_challenge_audit",
+        "dataset": "realistic_challenge_dataset.json (24 manually structured realistic challenge cases)",
         "total_cases": v3_metrics["total_samples"],
         "metrics": v3_metrics,
         "permutation_importance": v3_importance,
         "gate_checks": gate_checks,
-        "status": "EXPERIMENTAL_REJECTED",
-        "verdict_reason": "Failed quality gate on realistic human-curated challenge set (F1=0.5714 vs 0.80 required; FPR=41.18%). Learned synthetic shortcuts on transaction amounts and dark web flags. Status remains EXPERIMENTAL.",
+        "status": "EXPERIMENTAL",
+        "verdict_reason": verdict_reason,
     }
 
     with open(METRICS_DIR / "realistic_evaluation.json", "w", encoding="utf-8") as f:
@@ -242,5 +251,9 @@ def evaluate_warning_v4_gate():
     return report
 
 
+# Alias for backward compatibility
+evaluate_warning_v4_gate = run_warning_v3_realistic_audit
+
+
 if __name__ == "__main__":
-    evaluate_warning_v4_gate()
+    run_warning_v3_realistic_audit()

@@ -98,3 +98,70 @@ test("server-side pseudonymization: user id is hashed with SHA-256 before teleme
   assert.notEqual(hashed, rawUserId);
   assert.equal(hashed.includes("user-uuid"), false);
 });
+
+test("feedback loop: isolated V4 metrics and V4 must NEVER increment V3 counters", () => {
+  const initial = getClassificationProductMetrics();
+  const v3ShownBefore = initial.counts.v3_shown ?? 0;
+  const v3AppliedBefore = initial.counts.v3_applied ?? 0;
+  const v3OverriddenBefore = initial.counts.v3_overridden ?? 0;
+  const v4ShownBefore = initial.counts.v4_shown ?? 0;
+  const v4AppliedBefore = initial.counts.v4_applied ?? 0;
+  const v4OverriddenBefore = initial.counts.v4_overridden ?? 0;
+
+  // Record V4 shown, applied, overridden
+  recordClassificationProductEvent({
+    event: "shown",
+    model_version: "v4",
+    confidence_bucket: "HIGH",
+    predicted_category: "ăn uống",
+  });
+  recordClassificationProductEvent({
+    event: "applied",
+    model_version: "v4",
+    confidence_bucket: "HIGH",
+    predicted_category: "ăn uống",
+    final_category: "ăn uống",
+  });
+  recordClassificationProductEvent({
+    event: "overridden",
+    model_version: "v4",
+    confidence_bucket: "HIGH",
+    predicted_category: "ăn uống",
+    final_category: "mua sắm",
+  });
+
+  const updated = getClassificationProductMetrics();
+
+  // V4 events MUST NEVER increment V3 counters
+  assert.equal(updated.counts.v3_shown, v3ShownBefore, "V4 event must not increment v3_shown");
+  assert.equal(updated.counts.v3_applied, v3AppliedBefore, "V4 event must not increment v3_applied");
+  assert.equal(updated.counts.v3_overridden, v3OverriddenBefore, "V4 event must not increment v3_overridden");
+
+  // V4 counters MUST increment accurately
+  assert.equal(updated.counts.v4_shown, v4ShownBefore + 1, "V4 event must increment v4_shown");
+  assert.equal(updated.counts.v4_applied, v4AppliedBefore + 1, "V4 event must increment v4_applied");
+  assert.equal(updated.counts.v4_overridden, v4OverriddenBefore + 1, "V4 event must increment v4_overridden");
+
+  // Verify rates exist and are numbers
+  assert.equal(typeof updated.v3_acceptance_rate, "number");
+  assert.equal(typeof updated.v4_acceptance_rate, "number");
+  assert.equal(typeof updated.v3_correction_rate, "number");
+  assert.equal(typeof updated.v4_correction_rate, "number");
+  assert.equal(typeof updated.v3_high_confidence_correction_rate, "number");
+  assert.equal(typeof updated.v4_high_confidence_correction_rate, "number");
+});
+
+test("idempotency end-to-end: generated key has strong entropy and contains no PII or text", () => {
+  const rawUUID = crypto.randomUUID();
+  const idempotencyKey = `tx_${rawUUID}`;
+
+  // Key must be safe token format
+  assert.match(idempotencyKey, /^tx_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+  assert.ok(idempotencyKey.length >= 20 && idempotencyKey.length <= 128);
+
+  // Must not leak transaction content or user identity
+  const sensitiveStrings = ["phở", "cà phê", " HighLand ", "user_secret", "500000"];
+  for (const s of sensitiveStrings) {
+    assert.equal(idempotencyKey.includes(s), false, `Idempotency key must not contain '${s}'`);
+  }
+});

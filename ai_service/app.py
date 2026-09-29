@@ -120,6 +120,7 @@ from ai_service.config import (
     AI_CLASSIFY_V4_CANARY_ENABLED,
     AI_CLASSIFY_V4_CANARY_PERCENT,
     AI_INTERNAL_TELEMETRY_TOKEN,
+    AI_INTERNAL_SERVICE_TOKEN,
 )
 from ai_service.observability import (
     get_classify_v4_shadow_metrics,
@@ -129,16 +130,46 @@ from ai_service.observability import (
 from ai_service.services.canary_guard import get_v4_canary_guard_status
 
 
+def verify_trusted_internal_caller(
+    x_ai_internal_token: Optional[str] = Header(None, alias="X-AI-Internal-Token"),
+    x_internal_key: Optional[str] = Header(None, alias="X-Internal-Key"),
+    authorization: Optional[str] = Header(None),
+) -> bool:
+    """
+    Verify whether the request originates from a trusted internal backend (Next.js server).
+    Uses constant-time comparison.
+    FAIL CLOSED: If no internal service token is configured or token is invalid, returns False.
+    """
+    secret = AI_INTERNAL_SERVICE_TOKEN or AI_INTERNAL_TELEMETRY_TOKEN
+    if not secret:
+        return False
+
+    token = None
+    if x_ai_internal_token:
+        token = x_ai_internal_token.strip()
+    elif x_internal_key:
+        token = x_internal_key.strip()
+    elif authorization and authorization.startswith("Bearer "):
+        token = authorization[7:].strip()
+
+    if not token:
+        return False
+
+    return hmac.compare_digest(token, secret)
+
+
 def verify_internal_auth(
     authorization: Optional[str] = Header(None),
     x_internal_key: Optional[str] = Header(None),
+    x_ai_internal_token: Optional[str] = Header(None, alias="X-AI-Internal-Token"),
 ):
     """
     Security Guard: Prevent unauthorized external access to internal telemetry metrics.
-    Requires Authorization: Bearer <AI_INTERNAL_TELEMETRY_TOKEN> or X-Internal-Key: <token>.
+    Requires Authorization: Bearer <AI_INTERNAL_TELEMETRY_TOKEN> or X-Internal-Key: <token> or X-AI-Internal-Token: <token>.
     FAIL CLOSED: If AI_INTERNAL_TELEMETRY_TOKEN is unset/empty, all telemetry requests are rejected.
     """
-    if not AI_INTERNAL_TELEMETRY_TOKEN:
+    secret = AI_INTERNAL_TELEMETRY_TOKEN or AI_INTERNAL_SERVICE_TOKEN
+    if not secret:
         logger.warning("Telemetry access rejected: AI_INTERNAL_TELEMETRY_TOKEN is unconfigured (FAIL CLOSED).")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -151,6 +182,8 @@ def verify_internal_auth(
         token = authorization[7:].strip()
     elif x_internal_key:
         token = x_internal_key.strip()
+    elif x_ai_internal_token:
+        token = x_ai_internal_token.strip()
 
     if not token:
         raise HTTPException(
@@ -159,7 +192,7 @@ def verify_internal_auth(
         )
 
     # Constant-time comparison
-    if hmac.compare_digest(token, AI_INTERNAL_TELEMETRY_TOKEN):
+    if hmac.compare_digest(token, secret):
         return True
 
     logger.warning("Telemetry access attempt with invalid/unauthorized token.")
@@ -283,8 +316,11 @@ async def feedback_metrics():
     response_model=Union[ClassifyResponse, FailSafeResponse],
     summary="Classify transaction description into spending category",
 )
-async def classify(request: ClassifyRequest):
-    return run_classify(request)
+async def classify(
+    request: ClassifyRequest,
+    is_trusted_internal: bool = Depends(verify_trusted_internal_caller),
+):
+    return run_classify(request, is_trusted_internal=is_trusted_internal)
 
 
 @app.post(

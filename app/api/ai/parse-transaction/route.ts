@@ -13,6 +13,7 @@
  */
 
 import { NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { aiClassify } from "@/backend/src/services/ai-local.client";
 import {
@@ -159,13 +160,26 @@ export async function POST(request: Request) {
       supabasePublishableKey: supabaseKey,
     });
 
-    // 2. Parse body
+    // 2. Parse body and idempotency key
     const body = asRecord(await readJsonBody(request, 8 * 1024));
     const text = typeof body.text === "string" ? body.text.trim() : "";
     const clientDate = typeof body.client_date === "string" ? body.client_date.trim() : new Date().toISOString().slice(0, 10);
 
     if (!text) {
       return NextResponse.json({ error: "Trường 'text' không được để trống." }, { status: 400 });
+    }
+
+    // Extract client idempotency identifier if present (from header or body)
+    const headerKey = request.headers.get("x-idempotency-key") || request.headers.get("x-request-id");
+    const bodyKey = typeof body.idempotency_key === "string" ? body.idempotency_key : typeof body.client_event_id === "string" ? body.client_event_id : undefined;
+    const rawKey = (headerKey || bodyKey || "").trim();
+
+    // Key must have good entropy, be alphanumeric/hyphens/underscores (8..128 chars), and contain NO PII/text
+    let idempotencyKey: string;
+    if (rawKey && /^[a-zA-Z0-9_-]{8,128}$/.test(rawKey)) {
+      idempotencyKey = rawKey;
+    } else {
+      idempotencyKey = `tx_${crypto.randomUUID()}`;
     }
 
     // 3. Load user categories and wallets from database
@@ -182,9 +196,14 @@ export async function POST(request: Request) {
     const userCategories: UserCategoryRow[] = (catRes.data ?? []) as UserCategoryRow[];
     const userWallets: UserWalletRow[] = (walRes.data ?? []) as UserWalletRow[];
 
-    // 4. Call Local ML Classify via Client (FastAPI manages V4 canary routing)
+    // 4. Call Local ML Classify via Client (FastAPI manages V4 canary routing + idempotency deduplication)
     const aiResult = await aiClassify(
-      { text, user_id: user.id, is_real_traffic: true },
+      {
+        text,
+        user_id: user.id,
+        is_real_traffic: true,
+        idempotency_key: idempotencyKey,
+      },
       { userId: user.id },
     );
 

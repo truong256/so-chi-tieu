@@ -60,3 +60,7 @@ __pycache__/
 htmlcov/
 venv/
 .venv/
+
+# AI telemetry runtime logs (never commit real user events or feedback to git)
+ai_service/data/real_events_telemetry.jsonl
+ai_service/data/feedback_telemetry.jsonl

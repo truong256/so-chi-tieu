@@ -63,7 +63,8 @@ export async function POST(request: Request) {
 
     const suggestedCategory = typeof body.suggested_category === "string" ? body.suggested_category.trim() : "";
     const finalCategory = typeof body.final_category === "string" ? body.final_category.trim() : "";
-    const modelVersion = typeof body.model_version === "string" ? body.model_version.trim() : "v3";
+    const rawVersion = typeof body.model_version === "string" ? body.model_version.trim().toLowerCase() : "v3";
+    const modelVersion: "v4" | "v3" | "v2" = rawVersion === "v4" ? "v4" : rawVersion === "v2" ? "v2" : "v3";
     const rawBand = typeof body.confidence_band === "string" ? body.confidence_band.trim().toUpperCase() : "MEDIUM";
     const confidenceBand: "HIGH" | "MEDIUM" | "LOW" =
       rawBand === "HIGH" || rawBand === "LOW" ? rawBand : "MEDIUM";
@@ -86,17 +87,17 @@ export async function POST(request: Request) {
     // 3. Server-side SHA-256 user pseudonymization
     const userIdHash = crypto.createHash("sha256").update(user.id).digest("hex");
 
-    // 4. Update in-process product metrics
+    // 4. Update in-process product metrics (isolated per version: v2, v3, v4)
     recordClassificationProductEvent({
       event: isAccepted ? "applied" : "overridden",
-      model_version: modelVersion === "v2" ? "v2" : "v3",
+      model_version: modelVersion,
       confidence_bucket: confidenceBand,
       predicted_category: suggestedCategory,
       final_category: finalCategory,
     });
 
     // 5. Forward to FastAPI internal telemetry (fail-safe)
-    const telemetryToken = process.env.AI_INTERNAL_TELEMETRY_TOKEN;
+    const telemetryToken = (process.env.AI_INTERNAL_TELEMETRY_TOKEN || process.env.AI_INTERNAL_SERVICE_TOKEN || "").trim();
     if (telemetryToken) {
       try {
         const fastApiUrl = `${getAiServiceUrl()}/telemetry/feedback`;
@@ -105,6 +106,7 @@ export async function POST(request: Request) {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${telemetryToken}`,
+            "X-AI-Internal-Token": telemetryToken,
           },
           body: JSON.stringify({
             model_version: modelVersion,

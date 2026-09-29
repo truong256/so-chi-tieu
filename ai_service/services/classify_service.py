@@ -38,7 +38,10 @@ from ai_service.services.canary_guard import record_canary_execution, is_v4_cana
 logger = logging.getLogger("ai_service.classify")
 
 
-def run_classify(request: ClassifyRequest) -> Union[ClassifyResponse, FailSafeResponse]:
+def run_classify(
+    request: ClassifyRequest,
+    is_trusted_internal: bool = False,
+) -> Union[ClassifyResponse, FailSafeResponse]:
     t0 = time.perf_counter()
 
     # 1. Gate Approval Check
@@ -225,12 +228,13 @@ def run_classify(request: ClassifyRequest) -> Union[ClassifyResponse, FailSafeRe
             fallback_used=fallback_used,
             error_type="model_artifact_unavailable",
         )
-        if getattr(request, "is_real_traffic", False):
+        effective_is_real_traffic = bool(getattr(request, "is_real_traffic", False) and is_trusted_internal)
+        if effective_is_real_traffic:
             import hashlib
             from ai_service.observability import record_real_traffic_event
             uid_hash = hashlib.sha256(request.user_id.encode("utf-8")).hexdigest() if request.user_id else None
             record_real_traffic_event(
-                model_version=primary_version,
+                model_version="v4" if is_canary else primary_version,
                 route_type="canary" if is_canary else "control",
                 category="unknown",
                 confidence=0.0,
@@ -276,12 +280,13 @@ def run_classify(request: ClassifyRequest) -> Union[ClassifyResponse, FailSafeRe
     )
 
     # Real Event Tracking (Section 10: Only genuine authenticated application flow)
-    if getattr(request, "is_real_traffic", False):
+    effective_is_real_traffic = bool(getattr(request, "is_real_traffic", False) and is_trusted_internal)
+    if effective_is_real_traffic:
         import hashlib
         from ai_service.observability import record_real_traffic_event
         uid_hash = hashlib.sha256(request.user_id.encode("utf-8")).hexdigest() if request.user_id else None
         record_real_traffic_event(
-            model_version=active_version,
+            model_version="v4" if is_canary else active_version,
             route_type="canary" if is_canary else "control",
             category=category,
             confidence=confidence,

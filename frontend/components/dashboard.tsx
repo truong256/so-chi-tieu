@@ -3416,8 +3416,8 @@ function TransactionTable({ items, money, language, categoryById, walletById, on
         <span>{t("transactions.title", undefined, language).toUpperCase()}</span>
         <span>{language === "vi" ? "DANH MỤC / VÍ" : "CATEGORY / WALLET"}</span>
         <span>{language === "vi" ? "NGÀY & GIỜ" : "DATE & TIME"}</span>
-        <span className="th-amount">{t("common.amount", undefined, language).toUpperCase()}</span>
-        <span className="th-actions">{language === "vi" ? "THAO TÁC" : "ACTIONS"}</span>
+        <span>{t("common.amount", undefined, language).toUpperCase()}</span>
+        <span />
       </div>
       {items.map(item => {
         const category = categoryById.get(item.category_id ?? "");
@@ -3431,58 +3431,22 @@ function TransactionTable({ items, money, language, categoryById, walletById, on
                 <small>{item.note || t("common.noData", undefined, language)}</small>
               </span>
             </span>
-            <span className="transaction-meta">
+            <span>
               <b>{category?.name ?? item.category}</b>
               <small>{wallet?.name ?? (language === "vi" ? "Không gắn ví" : "No wallet")}</small>
             </span>
-            <span className="transaction-date">{formatDate(item.occurred_at, language)}</span>
-            <div className="transaction-amount-col">
-              <strong className={`transaction-amount ${item.type}`}>
-                {item.type === "expense" ? "-" : "+"}
-                {money(item.amount)}
-              </strong>
+            <span>{formatDate(item.occurred_at, language)}</span>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+              <strong className={item.type}>{item.type === "expense" ? "-" : "+"}{money(item.amount)}</strong>
               {token && item.type === "expense" && item.amount >= 2000000 && (
                 <AiRiskBadge token={token} amount={item.amount} />
               )}
             </div>
-            <div className="transaction-actions row-actions">
-              {item.receipt_path && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onReceipt(item.receipt_path!);
-                  }}
-                  title={t("transactions.viewReceipt", undefined, language)}
-                  className="tx-text-btn receipt"
-                >
-                  <span className="receipt-text-full">{t("transactions.receipt", undefined, language)}</span>
-                  <span className="receipt-text-short">{language === "vi" ? "Hóa đơn" : "Receipt"}</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(item);
-                }}
-                title={t("common.edit", undefined, language)}
-                className="tx-text-btn edit"
-              >
-                {t("common.edit", undefined, language)}
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(item);
-                }}
-                title={t("common.delete", undefined, language)}
-                className="tx-text-btn delete"
-              >
-                {t("common.delete", undefined, language)}
-              </button>
-            </div>
+            <span className="row-actions">
+              {item.receipt_path && <button type="button" onClick={() => onReceipt(item.receipt_path!)} title={t("transactions.viewReceipt", undefined, language)} className="tx-text-btn receipt">{t("transactions.receipt", undefined, language)}</button>}
+              <button type="button" onClick={() => onEdit(item)} title={t("common.edit", undefined, language)} className="tx-text-btn edit">{t("common.edit", undefined, language)}</button>
+              <button type="button" onClick={() => onDelete(item)} title={t("common.delete", undefined, language)} className="tx-text-btn delete">{t("common.delete", undefined, language)}</button>
+            </span>
           </div>
         );
       })}

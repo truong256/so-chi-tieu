@@ -1,4 +1,4 @@
-# BÁO CÁO PHÁT TRIỂN HỆ THỐNG AI SỔ CHI TIÊU (PRODUCTION HARDENING)
+# BÁO CÁO PHÁT TRIỂN HỆ THỐNG AI SỔ CHI TIÊU (PRODUCTION HARDENING & TELEMETRY INTEGRITY)
 **Repository**: [https://github.com/truong256/so-chi-tieu.git](https://github.com/truong256/so-chi-tieu.git)  
 **Tài liệu**: `AI_CONTINUED_DEVELOPMENT_REPORT.md`  
 **Ngày thực hiện**: 2026-09-29  
@@ -12,118 +12,94 @@
 | **Base Branch** | `origin/main` |
 | **Base Commit SHA** | `99288952332cdf0b8490ba848fba1544e2ff7d0b` |
 | **Working Branch** | `ai/production-learning-hardening` |
-| **Commit Target** | `feat(ai): harden production telemetry and continue realistic model development` |
+| **Audit & Fix Commit** | `41fb3c3831d1c316cf980308311be94aad6f380f` |
+| **Out-of-Scope Files Reverted** | `frontend/components/dashboard.tsx` (restored to origin/main)<br>`frontend/styles/globals.css` (restored to origin/main)<br>`tests/transaction-table-layout.test.mjs` (removed) |
 | **Trạng thái Merge** | Không merge vào `main` trong nhiệm vụ này (tuân thủ quy định). |
 
 ---
 
-## 2. KẾT QUẢ AUDIT TOÀN BỘ KIẾN TRÚC AI RUNTIME
+## 2. KẾT QUẢ AUDIT VÀ SỬA ĐỔI PRODUCTION CORRECTNESS
 
-| STT | Vấn đề phát hiện | Mức độ | File liên quan | Nguyên nhân gốc & Cách xử lý |
+| STT | Hạng mục | Vấn đề ban đầu | Giải pháp kỹ thuật đã triển khai | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | **Promotion gate bị đóng băng ở `0 / 500`** | **CRITICAL** | `app/api/ai/parse-transaction/route.ts`<br>`backend/src/services/ai-local.client.ts`<br>`ai_service/services/classify_service.py` | Route `parse-transaction` không truyền `is_real_traffic: true` và `user_id`; ngoài ra `ai-local.client.ts` tự động force version V2/V3 can thiệp trước FastAPI. **Đã sửa:** Chuyển toàn quyền quyết định canary V4 về FastAPI, truyền authenticated `user_id` và `is_real_traffic: true`. |
-| 2 | **Thiếu pipeline phản hồi (Feedback Loop) từ người dùng** | **HIGH** | `app/api/ai/feedback/route.ts`<br>`frontend/components/ai-classify-hint.tsx`<br>`ai_service/observability.py` | Khi AI gợi ý category, hệ thống không ghi nhận user chấp nhận (`accepted: true`) hay sửa sang danh mục khác (`accepted: false`). **Đã sửa:** Tạo route `/api/ai/feedback` (Bearer auth, SHA-256 hash userId, chặn PII), tự động ghi nhận tại frontend hint và tổng hợp chỉ số correction rate. |
-| 3 | **Nguy cơ double-counting khi client retry** | **MEDIUM** | `ai_service/observability.py`<br>`ai_service/schemas/classify.py` | Nếu mạng chập chờn client retry cùng request thật, bộ đếm 500 có thể bị đếm 2 lần. **Đã sửa:** Thêm `idempotency_key` deduplication trong `_seen_real_event_idempotency_keys`. |
-| 4 | **Model Registry chưa chuẩn hóa trạng thái production** | **MEDIUM** | `ai_service/config.py`<br>`ai_service/services/registry.py` | Trạng thái chỉ có chuỗi chung chung (`ACCEPT`/`REJECT`), chưa phân định rõ vai trò sản xuất và kết quả validation thực tế. **Đã sửa:** Chuẩn hóa: `PRODUCTION_CONTROL`, `CANARY_5_PERCENT`, `PRODUCTION_ADVISORY`, `EXPERIMENTAL`, `REJECTED`, `ADVISORY_EXPERIMENTAL`. |
-| 5 | **Warning V3 học shortcut từ dữ liệu synthetic** | **CRITICAL** | `model_warning_v3/`<br>`model_warning_v4/` | Synthetic test đạt F1 = 1.0, nhưng trên realistic challenge tập trung vào các tình huống thực tế (mua chip POS lớn, học phí, viện phí, chuyển tiền đêm) Precision rớt xuống 42.86%, F1 = 57.14%, FPR = 47.06%. Permutation importance chỉ ra model học shortcut từ transaction_amount và dark_web_flag. **Đã xử lý:** Tạo dataset 24 ca thực tế, thiết lập Quality Gate và xếp Warning V4 vào `REJECTED/EXPERIMENTAL`. |
-| 6 | **Advisor thiếu cơ chế xử lý dữ liệu thưa & trường hợp đặc thù** | **HIGH** | `ai_service/services/advisor_service.py` | Model MLP luôn đưa ra lời khuyên với confidence tối thiểu 0.70 kể cả khi ví/danh mục trống rỗng; hoảng sợ báo `CRITICAL` khi chi tiêu đột biến dù người dùng có quỹ dự phòng thanh khoản lớn (> 3 tháng) hoặc đang trong giai đoạn Sabbatical. **Đã sửa:** Bổ sung `apply_advisor_hardening_policy`: hạ confidence <= 0.50 và trả lời "Chưa đủ dữ liệu", đệm an toàn cho chi tiêu đột biến có bảo chứng ví, nhận diện sabbatical runway. |
-| 7 | **Admin Monitoring thiếu giao diện theo dõi phản hồi chất lượng** | **MEDIUM** | `backend/src/services/admin-ai.service.ts`<br>`frontend/features/admin/views/ai-monitoring.tsx` | Dashboard chỉ hiển thị sơ đồ thô, thiếu thông tin acceptance rate, high-confidence correction rate, canary distribution. **Đã sửa:** Kết nối FastAPI telemetry trực tiếp vào Admin service và bổ sung các metric card phản hồi chất lượng. |
+| 1 | **Promotion Gate 500 Events** | `get_real_events_status()` đếm tổng sự kiện `len(_real_event_records)`. Với tỷ lệ Canary 5% V4 / 95% V3, 500 sự kiện tổng chỉ có ~25 request V4. | Thiết kế lại telemetry phân rã rõ ràng: `total_real_events`, `v3_real_events`, `v4_real_events`, `valid_v4_canary_events`, `v4_success_events`, `v4_failure_events`, `v4_fallback_events`. Promotion gate V4 bắt buộc sử dụng `valid_v4_canary_events >= 500` (sự kiện V4 canary thành công, không fallback, không duplicate retry). Đạt 500 trả về `READY_FOR_HUMAN_REVIEW`, không tự động promote. | **PASS** |
+| 2 | **Internal Trust Boundary** | Request body có `is_real_traffic: true` và `user_id` nhưng FastAPI AI service tin trực tiếp mà không có bằng chứng từ authenticated application flow. | Thiết lập trust boundary giữa Next.js server và FastAPI service qua header `X-AI-Internal-Token` (hoặc `Authorization: Bearer`), so sánh constant-time bằng `hmac.compare_digest`. Nếu thiếu token, sai token, hoặc unconfigured thì FastAPI vẫn classify bình thường (200 OK) nhưng cưỡng chế `effective_is_real_traffic = False`, không tăng promotion counter. Không hardcode token, không expose `NEXT_PUBLIC_*`. | **PASS** |
+| 3 | **End-to-End Idempotency** | Python đã hỗ trợ `idempotency_key` deduplication nhưng `/api/ai/parse-transaction` và `/api/ai/classify` chưa sinh/truyền key trong luồng production. | Next.js trích xuất `x-idempotency-key`/`x-request-id` hoặc sinh UUID an toàn `tx_${crypto.randomUUID()}` (entropy cao, không chứa PII, không chứa raw transaction text, ổn định khi network retry). Truyền xuyên suốt qua `aiClassify` -> FastAPI -> `record_real_traffic_event`. Network retry 2x tăng counter đúng 1 lần; transaction khác nhau tăng độc lập. | **PASS** |
+| 4 | **Node Fallback cho /classify** | Node client thực hiện lớp fallback thứ 2 tới V2 khi request thất bại/timeout, dẫn đến nguy cơ double inference và double telemetry. | Bỏ lớp fallback thứ 2 tại Node đối với `/classify` (`!isClassifyPath`). FastAPI là nguồn chân lý duy nhất (Single Source of Truth) quản lý V4 canary, V4 -> V3 fallback, và V3 -> V2 fallback. Next.js route fallback trực tiếp sang heuristic SmartParser mà không gọi lại AI service. | **PASS** |
+| 5 | **V4 Feedback Metrics Isolation** | Local product metrics và feedback route có logic `modelVersion === "v2" ? "v2" : "v3"`, làm feedback của V4 bị dồn vào V3. | Chuẩn hóa types và metrics hỗ trợ độc lập cả `v2`, `v3`, `v4`. Tách bạch `v3_shown`, `v3_applied`, `v3_overridden` và `v4_shown`, `v4_applied`, `v4_overridden`. Tính toán độc lập `v3_acceptance_rate`, `v4_acceptance_rate`, `v3_correction_rate`, `v4_correction_rate`, `v3_high_confidence_correction_rate`, `v4_high_confidence_correction_rate`. Feedback V4 không bao giờ làm tăng counter V3. | **PASS** |
+| 6 | **Warning Audit Naming & Metrics** | Script import `RiskWarningEngineV3` nhưng thư mục lại đặt tên `model_warning_v4` và registry ghi `warning_v4: REJECTED` khi chưa từng có artifact V4 thực sự. Verdict ghi FPR=41.18% lệch với FPR thực tế 47.06%. | Đổi tên thành `warning_v3_realistic_audit`. Giữ `warning_v3: EXPERIMENTAL` trong `MODEL_REGISTRY`, không đăng ký `warning_v4` ảo. Tính toán FPR động trực tiếp từ metrics (`47.06%`). Thay đổi mô tả dataset thành `24 manually structured realistic challenge cases`. Phân biệt rõ lịch sử shortcut concern từ synthetic data cũ với kết quả permutation hiện tại (nhạy cảm nhất với `transaction_amount=0.0714`, `mcc=0.0497`, `credit_limit=0.0259`, `card_on_dark_web=0.0`). | **PASS** |
+| 7 | **Telemetry Storage & Database Schema** | Real event telemetry cần lưu trữ an toàn, phục hồi sau container restart, không crash inference. | Thêm migration `016_ai_telemetry_idempotency.sql` bổ sung cột `idempotency_key` và index cho bảng `public.ai_canary_telemetry`. Ghi bất đồng bộ Supabase qua daemon worker không ảnh hưởng latency inference. Thêm `ai_service/data/*.jsonl` vào `.gitignore` để không commit dữ liệu runtime vào Git. | **PASS** |
 
 ---
 
-## 3. TRẠNG THÁI CHUẨN HÓA CỦA CÁC MÔ HÌNH (MODEL REGISTRY)
+## 3. TRẠNG THÁI MÔ HÌNH TRONG MODEL REGISTRY
 
 ```mermaid
 graph TD
-    A[Client Request] --> B{FastAPI AI Service}
-    B -->|Classify| C[Classify V3: PRODUCTION_CONTROL 95%]
+    A[Client Request (Authenticated)] --> B{FastAPI AI Service (Trusted Token Verified)}
+    B -->|Classify (Deterministic Bucket)| C[Classify V3: PRODUCTION_CONTROL 95%]
     B -.->|Canary Max 5%| D[Classify V4: CANARY_5_PERCENT 5%]
     B -->|Forecast| E[Forecast V3: PRODUCTION_ADVISORY]
-    B -->|Risk / Warning| F[Warning V3: EXPERIMENTAL]
+    B -->|Warning Audit| F[Warning V3: EXPERIMENTAL]
     B -->|Advisor| G[Advisor: ADVISORY_EXPERIMENTAL]
-    D -->|Gate: 0/500 events| H[Promotion >5%: LOCKED]
-    F -.->|Realistic Gate Failed| I[Warning V4: REJECTED]
+    D -->|Gate: valid_v4_canary_events >= 500| H[Promotion >5%: BLOCKED (0/500)]
+    F -.->|24 Challenge Cases| I[Audit Only: Precision 42.86%, FPR 47.06%]
 ```
 
 | Tên mô hình | Phiên bản | Trạng thái Registry | Mô tả kỹ thuật & Vai trò |
 | :--- | :--- | :--- | :--- |
-| `classify_v3` | `v3.0-hybrid-ngram` | `PRODUCTION_CONTROL` | Phân loại giao dịch tiếng Việt không diacritics/typo (TF-IDF Word(1,2)+Char(3,4), Softmax LR, Holdout Acc 77.35%, F1 0.7710). |
-| `classify_v4` | `v4.0-calibrated-canary` | `CANARY_5_PERCENT` | Ứng viên Canary phân bổ tối đa 5% traffic. Khóa chặt thăng cấp cho đến khi tích lũy đủ >= 500 sự kiện người dùng thật. |
-| `forecast_v3` | `v3.0-walkforward` | `PRODUCTION_ADVISORY` | Dự báo chi tiêu 7/14/30 ngày (Walk-forward recursive Ridge, 30-day sMAPE 25.17%, vượt trội so với Moving Average baselines). |
-| `warning_v3` | `v3.0-leakage-free-hardened` | `EXPERIMENTAL` | Phát hiện bất thường rủi ro. Giữ trạng thái Thử nghiệm do nguy cơ shortcut (F1 challenge = 57.14%). |
-| `warning_v4` | `v4.0-challenge-gated` | `REJECTED` | Đánh giá trên 24 kịch bản thực tế: không đạt Quality Gate (Precision 42.86% < 70%, F1 57.14% < 80%). Minh bạch từ chối quảng bá. |
-| `advisor` | `advisor-v2-calibrated-hardened` | `ADVISORY_EXPERIMENTAL` | Tư vấn tài chính cá nhân hoàn toàn Advisory-only với chính sách uncertainty và cảnh báo dữ liệu thưa. |
+| `classify_v3` | `v3.0-hybrid-ngram` | `PRODUCTION_CONTROL` | Phân loại giao dịch tiếng Việt (TF-IDF Word(1,2)+Char(3,4), Softmax LR, Holdout Acc 77.35%, F1 0.7710). |
+| `classify_v4` | `v4.0-calibrated-canary` | `CANARY_5_PERCENT` | Ứng viên Canary phân bổ tối đa 5% traffic. Khóa chặt thăng cấp: yêu cầu `valid_v4_canary_events >= 500`. |
+| `forecast_v3` | `v3.0-walkforward` | `PRODUCTION_ADVISORY` | Dự báo chi tiêu 7/14/30 ngày (Walk-forward recursive Ridge, 30-day sMAPE 25.17%). |
+| `warning_v3` | `v3.0-leakage-free-hardened` | `EXPERIMENTAL` | Mô hình cảnh báo rủi ro baseline. Giữ trạng thái Thử nghiệm do kết quả challenge audit chưa đạt ngưỡng sản xuất. |
+| `advisor` | `advisor-v2-calibrated-hardened` | `ADVISORY_EXPERIMENTAL` | Cố vấn tài chính Advisory-only với chính sách uncertainty và cảnh báo dữ liệu thưa. |
+
+*Lưu ý*: Không đăng ký `warning_v4` trong `MODEL_REGISTRY` vì chưa có training pipeline hoặc model artifact V4 thực sự.
 
 ---
 
-## 4. BÁO CÁO TELEMETRY & PROMOTION GATE
+## 4. CHI TIẾT ĐÁNH GIÁ THỰC TẾ WARNING V3 REALISTIC AUDIT
 
-| Chỉ số Telemetry | Giá trị hiện tại | Tiêu chuẩn kiểm duyệt | Trạng thái |
+- **Model thực tế đánh giá**: `RiskWarningEngineV3` (Audit thực tế trên bộ thử thách)
+- **Tập dữ liệu**: `realistic_challenge_dataset.json` (24 manually structured realistic challenge cases)
+- **Kết quả Metrics chi tiết**:
+  - **TP**: 6
+  - **FP**: 8
+  - **TN**: 9
+  - **FN**: 1
+  - **Recall**: **85.71%** (Bắt được 6/7 giao dịch gian lận thực tế)
+  - **Precision**: **42.86%** (Báo động nhầm 8 giao dịch chi tiêu lớn hợp lệ như học phí, viện phí, mua vàng)
+  - **F1-Score**: **0.5714** (57.14%)
+  - **False Positive Rate (FPR)**: **47.06%**
+  - **False Negative Rate (FNR)**: **14.29%**
+  - **PR-AUC**: **0.4865**
+  - **Brier Score**: **0.1942**
+- **Độ nhạy Permutation Feature Importance (Delta F1 drop)**:
+  - `transaction_amount`: **0.0714**
+  - `mcc`: **0.0497**
+  - `credit_limit`: **0.0259**
+  - `card_on_dark_web`: **0.0000**
+  - `hour`: **0.0000**
+  - `use_chip`: **0.0000**
+  - `credit_score`: **0.0000**
+- **Đánh giá Shortcut**: Phân biệt rõ lịch sử với thực nghiệm hiện tại: *Mối lo ngại shortcut bắt nguồn từ các audit dữ liệu synthetic trước đây; trong khi đánh giá permutation 24 ca thực tế hiện tại cho thấy độ nhạy quan sát được mạnh nhất lần lượt là transaction_amount, MCC và credit_limit.*
+- **Kết luận Quality Gate**: **REJECT (EXPERIMENTAL)**. FPR=47.06% và Precision=42.86% không đạt ngưỡng sản xuất (Precision >= 70%, F1 >= 80%).
+
+---
+
+## 5. KẾT QUẢ KIỂM THỬ TOÀN DIỆN (FULL VERIFICATION SUITE)
+
+| Bộ kiểm thử | Lệnh thực thi | Kết quả | Chi tiết |
 | :--- | :--- | :--- | :--- |
-| **Valid Real Events** | **0 / 500** | Yêu cầu tối thiểu 500 sự kiện người dùng thật được xác thực | **PROMOTION_BLOCKED** |
-| **Synthetic / Test Count** | **0** (Cô lập hoàn toàn) | Nghiêm cấm đưa dữ liệu synthetic vào bộ đếm | **PASS (ISOLATED)** |
-| **User Feedback Events** | **0** (Sẵn sàng nhận traffic) | Ghi nhận qua `/api/ai/feedback` | **READY** |
-| **Canary Allocation** | **5%** (Hard limit) | Cấm cấu hình > 5% khi chưa vượt qua gate | **COMPLIANT** |
-| **Canary Circuit Breaker** | **CLOSED** | Tự động rollback 100% V3 nếu >= 3 lỗi hoặc error > 5% | **ACTIVE** |
+| **Python Tests** | `pytest ai_service/tests -v` | **136 / 136 PASSED** | Kiểm thử Trust Boundary, Idempotency, 5 kịch bản Promotion Gate, Feedback Isolation V3 vs V4, Warning Audit Metric Consistency, Real-world phrases. |
+| **Node Unit Tests** | `npm run test:unit` | **72 / 72 PASSED** | Kiểm thử Feedback loop V4 isolation, Idempotency key entropy & PII cleanliness, Canary distribution, Security guards. |
+| **TypeScript Check** | `npx tsc --noEmit` | **0 ERRORS** | Biên dịch sạch 100%. |
+| **Lint** | `npm run lint` | **0 ERRORS** | 7 pre-existing warnings được giữ nguyên. |
+| **Next.js & Worker Build** | `npm run build` | **BUILD SUCCESS** | Hoàn thành `build:next` (21 pages static/dynamic) và `build:worker` (Vite RSC/SSR/Client bundle). |
 
 ---
 
-## 5. ĐÁNH GIÁ CHẤT LƯỢNG MÔ HÌNH (TRUNG THỰC - TÁCH BẠCH)
+## 6. KẾT LUẬN & TRẠNG THÁI MERGE
 
-### A. Phân loại (Classification)
-- **Synthetic Test**: N/A (Đã loại bỏ đánh giá synthetic thuần túy).
-- **Clean Realistic Holdout**:
-  - **V3**: Accuracy = **77.35%**, Macro F1 = **0.7710**, High-confidence wrong = 4.
-  - **V4**: Accuracy = **86.75%**, Macro F1 = **0.8656**, High-confidence wrong = 0.
-- **OOD / Robustness**: Vượt qua các biến thể gõ tắt không dấu tiếng Việt ("cf 35k", "do xang xe may 50k", "mua giay sneaker shopee", "nap the dien thoai viettel", "dong tien hoc phi ky 1").
-- **Real-user Telemetry**: Đang ở giai đoạn Canary 5% chờ tích lũy đủ 500 sự kiện thực tế.
-
-### B. Cảnh báo rủi ro (Risk / Warning)
-- **Synthetic Test cũ**: F1 = 1.0000 (Shortcut learning: đánh đồng số tiền lớn hoặc dark_web_flag là gian lận).
-- **Realistic Challenge Test (24 ca người thật tuyển chọn)**:
-  - **Recall**: **85.71%** (Bắt được 6/7 ca gian lận tinh vi).
-  - **Precision**: **42.86%** (Báo động giả 8 ca chi tiêu hợp lệ số tiền lớn như học phí, viện phí, mua vàng ngày cưới).
-  - **F1-Score**: **0.5714** (57.14%).
-  - **False Positive Rate (FPR)**: **47.06%**.
-  - **False Negative Rate (FNR)**: **14.29%**.
-  - **PR-AUC**: **0.4865**.
-  - **Brier Score**: **0.1942**.
-- **Quality Gate Decision**: **REJECT (EXPERIMENTAL)**. Không che giấu số liệu, từ chối đưa Warning V4 vào phục vụ sản xuất.
-
-### C. Dự báo (Forecast)
-- **30-day sMAPE**: **25.17%** (Baseline Walk-forward Ridge).
-- So sánh Baseline: Vượt trội hơn Simple Moving Average (sMAPE ~32.4%) và Last Observation (sMAPE ~38.1%). Giữ nguyên V3 làm Baseline.
-
-### D. Cố vấn (Advisor)
-- **Cold Start (0 giao dịch)**: Confidence = 0.50, Thông báo: *"Chưa ghi nhận dữ liệu thu chi trong kỳ..."*, không đưa ra lời khuyên quá mức.
-- **Sparse Data (Thiếu ví và danh mục)**: Confidence = 0.35 - 0.45, Cảnh báo: *"Chưa đủ dữ liệu danh mục và ví để đưa ra khuyến nghị đáng tin cậy"*.
-- **Chi tiêu lớn có đệm dự phòng (> 3 tháng)**: Giảm cấp báo động từ `CRITICAL` hoảng sợ xuống `CAUTION`, ghi nhận đệm dự phòng hấp thụ tốt biến động.
-- **Sabbatical (Thu nhập 0, dự phòng >= 6 tháng)**: Không báo động vỡ nợ, đưa ra lời khuyên quản lý burn-rate theo kế hoạch.
-
----
-
-## 6. KẾT QUẢ KIỂM THỬ THỰC TẾ (TEST SUITE EXECUTION)
-
-| Kiểm thử | Lệnh thực thi | Kết quả thực tế |
-| :--- | :--- | :--- |
-| **Python Tests** | `pytest ai_service/tests -v` | **133 / 133 PASSED** (1.84s) |
-| **Node Unit Tests** | `npm run test:unit` | **74 / 74 PASSED** (857ms) |
-| **TypeCheck** | `npx tsc --noEmit` | **0 ERRORS** (Clean compilation) |
-| **Lint** | `npm run lint` | **0 ERRORS**, 7 warnings tiền nhiệm |
-| **Build Next.js & Worker** | `npm run build` | **BUILD SUCCESS** (`build:next` & `build:worker`) |
-
----
-
-## 7. CÁC RỦI RO CÒN TỒN TẠI (REMAINING RISKS)
-
-1. **Canary Guard State trong môi trường phân tán**: `canary_guard.py` hiện lưu trạng thái bộ nhớ (in-memory). Thiết kế này an toàn tuyệt đối cho kiến trúc hiện tại (Single-instance FastAPI), nhưng nếu scale nhiều worker phân tán (multi-instance) sẽ cần backend đồng bộ (Redis hoặc Postgres lock) để chia sẻ circuit breaker.
-2. **Thiếu dữ liệu giao dịch thực tế cho Warning Model**: Warning model không thể giải quyết triệt để shortcut nếu chỉ dùng synthetic augmentation. Cần thu thập dữ liệu bất thường thực tế ẩn danh để huấn luyện mô hình thế hệ tiếp theo.
-3. **Thời gian tích lũy Observation Window**: Cần sự tham gia của người dùng thực tế trên hệ thống để nâng dần bộ đếm 500 events một cách trung thực.
-
----
-
-## 8. KẾT LUẬN & HƯỚNG ĐI TIẾP THEO
-
-- Toàn bộ pipeline Telemetry thật và User Feedback Loop đã được vá hoàn thiện, fail-closed an toàn, không rò rỉ PII.
-- Cửa kiểm duyệt (Promotion Gate) được khóa chặt ở 5% Canary, đảm bảo không có bất kỳ hành vi gian lận số liệu hay thăng cấp non.
-- Trạng thái các model được chuẩn hóa minh bạch theo kết quả kiểm chứng thực tế.
+- **REAL TRAFFIC PIPELINE**: **PASS** (Trust boundary token verified + Idempotency verified + V4-specific promotion gate verified).
+- **SAFE TO MERGE VÀO MAIN**: **NO** (Tuân thủ chỉ đạo của user: giữ nguyên branch `ai/production-learning-hardening`, không merge vào `main` cho đến khi có phê duyệt riêng từ con người).

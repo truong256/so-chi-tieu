@@ -46,10 +46,12 @@ AI_RISK_MODEL_VERSION = os.getenv("AI_RISK_MODEL_VERSION", "v3").lower().strip()
 AI_FORECAST_MODEL_VERSION = os.getenv("AI_FORECAST_MODEL_VERSION", "v3").lower().strip()
 AI_ADVISOR_MODEL_VERSION = os.getenv("AI_ADVISOR_MODEL_VERSION", "v3").lower().strip()
 
-# Internal Telemetry Security Token (Rotation required, zero hardcoded fallback secret)
+# Internal Telemetry & Service Security Tokens (Rotation required, zero hardcoded fallback secret)
 # If unconfigured in environment, telemetry endpoints fail closed (HTTP 401).
 _raw_telemetry_token = os.getenv("AI_INTERNAL_TELEMETRY_TOKEN", "").strip()
+_raw_service_token = os.getenv("AI_INTERNAL_SERVICE_TOKEN", "").strip() or _raw_telemetry_token
 AI_INTERNAL_TELEMETRY_TOKEN = _raw_telemetry_token if _raw_telemetry_token else None
+AI_INTERNAL_SERVICE_TOKEN = _raw_service_token if _raw_service_token else None
 
 # Fallback & Shadow Configuration
 AI_MODEL_FALLBACK_ENABLED = os.getenv("AI_MODEL_FALLBACK_ENABLED", "true").lower().strip() in ("true", "1", "yes")
@@ -213,13 +215,6 @@ MODEL_REGISTRY: Dict[str, ModelRegistryEntry] = {
         rejection_reason="Synthetic F1=1.0 but realistic challenge validation F1 ~57.14%; shortcut suspected",
         version="v3.0-leakage-free-hardened",
         description="Risk classifier baseline (Experimental status due to synthetic shortcut risk)",
-    ),
-    "warning_v4": ModelRegistryEntry(
-        name="model_warning_v4",
-        status="REJECTED",
-        rejection_reason="Failed realistic challenge quality gate: Precision 42.86% < 70%, F1 57.14% < 80%",
-        version="v4.0-challenge-gated",
-        description="Warning candidate v4 evaluated on 24-case realistic human-curated challenge dataset",
     ),
     "advisor": ModelRegistryEntry(
         name="model_advisor",

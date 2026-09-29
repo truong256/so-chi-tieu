@@ -70,17 +70,19 @@ def clean_telemetry_after_tests():
 
 @pytest.fixture(autouse=True)
 def setup_telemetry_token(monkeypatch):
-    """Ensure internal telemetry token is configured during tests."""
+    """Ensure internal telemetry & service tokens are configured during tests."""
     monkeypatch.setattr("ai_service.app.AI_INTERNAL_TELEMETRY_TOKEN", TEST_TELEMETRY_TOKEN)
     monkeypatch.setattr("ai_service.config.AI_INTERNAL_TELEMETRY_TOKEN", TEST_TELEMETRY_TOKEN)
+    monkeypatch.setattr("ai_service.app.AI_INTERNAL_SERVICE_TOKEN", TEST_TELEMETRY_TOKEN)
+    monkeypatch.setattr("ai_service.config.AI_INTERNAL_SERVICE_TOKEN", TEST_TELEMETRY_TOKEN)
 
 
 # ---------------------------------------------------------------------------
-# 1. Telemetry Gating & Idempotency Tests
+# 1. Telemetry Gating, Trust Boundary & Idempotency Tests
 # ---------------------------------------------------------------------------
 def test_synthetic_and_test_requests_do_not_increment_real_count(client):
     initial_metrics = get_real_events_status()
-    initial_count = initial_metrics["valid_real_events"]
+    initial_count = initial_metrics["total_real_events"]
 
     # Synthetic request (is_real_traffic = False)
     res_synthetic = client.post("/classify", json={
@@ -97,59 +99,110 @@ def test_synthetic_and_test_requests_do_not_increment_real_count(client):
     assert res_default.status_code == 200
 
     after_metrics = get_real_events_status()
-    assert after_metrics["valid_real_events"] == initial_count, (
-        f"Synthetic requests must NOT increment real count! Before: {initial_count}, After: {after_metrics['valid_real_events']}"
+    assert after_metrics["total_real_events"] == initial_count, (
+        f"Synthetic requests must NOT increment real count! Before: {initial_count}, After: {after_metrics['total_real_events']}"
     )
 
 
-def test_authenticated_real_request_increments_real_count_by_one(client):
+def test_direct_fastapi_request_without_token_must_not_increase_real_counter(client):
+    """
+    Requirement 3 & 13: Direct FastAPI request with is_real_traffic=True WITHOUT internal proof
+    MUST NOT increase real counter.
+    """
     initial_metrics = get_real_events_status()
-    initial_count = initial_metrics["valid_real_events"]
+    initial_total = initial_metrics["total_real_events"]
+    initial_v4 = initial_metrics["valid_v4_canary_events"]
 
-    unique_key = f"real-req-{uuid.uuid4()}"
     res = client.post("/classify", json={
-        "text": "Cà phê Highland 65k",
+        "text": "Ăn tối lẩu bò 200k",
         "is_real_traffic": True,
-        "user_id": "authenticated-user-hash-abc",
-        "idempotency_key": unique_key
+        "user_id": "direct-unauthenticated-caller",
+        "idempotency_key": f"untrusted-{uuid.uuid4()}",
     })
     assert res.status_code == 200
-
     after_metrics = get_real_events_status()
-    assert after_metrics["valid_real_events"] == initial_count + 1, (
-        f"Authenticated real request must increment real count by exactly 1! Before: {initial_count}, After: {after_metrics['valid_real_events']}"
+    assert after_metrics["total_real_events"] == initial_total, "Direct call without internal token must NOT increase real counter!"
+    assert after_metrics["valid_v4_canary_events"] == initial_v4
+
+
+def test_fake_user_id_without_token_cannot_bypass_trust_boundary(client):
+    """
+    Requirement 3 & 13: Fake user_id or invalid token cannot bypass trust boundary.
+    """
+    before = get_real_events_status()["total_real_events"]
+
+    res = client.post(
+        "/classify",
+        json={"text": "Mua áo khoác 500k", "is_real_traffic": True, "user_id": "fake_admin"},
+        headers={"X-AI-Internal-Token": "invalid-spoofed-token"}
     )
+    assert res.status_code == 200
+    after = get_real_events_status()["total_real_events"]
+    assert after == before, "Fake user_id with invalid token must NOT increase real counter!"
 
 
-def test_idempotency_deduplication_prevents_double_counting(client):
-    initial_metrics = get_real_events_status()
-    initial_count = initial_metrics["valid_real_events"]
+def test_authenticated_trusted_request_increments_real_counter(client):
+    """
+    Requirement 3 & 13: Authenticated/internal trusted request CAN increase valid real counter.
+    """
+    before = get_real_events_status()["total_real_events"]
 
-    shared_key = f"idempotent-{uuid.uuid4()}"
+    trusted_headers = {"X-AI-Internal-Token": TEST_TELEMETRY_TOKEN}
+    res = client.post(
+        "/classify",
+        json={
+            "text": "Cà phê Highland 65k",
+            "is_real_traffic": True,
+            "user_id": "authenticated-session-user-123",
+            "idempotency_key": f"trusted-req-{uuid.uuid4()}",
+        },
+        headers=trusted_headers
+    )
+    assert res.status_code == 200
+    after = get_real_events_status()["total_real_events"]
+    assert after == before + 1, "Authenticated request with valid internal token must increment real counter by 1!"
 
-    # First call with key
+
+def test_idempotency_deduplication_same_request_retried(client):
+    """
+    Requirement 4 & 13: Same logical request retried 2x => increment exactly 1.
+    Different logical transaction => increment independently.
+    """
+    trusted_headers = {"X-AI-Internal-Token": TEST_TELEMETRY_TOKEN}
+    shared_key = f"idemp-flow-{uuid.uuid4()}"
+
+    before = get_real_events_status()["total_real_events"]
+
+    # First attempt
     res1 = client.post("/classify", json={
         "text": "Mua thuốc tây 120k",
         "is_real_traffic": True,
         "user_id": "user-retry-123",
         "idempotency_key": shared_key
-    })
+    }, headers=trusted_headers)
     assert res1.status_code == 200
+    assert get_real_events_status()["total_real_events"] == before + 1
 
-    count_after_first = get_real_events_status()["valid_real_events"]
-    assert count_after_first == initial_count + 1
-
-    # Second call (retry) with the exact same idempotency_key
+    # Second attempt (network retry of same request)
     res2 = client.post("/classify", json={
         "text": "Mua thuốc tây 120k",
         "is_real_traffic": True,
         "user_id": "user-retry-123",
         "idempotency_key": shared_key
-    })
+    }, headers=trusted_headers)
     assert res2.status_code == 200
+    # Must NOT double-count
+    assert get_real_events_status()["total_real_events"] == before + 1
 
-    count_after_retry = get_real_events_status()["valid_real_events"]
-    assert count_after_retry == count_after_first, "Retry with duplicate idempotency key must not double-count!"
+    # Third attempt (different logical transaction with new key)
+    res3 = client.post("/classify", json={
+        "text": "Mua trà sữa 55k",
+        "is_real_traffic": True,
+        "user_id": "user-retry-123",
+        "idempotency_key": f"idemp-flow-{uuid.uuid4()}"
+    }, headers=trusted_headers)
+    assert res3.status_code == 200
+    assert get_real_events_status()["total_real_events"] == before + 2
 
 
 def test_pii_sanitization_strictly_omits_sensitive_fields():
@@ -176,7 +229,7 @@ def test_pii_sanitization_strictly_omits_sensitive_fields():
 
 
 # ---------------------------------------------------------------------------
-# 2. Feedback Telemetry & Security Tests
+# 2. Feedback Telemetry & Version Isolation Tests
 # ---------------------------------------------------------------------------
 def test_feedback_endpoint_fails_closed_without_valid_internal_token(client, monkeypatch):
     payload = {
@@ -202,6 +255,7 @@ def test_feedback_endpoint_fails_closed_without_valid_internal_token(client, mon
 
     # Unset token on server -> FAIL CLOSED
     monkeypatch.setattr("ai_service.app.AI_INTERNAL_TELEMETRY_TOKEN", None)
+    monkeypatch.setattr("ai_service.app.AI_INTERNAL_SERVICE_TOKEN", None)
     res_unset = client.post(
         "/telemetry/feedback",
         json=payload,
@@ -210,43 +264,173 @@ def test_feedback_endpoint_fails_closed_without_valid_internal_token(client, mon
     assert res_unset.status_code == 401
 
 
-def test_feedback_endpoint_records_accepted_and_corrected_signals(client):
+def test_feedback_isolation_v3_vs_v4(client):
+    """
+    Requirement 6 & 13:
+    V3 accepted, V3 corrected, V4 accepted, V4 corrected.
+    V4 must NEVER increment V3 counters.
+    """
     headers = {"X-Internal-Key": TEST_TELEMETRY_TOKEN}
 
-    # 1. Accept signal
-    res_accept = client.post("/telemetry/feedback", json={
+    from ai_service.observability import _user_feedback_records, get_user_feedback_metrics
+    _user_feedback_records.clear()
+
+    # V3 Accepted
+    client.post("/telemetry/feedback", json={
         "model_version": "v3",
+        "suggested_category": "ăn uống",
+        "final_category": "ăn uống",
+        "confidence_band": "HIGH",
+        "accepted": True,
+        "user_id_hash": "u_v3_1",
+    }, headers=headers)
+
+    # V3 Corrected
+    client.post("/telemetry/feedback", json={
+        "model_version": "v3",
+        "suggested_category": "ăn uống",
+        "final_category": "mua sắm",
+        "confidence_band": "HIGH",
+        "accepted": False,
+        "user_id_hash": "u_v3_2",
+    }, headers=headers)
+
+    metrics_mid = get_user_feedback_metrics()
+    assert metrics_mid["v3_total"] == 2
+    assert metrics_mid["v4_total"] == 0
+
+    # V4 Accepted
+    client.post("/telemetry/feedback", json={
+        "model_version": "v4",
         "suggested_category": "di chuyển",
         "final_category": "di chuyển",
         "confidence_band": "HIGH",
         "accepted": True,
-        "user_id_hash": "cohort_accept_1",
+        "user_id_hash": "u_v4_1",
     }, headers=headers)
-    assert res_accept.status_code == 200
-    assert res_accept.json()["accepted"] is True
 
-    # 2. Correct signal
-    res_correct = client.post("/telemetry/feedback", json={
-        "model_version": "v3",
-        "suggested_category": "ăn uống",
-        "final_category": "mua sắm",
-        "confidence_band": "MEDIUM",
+    # V4 Corrected
+    client.post("/telemetry/feedback", json={
+        "model_version": "v4",
+        "suggested_category": "di chuyển",
+        "final_category": "hóa đơn",
+        "confidence_band": "HIGH",
         "accepted": False,
-        "user_id_hash": "cohort_correct_1",
+        "user_id_hash": "u_v4_2",
     }, headers=headers)
-    assert res_correct.status_code == 200
-    assert res_correct.json()["accepted"] is False
 
-    metrics = get_user_feedback_metrics()
-    assert metrics["total_events"] >= 2
-    assert "acceptance_rate" in metrics
-    assert "correction_rate" in metrics
-    assert "correction_by_category" in metrics
+    metrics_final = get_user_feedback_metrics()
+    # V4 MUST NEVER increment V3 counters
+    assert metrics_final["v3_total"] == 2, f"V3 total must remain 2, got {metrics_final['v3_total']}"
+    assert metrics_final["v4_total"] == 2, f"V4 total must be 2, got {metrics_final['v4_total']}"
+    assert metrics_final["v3_acceptance_rate"] == 0.5
+    assert metrics_final["v4_acceptance_rate"] == 0.5
+    assert metrics_final["v3_correction_rate"] == 0.5
+    assert metrics_final["v4_correction_rate"] == 0.5
 
 
 # ---------------------------------------------------------------------------
-# 3. Canary Guard & Promotion Gate Tests
+# 3. Canary Guard & Promotion Gate Scenarios
 # ---------------------------------------------------------------------------
+def test_promotion_gate_exact_scenarios():
+    """
+    Requirement 2 & 13:
+    499 valid V4 canary events => PROMOTION_BLOCKED
+    500 valid V4 canary events => READY_FOR_HUMAN_REVIEW
+    500 V3 events + 0 V4 => PROMOTION_BLOCKED
+    500 failed V4 events => PROMOTION_BLOCKED
+    synthetic/test event => PROMOTION_BLOCKED
+    """
+    from ai_service.observability import reset_real_events_records, record_real_traffic_event, get_real_events_status
+
+    # Scenario 1: 500 V3 events + 0 V4 => PROMOTION_BLOCKED
+    reset_real_events_records()
+    for i in range(500):
+        record_real_traffic_event(
+            model_version="v3",
+            route_type="control",
+            category="ăn uống",
+            confidence=0.9,
+            latency_ms=10.0,
+            success=True,
+            fallback=False,
+            idempotency_key=f"v3-test-{i}",
+        )
+    st1 = get_real_events_status()
+    assert st1["total_real_events"] == 500
+    assert st1["v3_real_events"] == 500
+    assert st1["valid_v4_canary_events"] == 0
+    assert st1["promotion_gate"] == "PROMOTION_BLOCKED", "500 V3 events must NOT open V4 gate!"
+
+    # Scenario 2: 500 failed V4 events => PROMOTION_BLOCKED
+    reset_real_events_records()
+    for i in range(500):
+        record_real_traffic_event(
+            model_version="v4",
+            route_type="canary",
+            category="unknown",
+            confidence=0.0,
+            latency_ms=10.0,
+            success=False,
+            fallback=False,
+            idempotency_key=f"v4-fail-{i}",
+        )
+    st2 = get_real_events_status()
+    assert st2["v4_failure_events"] == 500
+    assert st2["valid_v4_canary_events"] == 0
+    assert st2["promotion_gate"] == "PROMOTION_BLOCKED", "500 failed V4 events must NOT open V4 gate!"
+
+    # Scenario 3: 500 fallback V4 events => PROMOTION_BLOCKED
+    reset_real_events_records()
+    for i in range(500):
+        record_real_traffic_event(
+            model_version="v4",
+            route_type="canary",
+            category="ăn uống",
+            confidence=0.8,
+            latency_ms=10.0,
+            success=True,
+            fallback=True,
+            idempotency_key=f"v4-fb-{i}",
+        )
+    st3 = get_real_events_status()
+    assert st3["v4_fallback_events"] == 500
+    assert st3["valid_v4_canary_events"] == 0
+    assert st3["promotion_gate"] == "PROMOTION_BLOCKED", "Fallback-only V4 events must NOT open V4 gate!"
+
+    # Scenario 4: 499 valid V4 canary events => PROMOTION_BLOCKED
+    reset_real_events_records()
+    for i in range(499):
+        record_real_traffic_event(
+            model_version="v4",
+            route_type="canary",
+            category="ăn uống",
+            confidence=0.9,
+            latency_ms=10.0,
+            success=True,
+            fallback=False,
+            idempotency_key=f"v4-val-{i}",
+        )
+    st4 = get_real_events_status()
+    assert st4["valid_v4_canary_events"] == 499
+    assert st4["promotion_gate"] == "PROMOTION_BLOCKED", "499 valid V4 events must be PROMOTION_BLOCKED!"
+
+    # Scenario 5: 500 valid V4 canary events => READY_FOR_HUMAN_REVIEW (NOT auto-promote)
+    record_real_traffic_event(
+        model_version="v4",
+        route_type="canary",
+        category="ăn uống",
+        confidence=0.9,
+        latency_ms=10.0,
+        success=True,
+        fallback=False,
+        idempotency_key="v4-val-500",
+    )
+    st5 = get_real_events_status()
+    assert st5["valid_v4_canary_events"] == 500
+    assert st5["promotion_gate"] == "READY_FOR_HUMAN_REVIEW", "500 valid V4 events must be READY_FOR_HUMAN_REVIEW!"
+
+
 def test_canary_promotion_gate_locked_under_500_events(client):
     headers = {"X-Internal-Key": TEST_TELEMETRY_TOKEN}
     res = client.get("/telemetry/canary", headers=headers)
@@ -254,11 +438,11 @@ def test_canary_promotion_gate_locked_under_500_events(client):
     data = res.json()
 
     real_data = data["real_traffic"]
-    real_events = real_data["valid_real_events"]
+    v4_valid = real_data["valid_v4_canary_events"]
     # Check that promotion is strictly locked when under 500
-    if real_events < 500:
-        assert real_data["promotion_gate"] == "PROMOTION_BLOCKED", "Promotion must be strictly BLOCKED when real_events < 500!"
-        assert "500 required" in real_data["reason"].lower() or "blocked" in real_data["reason"].lower()
+    if v4_valid < 500:
+        assert real_data["promotion_gate"] == "PROMOTION_BLOCKED", "Promotion must be strictly BLOCKED when valid_v4_canary_events < 500!"
+        assert "500" in real_data["reason"].lower() or "blocked" in real_data["reason"].lower()
 
     # Canary percentage must not exceed 5%
     assert AI_CLASSIFY_V4_CANARY_PERCENT <= 5, f"Canary percent {AI_CLASSIFY_V4_CANARY_PERCENT} must not exceed 5%!"
@@ -355,15 +539,27 @@ def test_advisor_lifestyle_inflation_thin_buffer():
 # ---------------------------------------------------------------------------
 # 5. Warning Realistic Challenge Quality Gate Test
 # ---------------------------------------------------------------------------
-def test_warning_v4_realistic_challenge_evaluation():
-    from model_warning_v4.scripts.evaluate import evaluate_warning_v4_gate
+def test_warning_v3_realistic_challenge_evaluation():
+    from warning_v3_realistic_audit.scripts.evaluate import run_warning_v3_realistic_audit
 
-    report = evaluate_warning_v4_gate()
-    v3_metrics = report["metrics"]
+    report = run_warning_v3_realistic_audit()
+    metrics = report["metrics"]
 
-    assert v3_metrics["recall"] >= 0.80
-    assert v3_metrics["precision"] < 0.70, "Realistic challenge precision should detect synthetic shortcuts"
-    assert report["status"] == "EXPERIMENTAL_REJECTED"
+    assert metrics["recall"] == 0.8571
+    assert metrics["precision"] == 0.4286
+    assert metrics["f1"] == 0.5714
+    assert metrics["fpr"] == 0.4706
+    assert metrics["fnr"] == 0.1429
+    assert metrics["brier_score"] == 0.1942
+    assert metrics["pr_auc"] == 0.4865
+    assert metrics["total_samples"] == 24
+
+    # Exact consistency check between calculated FPR and reported verdict string
+    fpr_str = f"{metrics['fpr'] * 100:.2f}%"
+    assert fpr_str == "47.06%"
+    assert fpr_str in report["verdict_reason"], f"Verdict reason must contain {fpr_str}, got {report['verdict_reason']}"
+    assert "41.18%" not in report["verdict_reason"], "Stale 41.18% must not exist in verdict reason"
+    assert report["status"] == "EXPERIMENTAL"
 
 
 # ---------------------------------------------------------------------------
@@ -375,7 +571,6 @@ def test_model_registry_standardized_statuses():
         "classify_v4": "CANARY_5_PERCENT",
         "forecast_v3": "PRODUCTION_ADVISORY",
         "warning_v3": "EXPERIMENTAL",
-        "warning_v4": "REJECTED",
         "advisor": "ADVISORY_EXPERIMENTAL",
     }
 
@@ -384,6 +579,7 @@ def test_model_registry_standardized_statuses():
         assert MODEL_REGISTRY[key].status == expected, (
             f"Model {key} status is '{MODEL_REGISTRY[key].status}', expected '{expected}'"
         )
+    assert "warning_v4" not in MODEL_REGISTRY, "warning_v4 must not exist in MODEL_REGISTRY without actual v4 artifact"
 
 
 # ---------------------------------------------------------------------------
