@@ -182,11 +182,14 @@ export async function POST(request: Request) {
     const userCategories: UserCategoryRow[] = (catRes.data ?? []) as UserCategoryRow[];
     const userWallets: UserWalletRow[] = (walRes.data ?? []) as UserWalletRow[];
 
-    // 4. Call Local ML V3 Classify via Client
-    const aiResult = await aiClassify({ text }, { userId: user.id, preferredVersion: "v3" });
+    // 4. Call Local ML Classify via Client (FastAPI manages V4 canary routing)
+    const aiResult = await aiClassify(
+      { text, user_id: user.id, is_real_traffic: true },
+      { userId: user.id },
+    );
 
     // 5. Build parsed response
-    let source: "local_model_v3" | "local_model_v2" | "heuristic" = "heuristic";
+    let source: "local_model_v4" | "local_model_v3" | "local_model_v2" | "heuristic" = "heuristic";
     let predictedCategory = "";
     let confidence = 0.0;
     let fallback = false;
@@ -196,7 +199,7 @@ export async function POST(request: Request) {
       predictedCategory = aiResult.data.category;
       confidence = aiResult.data.confidence;
       const modelVer = aiResult.data.meta?.version;
-      source = modelVer === "v2" ? "local_model_v2" : "local_model_v3";
+      source = modelVer === "v4" ? "local_model_v4" : (modelVer === "v2" ? "local_model_v2" : "local_model_v3");
       fallback = Boolean(aiResult.data.meta?.fallback_used);
 
       // Log prediction event safely (no PII or secrets)

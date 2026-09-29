@@ -43,6 +43,15 @@ export interface AiUsageStats {
     circuitBreaker: "CLOSED" | "OPEN";
     promotionGate: "BLOCKED" | "READY_FOR_HUMAN_REVIEW";
   };
+  feedback?: {
+    totalEvents: number;
+    acceptanceRate: number;
+    correctionRate: number;
+    highConfidenceCorrectionRate: number;
+    v3AcceptanceRate: number;
+    v4AcceptanceRate: number;
+    correctionByCategory: Record<string, number>;
+  };
 }
 
 /**
@@ -146,6 +155,56 @@ export async function getAiUsageStats(period: "today" | "7d" | "30d" = "7d"): Pr
   }
 
   let realCount = 0;
+  let canaryData: {
+    canary_enabled?: boolean;
+    canary_percent?: number;
+    guard_status?: { circuit_breaker?: "CLOSED" | "OPEN" };
+    real_traffic?: {
+      valid_real_events?: number;
+      progress?: string;
+      v3_real_events?: number;
+      v4_real_events?: number;
+      v4_error_rate?: number;
+      v4_fallback_rate?: number;
+      v4_latency_p95?: number;
+    };
+  } | null = null;
+
+  let feedbackData: {
+    total_events?: number;
+    acceptance_rate?: number;
+    correction_rate?: number;
+    v3_high_confidence_correction?: number;
+    v4_high_confidence_correction?: number;
+    v3_acceptance_rate?: number;
+    v4_acceptance_rate?: number;
+    correction_by_category?: Record<string, number>;
+  } | null = null;
+
+  const aiServiceUrl = (process.env.AI_SERVICE_URL ?? "http://127.0.0.1:8000").replace(/\/$/, "");
+  const telemetryToken = process.env.AI_INTERNAL_TELEMETRY_TOKEN;
+
+  if (telemetryToken) {
+    try {
+      const [canaryRes, feedbackRes] = await Promise.all([
+        fetch(`${aiServiceUrl}/telemetry/canary`, {
+          headers: { Authorization: `Bearer ${telemetryToken}` },
+          signal: AbortSignal.timeout(2000),
+          cache: "no-store",
+        }),
+        fetch(`${aiServiceUrl}/telemetry/feedback`, {
+          headers: { Authorization: `Bearer ${telemetryToken}` },
+          signal: AbortSignal.timeout(2000),
+          cache: "no-store",
+        }),
+      ]);
+      if (canaryRes.ok) canaryData = await canaryRes.json();
+      if (feedbackRes.ok) feedbackData = await feedbackRes.json();
+    } catch {
+      // AI service request error safely isolated
+    }
+  }
+
   try {
     const { count } = await supabase
       .from("ai_canary_telemetry")
@@ -156,7 +215,8 @@ export async function getAiUsageStats(period: "today" | "7d" | "30d" = "7d"): Pr
     // Database query error isolated
   }
 
-  const isBlocked = realCount < 500;
+  const validRealEvents = canaryData?.real_traffic?.valid_real_events ?? realCount;
+  const isBlocked = validRealEvents < 500;
 
   return {
     period,
@@ -169,16 +229,25 @@ export async function getAiUsageStats(period: "today" | "7d" | "30d" = "7d"): Pr
     canary: {
       primaryModel: "v3",
       canaryModel: "v4",
-      canaryEnabled: true,
-      canaryPercent: 5,
-      realEventsProgress: `${realCount} / 500`,
-      v3Requests: 0,
-      v4Requests: 0,
-      v4SuccessRate: 100,
-      v4FallbackRate: 0,
-      v4LatencyP95: 0,
-      circuitBreaker: "CLOSED",
+      canaryEnabled: canaryData?.canary_enabled ?? true,
+      canaryPercent: canaryData?.canary_percent ?? 5,
+      realEventsProgress: canaryData?.real_traffic?.progress ?? `${validRealEvents} / 500`,
+      v3Requests: canaryData?.real_traffic?.v3_real_events ?? 0,
+      v4Requests: canaryData?.real_traffic?.v4_real_events ?? 0,
+      v4SuccessRate: Math.round((1 - (canaryData?.real_traffic?.v4_error_rate ?? 0)) * 100),
+      v4FallbackRate: Math.round((canaryData?.real_traffic?.v4_fallback_rate ?? 0) * 100),
+      v4LatencyP95: canaryData?.real_traffic?.v4_latency_p95 ?? 0,
+      circuitBreaker: canaryData?.guard_status?.circuit_breaker ?? "CLOSED",
       promotionGate: isBlocked ? "BLOCKED" : "READY_FOR_HUMAN_REVIEW",
+    },
+    feedback: {
+      totalEvents: feedbackData?.total_events ?? 0,
+      acceptanceRate: Math.round((feedbackData?.acceptance_rate ?? 0) * 100),
+      correctionRate: Math.round((feedbackData?.correction_rate ?? 0) * 100),
+      highConfidenceCorrectionRate: Math.round((feedbackData?.v3_high_confidence_correction ?? 0) * 100),
+      v3AcceptanceRate: Math.round((feedbackData?.v3_acceptance_rate ?? 0) * 100),
+      v4AcceptanceRate: Math.round((feedbackData?.v4_acceptance_rate ?? 0) * 100),
+      correctionByCategory: feedbackData?.correction_by_category ?? {},
     },
   };
 }

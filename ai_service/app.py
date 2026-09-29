@@ -175,6 +175,8 @@ class UserFeedbackPayload(BaseModel):
     final_category: str
     confidence_band: str
     user_id_hash: Optional[str] = None
+    accepted: Optional[bool] = None
+    latency_ms: Optional[float] = None
 
 
 @app.get(
@@ -262,6 +264,8 @@ async def record_feedback(payload: UserFeedbackPayload):
         final_category=payload.final_category,
         confidence_band=payload.confidence_band,
         user_id_hash=payload.user_id_hash,
+        accepted=payload.accepted,
+        latency_ms=payload.latency_ms,
     )
 
 

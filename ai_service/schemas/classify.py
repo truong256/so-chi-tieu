@@ -16,6 +16,7 @@ class ClassifyRequest(BaseModel):
     preferred_version: Optional[str] = Field(default=None, description="Preferred model version (e.g. 'v3' or 'v2')")
     canary: Optional[bool] = Field(default=None, description="Whether request is in canary cohort")
     is_real_traffic: bool = Field(default=False, description="Flag indicating if request originates from actual authenticated user application flow")
+    idempotency_key: Optional[str] = Field(default=None, max_length=128, description="Optional idempotency key to prevent duplicate telemetry counting on retries")
 
     @field_validator("text")
     @classmethod

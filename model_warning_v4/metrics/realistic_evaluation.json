@@ -1,0 +1,38 @@
+{
+  "model_name": "model_warning_v3",
+  "candidate_evaluated": "model_warning_v4_baseline_audit",
+  "dataset": "realistic_challenge_dataset.json",
+  "total_cases": 24,
+  "metrics": {
+    "tp": 6,
+    "fp": 8,
+    "tn": 9,
+    "fn": 1,
+    "recall": 0.8571,
+    "precision": 0.4286,
+    "f1": 0.5714,
+    "fpr": 0.4706,
+    "fnr": 0.1429,
+    "brier_score": 0.1942,
+    "pr_auc": 0.4865,
+    "total_samples": 24,
+    "fraud_samples": 7,
+    "safe_samples": 17
+  },
+  "permutation_importance": {
+    "transaction_amount": 0.0714,
+    "card_on_dark_web": 0.0,
+    "mcc": 0.0497,
+    "hour": 0.0,
+    "use_chip": 0.0,
+    "credit_limit": 0.0259,
+    "credit_score": 0.0
+  },
+  "gate_checks": {
+    "recall_gte_0_85": true,
+    "precision_gte_0_70": false,
+    "f1_gte_0_80": false
+  },
+  "status": "EXPERIMENTAL_REJECTED",
+  "verdict_reason": "Failed quality gate on realistic human-curated challenge set (F1=0.5714 vs 0.80 required; FPR=41.18%). Learned synthetic shortcuts on transaction amounts and dark web flags. Status remains EXPERIMENTAL."
+}

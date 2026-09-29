@@ -16,7 +16,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { aiSuggestCategory, type ClassifySuggestion } from "@/frontend/services/ai.service";
+import { aiSuggestCategory, aiSendFeedback, type ClassifySuggestion } from "@/frontend/services/ai.service";
 
 export interface AiClassifyHintProps {
   token: string;
@@ -76,6 +76,36 @@ export default function AiClassifyHint({
     };
   }, [text, fetchSuggestion]);
 
+  const handleAccept = () => {
+    if (suggestion) {
+      onAccept(suggestion.category);
+      const band = suggestion.confidence >= 0.60 ? "HIGH" : suggestion.confidence >= 0.40 ? "MEDIUM" : "LOW";
+      void aiSendFeedback(token, {
+        suggested_category: suggestion.category,
+        final_category: suggestion.category,
+        model_version: suggestion.meta?.version || "v3",
+        confidence_band: band,
+        accepted: true,
+        latency_ms: suggestion.meta?.latency_ms,
+      });
+    }
+    setDismissed(true);
+  };
+
+  const handleDismiss = () => {
+    if (suggestion) {
+      const band = suggestion.confidence >= 0.60 ? "HIGH" : suggestion.confidence >= 0.40 ? "MEDIUM" : "LOW";
+      void aiSendFeedback(token, {
+        suggested_category: suggestion.category,
+        final_category: "dismissed",
+        model_version: suggestion.meta?.version || "v3",
+        confidence_band: band,
+        accepted: false,
+      });
+    }
+    setDismissed(true);
+  };
+
   if (dismissed || (!loading && !suggestion)) return null;
 
   return (
@@ -120,10 +150,7 @@ export default function AiClassifyHint({
           </span>
           <button
             id="ai-classify-accept-btn"
-            onClick={() => {
-              if (suggestion) onAccept(suggestion.category);
-              setDismissed(true);
-            }}
+            onClick={handleAccept}
             style={{
               padding: "2px 9px",
               background: "rgba(129,140,248,0.2)",
@@ -139,7 +166,7 @@ export default function AiClassifyHint({
           </button>
           <button
             id="ai-classify-dismiss-btn"
-            onClick={() => setDismissed(true)}
+            onClick={handleDismiss}
             style={{
               background: "none",
               border: "none",

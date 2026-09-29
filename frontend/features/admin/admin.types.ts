@@ -83,6 +83,15 @@ export interface AiMonitoringData {
     circuitBreaker: "CLOSED" | "OPEN";
     promotionGate: "BLOCKED" | "READY_FOR_HUMAN_REVIEW";
   };
+  feedback?: {
+    totalEvents: number;
+    acceptanceRate: number;
+    correctionRate: number;
+    highConfidenceCorrectionRate: number;
+    v3AcceptanceRate: number;
+    v4AcceptanceRate: number;
+    correctionByCategory: Record<string, number>;
+  };
 }
 
 export interface AuditLogItem {

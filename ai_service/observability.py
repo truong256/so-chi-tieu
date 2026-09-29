@@ -112,6 +112,7 @@ REAL_EVENTS_TELEMETRY_FILE = DATA_DIR / "real_events_telemetry.jsonl"
 _v4_shadow_records: list = []
 _user_feedback_records: list = []
 _real_event_records: list = []
+_seen_real_event_idempotency_keys: set = set()
 
 
 def _ensure_data_dir():
@@ -123,7 +124,7 @@ def _ensure_data_dir():
 
 def _load_persisted_records():
     """Load persisted records from disk into memory on startup so telemetry survives restarts."""
-    global _v4_shadow_records, _user_feedback_records, _real_event_records
+    global _v4_shadow_records, _user_feedback_records, _real_event_records, _seen_real_event_idempotency_keys
     _ensure_data_dir()
     if SHADOW_TELEMETRY_FILE.exists():
         try:
@@ -164,7 +165,10 @@ def _load_persisted_records():
                     line = line.strip()
                     if line:
                         try:
-                            _real_event_records.append(json.loads(line))
+                            rec = json.loads(line)
+                            _real_event_records.append(rec)
+                            if rec.get("idempotency_key"):
+                                _seen_real_event_idempotency_keys.add(rec["idempotency_key"])
                         except Exception:
                             continue
             logger.info(f"Loaded {len(_real_event_records)} real traffic events from {REAL_EVENTS_TELEMETRY_FILE}.")
@@ -178,10 +182,10 @@ _load_persisted_records()
 
 def _sanitize_no_pii(data: Dict[str, Any]) -> Dict[str, Any]:
     """Strictly assert no raw text or sensitive fields exist in telemetry records."""
-    banned_substrings = ["text", "desc", "card", "token", "auth", "secret", "password", "key", "account", "email"]
+    banned_substrings = ["text", "desc", "card", "token", "auth", "secret", "password", "key", "account", "email", "phone"]
     for k in data.keys():
         lower_k = k.lower()
-        if any(sub in lower_k for sub in banned_substrings) and k != "request_id":
+        if any(sub in lower_k for sub in banned_substrings) and k not in ("request_id", "idempotency_key"):
             raise ValueError(f"PII Leakage Prevention: Forbidden telemetry key '{k}' detected.")
     return data
 
@@ -259,6 +263,8 @@ def record_user_correction_signal(
     final_category: str,
     confidence_band: str,
     user_id_hash: Optional[str] = None,
+    accepted: Optional[bool] = None,
+    latency_ms: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
     Record user acceptance or correction of AI category suggestion:
@@ -267,18 +273,21 @@ def record_user_correction_signal(
     - Strictly no raw transaction text.
     """
     now_str = datetime.now(timezone.utc).isoformat()
-    accepted = (suggested_category == final_category)
-    event_type = "suggestion_accepted" if accepted else "suggestion_changed"
+    is_accepted = (suggested_category == final_category) if accepted is None else bool(accepted)
+    event_type = "suggestion_accepted" if is_accepted else "suggestion_changed"
 
     record = {
         "timestamp": now_str,
         "event": event_type,
+        "accepted": is_accepted,
         "model_version": model_version,
         "suggested_category": suggested_category,
         "final_category": final_category,
         "confidence_band": confidence_band,
         "user_id_hash": user_id_hash,
     }
+    if latency_ms is not None:
+        record["latency_ms"] = round(float(latency_ms), 2)
 
     _sanitize_no_pii(record)
 
@@ -453,6 +462,12 @@ def get_user_feedback_metrics() -> Dict[str, Any]:
     accepted_total = sum(1 for r in _user_feedback_records if r.get("event") == "suggestion_accepted")
     changed_total = total - accepted_total
 
+    correction_by_category: Dict[str, int] = {}
+    for r in _user_feedback_records:
+        if r.get("event") == "suggestion_changed" and r.get("suggested_category"):
+            cat = r["suggested_category"]
+            correction_by_category[cat] = correction_by_category.get(cat, 0) + 1
+
     return {
         "total_events": total,
         "accepted_count": accepted_total,
@@ -471,6 +486,7 @@ def get_user_feedback_metrics() -> Dict[str, Any]:
         "v4_high_confidence_correction": v4_stats["high_conf_correction_rate"],
         "v3_uncertain_rate": v3_stats["uncertain_rate"],
         "v4_uncertain_rate": v4_stats["uncertain_rate"],
+        "correction_by_category": correction_by_category,
         "ground_truth_note": "User correction signals are proxy ground-truth. V3 == V4 agreement is NOT treated as ground truth.",
     }
 
@@ -528,13 +544,27 @@ def record_real_traffic_event(
     success: bool,
     fallback: bool = False,
     user_id_hash: Optional[str] = None,
+    idempotency_key: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Record an authentic user transaction classification event:
     - ONLY invoked when request originates from authenticated application flow.
     - NEVER records raw transaction text, descriptions, bank accounts, or tokens.
     - Saves to disk and keeps running tally of valid real events.
+    - Deduplicates repeated retries with identical idempotency_key.
     """
+    global _seen_real_event_idempotency_keys
+    if idempotency_key:
+        if idempotency_key in _seen_real_event_idempotency_keys:
+            logger.info(f"Duplicate real traffic event ignored for idempotency_key={idempotency_key}")
+            return {
+                "idempotency_key": idempotency_key,
+                "is_duplicate": True,
+                "is_real_traffic": True,
+                "model_version": model_version,
+            }
+        _seen_real_event_idempotency_keys.add(idempotency_key)
+
     now_str = datetime.now(timezone.utc).isoformat()
     record = {
         "timestamp": now_str,
@@ -549,6 +579,9 @@ def record_real_traffic_event(
         "user_id_hash": user_id_hash[:64] if user_id_hash else None,
         "is_real_traffic": True,
     }
+    if idempotency_key:
+        record["idempotency_key"] = idempotency_key[:128]
+
     _sanitize_no_pii(record)
     _real_event_records.append(record)
     if len(_real_event_records) > 10000:
@@ -609,8 +642,9 @@ def get_real_events_status() -> Dict[str, Any]:
 
 def reset_real_events_records():
     """Clear real events telemetry records (testing only)."""
-    global _real_event_records
+    global _real_event_records, _seen_real_event_idempotency_keys
     _real_event_records.clear()
+    _seen_real_event_idempotency_keys.clear()
     try:
         if REAL_EVENTS_TELEMETRY_FILE.exists():
             REAL_EVENTS_TELEMETRY_FILE.unlink()

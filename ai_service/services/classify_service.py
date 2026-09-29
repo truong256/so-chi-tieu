@@ -225,6 +225,21 @@ def run_classify(request: ClassifyRequest) -> Union[ClassifyResponse, FailSafeRe
             fallback_used=fallback_used,
             error_type="model_artifact_unavailable",
         )
+        if getattr(request, "is_real_traffic", False):
+            import hashlib
+            from ai_service.observability import record_real_traffic_event
+            uid_hash = hashlib.sha256(request.user_id.encode("utf-8")).hexdigest() if request.user_id else None
+            record_real_traffic_event(
+                model_version=primary_version,
+                route_type="canary" if is_canary else "control",
+                category="unknown",
+                confidence=0.0,
+                latency_ms=lat,
+                success=False,
+                fallback=fallback_used,
+                user_id_hash=uid_hash,
+                idempotency_key=getattr(request, "idempotency_key", None),
+            )
         return FailSafeResponse(
             available=False,
             reason="model_artifact_unavailable",
@@ -274,6 +289,7 @@ def run_classify(request: ClassifyRequest) -> Union[ClassifyResponse, FailSafeRe
             success=True,
             fallback=fallback_used,
             user_id_hash=uid_hash,
+            idempotency_key=getattr(request, "idempotency_key", None),
         )
 
     return ClassifyResponse(

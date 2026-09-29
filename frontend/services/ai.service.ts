@@ -26,6 +26,13 @@ export interface ClassifySuggestion {
   category: string;
   confidence: number;
   warning?: string;
+  meta?: {
+    model?: string;
+    version?: string;
+    latency_ms?: number;
+    fallback_used?: boolean;
+    canary?: boolean;
+  };
 }
 
 // --- Forecast ---
@@ -233,5 +240,26 @@ export async function aiGetHealth(): Promise<{
       versions: {},
     };
   }
+}
+
+export interface FeedbackPayload {
+  suggested_category: string;
+  final_category: string;
+  model_version?: string;
+  confidence_band?: "HIGH" | "MEDIUM" | "LOW";
+  accepted?: boolean;
+  latency_ms?: number;
+  [key: string]: unknown;
+}
+
+/**
+ * Send user acceptance or correction feedback for AI category suggestions.
+ * Strictly no raw text or financial PII sent.
+ */
+export async function aiSendFeedback(
+  token: string,
+  payload: FeedbackPayload,
+): Promise<AiClientResult<{ ok: boolean; accepted: boolean }>> {
+  return postAi<{ ok: boolean; accepted: boolean }>("/api/ai/feedback", token, payload);
 }
 

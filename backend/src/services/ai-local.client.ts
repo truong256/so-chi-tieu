@@ -447,6 +447,7 @@ export function getClassificationProductMetrics() {
 }
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Internal HTTP caller with Canary & Fallback
 // ---------------------------------------------------------------------------
 
@@ -458,25 +459,35 @@ async function singlePost<TReq, TRes>(
   path: string,
   body: TReq,
   timeoutMs: number,
-  preferredVersion: "v3" | "v2",
-  isCanary: boolean,
+  preferredVersion?: string,
+  isCanary?: boolean,
 ): Promise<{ ok: boolean; data?: TRes; error?: string; status?: number }> {
   const url = `${getAiServiceUrl()}${path}`;
-  const payload = {
-    ...body,
-    preferred_version: preferredVersion,
-    canary: isCanary,
+  const payload: Record<string, unknown> = {
+    ...(body as unknown as Record<string, unknown>),
   };
+  if (preferredVersion) {
+    payload.preferred_version = preferredVersion;
+  }
+  if (isCanary !== undefined) {
+    payload.canary = isCanary;
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (preferredVersion) {
+    headers["X-AI-Model-Version"] = preferredVersion;
+  }
+  if (isCanary !== undefined) {
+    headers["X-AI-Canary"] = String(isCanary);
+  }
 
   let response: Response;
   try {
     response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-AI-Model-Version": preferredVersion,
-        "X-AI-Canary": String(isCanary),
-      },
+      headers,
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(timeoutMs),
       cache: "no-store",
@@ -520,15 +531,20 @@ async function executeWithCanaryAndFallback<
     };
   }
 
-  let primaryVersion: "v3" | "v2";
+  const isClassifyPath = path === "/classify";
+  let primaryVersion: "v3" | "v2" | undefined;
   let isCanary = false;
+
   if (options?.preferredVersion) {
     primaryVersion = options.preferredVersion;
-  } else {
+  } else if (!isClassifyPath) {
+    // For non-classify endpoints (legacy canary logic)
     const decision = getCanaryDecision(options?.userId);
     primaryVersion = decision.targetVersion;
     isCanary = decision.isCanary;
   }
+  // For /classify: FastAPI is the single source of truth for V4 canary.
+  // We leave primaryVersion undefined so FastAPI applies its own V4 canary policy.
 
   // 1. Attempt Primary execution
   const primaryRes = await singlePost<TReq, TRes>(
@@ -543,8 +559,11 @@ async function executeWithCanaryAndFallback<
 
   if (primaryRes.ok && primaryRes.data) {
     const data = primaryRes.data as TRes & { source?: string; fallback?: boolean };
+    const resolvedVersion = data.meta?.version ?? primaryVersion ?? "v3";
+    const resolvedCanary = data.meta?.canary ?? isCanary;
+
     if (data.meta && data.meta.canary === undefined) {
-      data.meta.canary = isCanary;
+      data.meta.canary = resolvedCanary;
     }
     if (!data.source && data.meta?.version) {
       if (data.meta.version === "v4") {
@@ -558,18 +577,18 @@ async function executeWithCanaryAndFallback<
     if (data.fallback === undefined && data.meta) {
       data.fallback = Boolean(data.meta.fallback_used);
     }
-    recordTelemetry(path, primaryVersion, isCanary, false, latPrimary, false);
+    recordTelemetry(path, resolvedVersion === "v2" ? "v2" : "v3", resolvedCanary, false, latPrimary, false);
     return { ok: true, data: data as TRes };
   }
 
-  // 2. Fallback execution: If Primary was V3 and failed, attempt V2 fallback
-  if (primaryVersion === "v3" && primaryRes.status !== 400 && primaryRes.status !== 422) {
+  // 2. Fallback execution: If Primary was V3 (or unspecified on non-4xx) and failed, attempt V2 fallback
+  if ((!primaryVersion || primaryVersion === "v3") && primaryRes.status !== 400 && primaryRes.status !== 422) {
     const fallbackRes = await singlePost<TReq, TRes>(
       path,
       body,
       timeoutMs,
       "v2",
-      isCanary,
+      false,
     );
     const latTotal = Date.now() - t0;
 
@@ -578,18 +597,18 @@ async function executeWithCanaryAndFallback<
       if (data.meta) {
         data.meta.version = "v2";
         data.meta.fallback_used = true;
-        data.meta.canary = isCanary;
+        data.meta.canary = false;
       }
       data.source = "local_model_v2";
       data.fallback = true;
-      recordTelemetry(path, "v2", isCanary, true, latTotal, false);
+      recordTelemetry(path, "v2", false, true, latTotal, false);
       return { ok: true, data: data as TRes };
     }
   }
 
   // If all failed
   const latFail = Date.now() - t0;
-  recordTelemetry(path, primaryVersion, isCanary, false, latFail, true);
+  recordTelemetry(path, primaryVersion ?? "v3", isCanary, false, latFail, true);
   return {
     ok: false,
     error: primaryRes.error === "timeout"

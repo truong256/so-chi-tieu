@@ -8,6 +8,17 @@ from typing import Dict, Any, Tuple
 from ai_service.config import MODEL_REGISTRY, ModelRegistryEntry
 
 
+APPROVED_STATUSES = {
+    "ACCEPT",
+    "ACCEPT_FOR_INTEGRATION_TEST",
+    "PRODUCTION_CONTROL",
+    "CANARY_5_PERCENT",
+    "PRODUCTION_ADVISORY",
+    "EXPERIMENTAL",
+    "ADVISORY_EXPERIMENTAL",
+}
+
+
 def check_model_approval(model_key: str, allow_unapproved: bool = False) -> Tuple[bool, str]:
     """
     Check if a model is approved for production / integration testing.
@@ -17,7 +28,7 @@ def check_model_approval(model_key: str, allow_unapproved: bool = False) -> Tupl
     if not entry:
         return False, f"Unknown model key '{model_key}'."
 
-    if entry.status in ("ACCEPT", "ACCEPT_FOR_INTEGRATION_TEST"):
+    if entry.status in APPROVED_STATUSES:
         return True, ""
 
     if allow_unapproved:

@@ -166,6 +166,68 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
                     {data.canary.promotionGate} (Cần &ge;500 sự kiện thật)
                   </div>
                 </div>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>V3 / V4 Request Distribution</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
+                    {data.canary.v3Requests} V3 / {data.canary.v4Requests} V4
+                  </div>
+                </div>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>V4 Latency p95 / Success</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
+                    {data.canary.v4LatencyP95} ms / {data.canary.v4SuccessRate}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AI Suggestion & Correction Quality Feedback Loop */}
+          {data.feedback && (
+            <div className="admin-card">
+              <div className="admin-card-header">
+                <h2 className="admin-card-title">Chất lượng gợi ý danh mục (Feedback Loop)</h2>
+                <span className="admin-card-subtitle">
+                  Theo dõi phản hồi chấp nhận hoặc sửa đổi gợi ý từ người dùng thực (tuyệt đối không lưu text giao dịch)
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", padding: "1rem" }}>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Tỷ lệ chấp nhận gợi ý</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.feedback.acceptanceRate >= 70 ? "#10b981" : "#f59e0b" }}>
+                    {data.feedback.totalEvents > 0 ? `${data.feedback.acceptanceRate}%` : "Chưa có dữ liệu"}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", opacity: 0.5, marginTop: "2px" }}>
+                    {data.feedback.totalEvents} lượt phản hồi ghi nhận
+                  </div>
+                </div>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Tỷ lệ người dùng sửa đổi</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.feedback.correctionRate > 30 ? "#ef4444" : "#10b981" }}>
+                    {data.feedback.totalEvents > 0 ? `${data.feedback.correctionRate}%` : "0%"}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", opacity: 0.5, marginTop: "2px" }}>
+                    Sửa đổi danh mục khi AI đề xuất
+                  </div>
+                </div>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Sửa khi tự tin cao (High-Conf)</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.feedback.highConfidenceCorrectionRate > 15 ? "#ef4444" : "#10b981" }}>
+                    {data.feedback.totalEvents > 0 ? `${data.feedback.highConfidenceCorrectionRate}%` : "0%"}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", opacity: 0.5, marginTop: "2px" }}>
+                    Chỉ số phát hiện gợi ý sai tự tin cao
+                  </div>
+                </div>
+                <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>V3 vs V4 Chấp nhận</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
+                    {data.feedback.v3AcceptanceRate}% V3 / {data.feedback.v4AcceptanceRate}% V4
+                  </div>
+                  <div style={{ fontSize: "0.7rem", opacity: 0.5, marginTop: "2px" }}>
+                    So sánh thực nghiệm Control vs Canary
+                  </div>
+                </div>
               </div>
             </div>
           )}

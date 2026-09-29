@@ -60,10 +60,12 @@ def test_health_endpoint(client):
     assert data["models"]["risk"] is True
     assert data["models"]["advisor"] is True
 
-    assert data["registry"]["classify"] == "ACCEPT"
-    assert data["registry"]["forecast"] == "ACCEPT"
-    assert data["registry"]["risk"] == "ACCEPT"
-    assert data["registry"]["advisor"] in ("ACCEPT", "ACCEPT_FOR_INTEGRATION_TEST")
+    assert data["registry"]["classify"] in ("ACCEPT", "PRODUCTION_CONTROL")
+    assert data["registry"]["forecast"] in ("ACCEPT", "PRODUCTION_ADVISORY")
+    assert data["registry"]["risk"] in ("ACCEPT", "EXPERIMENTAL")
+    assert data["registry"]["advisor"] in ("ACCEPT", "ACCEPT_FOR_INTEGRATION_TEST", "ADVISORY_EXPERIMENTAL")
+    assert data["registry"]["classify_v4"] == "CANARY_5_PERCENT"
+    assert data["registry"]["warning_v4"] == "REJECTED"
 
 
 # ---------------------------------------------------------------------------
