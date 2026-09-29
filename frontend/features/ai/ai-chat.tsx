@@ -7,12 +7,12 @@ import AiMessageContent from "./ai-message-content";
 
 // ─── Suggested questions ─────────────────────────────────────────────────────
 const SUGGESTED_QUESTIONS = [
-  "Tháng này tôi đã tiêu bao nhiêu?",
+  "Tháng này tôi đã chi bao nhiêu?",
   "Danh mục nào tôi chi nhiều nhất?",
   "Tình hình ngân sách của tôi thế nào?",
-  "Tôi có thể giảm khoản chi nào?",
-  "Tôi còn bao nhiêu tiền?",
-  "Tình hình tiết kiệm của tôi thế nào?",
+  "Tôi còn bao nhiêu tiền trong các ví?",
+  "Tôi có thể chi thêm 250k mà không vượt ngân sách không?",
+  "Khoản chi lớn nhất gần đây là gì?",
 ];
 
 interface Props {
@@ -61,17 +61,17 @@ export default function AiChatView({ financialContext }: Props) {
       {/* ── Header ── */}
       <div className="ai-chat-header">
         <div className="ai-chat-header-text">
-          <h2>Trợ lý tài chính AI</h2>
-          <p>Phân tích chi tiêu và hỗ trợ quản lý tài chính cá nhân</p>
+          <h2>Hỏi trợ lý chi tiêu</h2>
+          <p>Đặt câu hỏi bằng tiếng Việt về thu chi và cách sử dụng ứng dụng</p>
         </div>
         {messages.length > 0 && (
           <button
             type="button"
             className="ai-clear-btn"
             onClick={clearMessages}
-            title="Xóa cuộc trò chuyện"
+            title="Xóa toàn bộ cuộc trò chuyện"
           >
-            Xóa chat
+            Xóa cuộc trò chuyện
           </button>
         )}
       </div>
@@ -80,8 +80,8 @@ export default function AiChatView({ financialContext }: Props) {
       <div className="ai-messages-area">
         {isEmpty && (
           <div className="ai-welcome">
-            <p className="ai-welcome-title">Xin chào! Tôi có thể giúp bạn phân tích chi tiêu và quản lý tài chính cá nhân.</p>
-            <p className="ai-welcome-sub">Chọn câu hỏi gợi ý hoặc nhập câu hỏi của bạn:</p>
+            <p className="ai-welcome-title">Xin chào! Tôi là Trợ lý chi tiêu của bạn.</p>
+            <p className="ai-welcome-sub">Hệ thống hỗ trợ tra cứu thu chi, số dư ví và ngân sách theo dữ liệu thực tế của bạn. Chọn câu hỏi gợi ý hoặc nhập câu hỏi bên dưới:</p>
             <div className="ai-suggestions">
               {SUGGESTED_QUESTIONS.map((q, i) => (
                 <button
@@ -101,7 +101,7 @@ export default function AiChatView({ financialContext }: Props) {
         {messages.map(msg => (
           <div key={msg.id} className={`ai-message-row ${msg.role}`}>
             {msg.role === "ai" && (
-              <div className="ai-avatar">AI</div>
+              <div className="ai-avatar" title="Trợ lý chi tiêu" style={{ fontSize: "11px", fontWeight: 700 }}>Trợ lý</div>
             )}
             <div className={`ai-bubble ${msg.role} ${msg.isError ? "error" : ""}`}>
               <AiMessageContent text={msg.text} />
@@ -111,14 +111,14 @@ export default function AiChatView({ financialContext }: Props) {
 
         {loading && (
           <div className="ai-message-row ai">
-            <div className="ai-avatar ai-avatar-pulse">AI</div>
+            <div className="ai-avatar ai-avatar-pulse" title="Trợ lý chi tiêu" style={{ fontSize: "11px", fontWeight: 700 }}>Trợ lý</div>
             <div className="ai-bubble ai">
               <div className="ai-loading-dots">
                 <span />
                 <span />
                 <span />
               </div>
-              <span className="ai-loading-label">Trợ lý AI đang phân tích...</span>
+              <span className="ai-loading-label">Trợ lý đang phân tích dữ liệu...</span>
             </div>
           </div>
         )}
@@ -142,7 +142,7 @@ export default function AiChatView({ financialContext }: Props) {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Hỏi về chi tiêu của bạn... (Enter để gửi, Shift+Enter để xuống dòng)"
+            placeholder="Đặt câu hỏi về chi tiêu của bạn... (Nhấn Enter để gửi, Shift+Enter để xuống dòng)"
             rows={1}
             disabled={loading}
             maxLength={2000}
@@ -152,9 +152,9 @@ export default function AiChatView({ financialContext }: Props) {
             className="ai-send-btn"
             disabled={loading || !input.trim()}
             aria-label="Gửi câu hỏi"
-            style={{ fontWeight: 700, fontSize: "13px" }}
+            style={{ fontWeight: 700, fontSize: "13px", padding: "0 16px" }}
           >
-            {loading ? "..." : "Gửi"}
+            {loading ? "..." : "Gửi câu hỏi"}
           </button>
         </form>
       </div>

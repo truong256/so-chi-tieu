@@ -357,12 +357,12 @@ export default function ReceiptScannerModal({
         <div className="receipt-modal-head">
           <div className="receipt-head-info">
             <div className="receipt-badge-row">
-              <span className="receipt-ai-pill">AI MULTIMODAL</span>
-              <span className="receipt-eyebrow">QUÉT HÓA ĐƠN THÔNG MINH</span>
+              <span className="receipt-ai-pill">TRÍCH XUẤT</span>
+              <span className="receipt-eyebrow">ĐỌC THÔNG TIN TỪ HÓA ĐƠN</span>
             </div>
-            <h2 id="receipt-modal-title">Quét hóa đơn bằng AI</h2>
+            <h2 id="receipt-modal-title">Đọc thông tin từ hóa đơn</h2>
             <p className="receipt-modal-sub">
-              Tải lên hoặc chụp ảnh hóa đơn để AI tự động nhận diện cửa hàng, số tiền và sản phẩm.
+              Tải ảnh hóa đơn để hệ thống hỗ trợ điền thông tin giao dịch.
             </p>
           </div>
           <button type="button" className="receipt-close-btn" onClick={onClose} aria-label="Đóng">
@@ -380,7 +380,7 @@ export default function ReceiptScannerModal({
             Nhập thủ công
           </button>
           <span className="receipt-tab-btn active" aria-current="page">
-            Quét hóa đơn bằng AI
+            Đọc thông tin từ hóa đơn
           </span>
         </div>
 
@@ -405,7 +405,7 @@ export default function ReceiptScannerModal({
                   className="receipt-browse-btn"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  Chọn ảnh từ máy
+                  Chọn ảnh hóa đơn
                 </button>
 
                 <button
@@ -450,7 +450,7 @@ export default function ReceiptScannerModal({
             )}
 
             <div className="receipt-guide-box">
-              <h4>Mẹo để AI nhận diện hóa đơn chính xác nhất:</h4>
+              <h4>Mẹo để hệ thống đọc hóa đơn chính xác nhất:</h4>
               <ul>
                 <li>Chụp ảnh đủ sáng, căn thẳng hóa đơn trong khung hình.</li>
                 <li>Đảm bảo thấy rõ tên cửa hàng, ngày tháng và dòng Tổng tiền.</li>
@@ -501,7 +501,7 @@ export default function ReceiptScannerModal({
                 className="receipt-primary-btn"
                 onClick={handleAnalyzeReceipt}
               >
-                Phân tích hóa đơn
+                Đọc hóa đơn
               </button>
             </div>
           </div>
@@ -515,9 +515,9 @@ export default function ReceiptScannerModal({
                 <div className="receipt-pulse-ring" />
               </div>
 
-              <h3 className="receipt-loading-title">Đang phân tích hóa đơn...</h3>
+              <h3 className="receipt-loading-title">Đang đọc thông tin từ hóa đơn...</h3>
               <p className="receipt-loading-sub">
-                AI đang trích xuất dữ liệu chi tiêu có cấu trúc từ hình ảnh
+                Hệ thống đang trích xuất dữ liệu chi tiêu từ hình ảnh hóa đơn
               </p>
 
               <div className="receipt-checklist">
@@ -540,17 +540,17 @@ export default function ReceiptScannerModal({
             <div className="receipt-result-top-banner">
               <div className="receipt-banner-left">
                 <div>
-                  <strong>AI đã nhận diện thành công hóa đơn</strong>
-                  <p>Hãy kiểm tra lại thông tin và chỉnh sửa nếu cần trước khi tạo giao dịch.</p>
+                  <strong>Đã đọc thông tin từ hóa đơn thành công</strong>
+                  <p>Bạn hãy kiểm tra lại số tiền và các thông tin trước khi lưu.</p>
                 </div>
               </div>
               <button
                 type="button"
                 className="receipt-rescan-btn"
                 onClick={handleResetImage}
-                title="Quét ảnh khác"
+                title="Chọn ảnh khác"
               >
-                Đổi ảnh khác
+                Chọn ảnh khác
               </button>
             </div>
 
@@ -835,7 +835,7 @@ export default function ReceiptScannerModal({
                     onClick={handleResetImage}
                     disabled={saving}
                   >
-                    Quét lại
+                    Chọn ảnh khác
                   </button>
 
                   <button
@@ -843,7 +843,7 @@ export default function ReceiptScannerModal({
                     className="receipt-submit-btn"
                     disabled={saving}
                   >
-                    {saving ? "Đang tạo giao dịch…" : "Xác nhận tạo giao dịch"}
+                    {saving ? "Đang lưu giao dịch…" : "Xác nhận và lưu"}
                   </button>
                 </div>
               </div>
@@ -855,7 +855,7 @@ export default function ReceiptScannerModal({
         {step === "error" && (
           <div className="receipt-step-content error-step">
             <div className="receipt-error-card">
-              <h3>Không thể nhận diện hóa đơn</h3>
+              <h3>Không thể đọc thông tin từ hóa đơn</h3>
               <p>
                 {errorMessage ||
                   "Ảnh có thể bị mờ, thiếu sáng, bị che khuất hoặc không chứa thông tin giao dịch mua sắm."}
@@ -867,7 +867,7 @@ export default function ReceiptScannerModal({
                   className="receipt-primary-btn"
                   onClick={handleResetImage}
                 >
-                  Chọn / Chụp ảnh khác
+                  Chọn ảnh khác
                 </button>
                 <button
                   type="button"

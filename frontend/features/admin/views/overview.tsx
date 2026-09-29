@@ -162,7 +162,7 @@ export default function OverviewView({ getAuthToken }: OverviewViewProps) {
               <div className="admin-breakdown-list">
                 <div className="breakdown-item">
                   <div className="breakdown-header">
-                    <span className="breakdown-name">Trợ lý tài chính (Chat)</span>
+                    <span className="breakdown-name">Hỏi trợ lý chi tiêu (Chat)</span>
                     <span className="breakdown-count">
                       {data.ai.featureBreakdown.chat} lượt
                     </span>
@@ -185,7 +185,7 @@ export default function OverviewView({ getAuthToken }: OverviewViewProps) {
 
                 <div className="breakdown-item">
                   <div className="breakdown-header">
-                    <span className="breakdown-name">Phân tích giao dịch tự động</span>
+                    <span className="breakdown-name">Đọc giao dịch từ câu mô tả</span>
                     <span className="breakdown-count">
                       {data.ai.featureBreakdown.parseTransaction} lượt
                     </span>
@@ -208,7 +208,7 @@ export default function OverviewView({ getAuthToken }: OverviewViewProps) {
 
                 <div className="breakdown-item">
                   <div className="breakdown-header">
-                    <span className="breakdown-name">Quét & trích xuất hóa đơn</span>
+                    <span className="breakdown-name">Đọc thông tin từ hóa đơn</span>
                     <span className="breakdown-count">
                       {data.ai.featureBreakdown.receiptParse} lượt
                     </span>

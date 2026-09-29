@@ -273,17 +273,25 @@ export default function AiAdvisorPanel({
         }}
         aria-expanded={isOpen}
         aria-controls="ai-advisor-panel-body"
+        title="Xem nhận xét và gợi ý dựa trên tình hình thu chi của bạn"
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 20 }}>🤖</span>
-          <span style={{ fontWeight: 700, fontSize: 15, color: "#e2e8f0" }}>
-            Phân tích tài chính AI
-          </span>
-          <AiBadge label="ADVISORY" />
+          <span style={{ fontSize: 20 }}>💡</span>
+          <div style={{ textAlign: "left" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: "#e2e8f0" }}>
+                Gợi ý quản lý chi tiêu
+              </span>
+              <AiBadge label="Tham khảo" />
+            </div>
+            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
+              Xem nhận xét và gợi ý dựa trên tình hình thu chi của bạn
+            </div>
+          </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {loading && <LoadingDots />}
-          <span style={{ color: "#818cf8", fontSize: 13 }}>{isOpen ? "▲" : "▼"}</span>
+          <span style={{ color: "#818cf8", fontSize: 13 }}>{isOpen ? "▲ Thu gọn" : "▼ Xem gợi ý"}</span>
         </div>
       </button>
 
@@ -304,13 +312,12 @@ export default function AiAdvisorPanel({
               background: "rgba(129,140,248,0.06)",
               border: "1px solid rgba(129,140,248,0.15)",
               borderRadius: 8,
-              padding: "6px 12px",
+              padding: "8px 12px",
               marginBottom: 14,
               lineHeight: 1.6,
             }}
           >
-            ⚠ Đây là gợi ý từ mô hình AI, mang tính tham khảo. Không tự động
-            thay đổi dữ liệu của bạn.
+            💡 Đây là nhận xét và gợi ý mang tính tham khảo dựa trên tình hình thu chi thực tế của bạn, không tự động thay đổi dữ liệu hoặc số dư.
           </div>
 
           {/* Error state */}
@@ -363,7 +370,7 @@ export default function AiAdvisorPanel({
                   <div
                     style={{
                       flex: 1,
-                      minWidth: 80,
+                      minWidth: 90,
                       textAlign: "center",
                       background: "rgba(15,17,30,0.6)",
                       border: `1px solid ${gradeColor(advisor.health_grade)}44`,
@@ -373,15 +380,18 @@ export default function AiAdvisorPanel({
                   >
                     <div
                       style={{
-                        fontSize: 26,
+                        fontSize: 24,
                         fontWeight: 800,
                         color: gradeColor(advisor.health_grade),
                         letterSpacing: "-0.02em",
                       }}
                     >
                       {advisor.health_grade}
+                      <span style={{ fontSize: 12, fontWeight: 600, marginLeft: 4 }}>
+                        ({advisor.health_grade === "A" ? "Tốt" : advisor.health_grade === "B" ? "Khá" : advisor.health_grade === "C" ? "Cần chú ý" : "Cần cải thiện"})
+                      </span>
                     </div>
-                    <div style={{ fontSize: 10, color: "#64748b", marginTop: 2 }}>
+                    <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
                       Sức khỏe tài chính
                     </div>
                   </div>
@@ -390,7 +400,7 @@ export default function AiAdvisorPanel({
                   <div
                     style={{
                       flex: 1,
-                      minWidth: 80,
+                      minWidth: 90,
                       textAlign: "center",
                       background: "rgba(15,17,30,0.6)",
                       border: `1px solid ${riskScoreColor(advisor.risk_score)}44`,
@@ -400,22 +410,22 @@ export default function AiAdvisorPanel({
                   >
                     <div
                       style={{
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: 800,
                         color: riskScoreColor(advisor.risk_score),
                       }}
                     >
-                      {Math.round(advisor.risk_score * 100)}
+                      {advisor.risk_score < 0.3 ? "Thấp" : advisor.risk_score < 0.6 ? "Trung bình" : "Đáng chú ý"}
                     </div>
-                    <div style={{ fontSize: 10, color: "#64748b", marginTop: 2 }}>
-                      Điểm rủi ro
+                    <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
+                      Mức độ rủi ro chi tiêu
                     </div>
                   </div>
                 )}
                 <div
                   style={{
                     flex: 1,
-                    minWidth: 80,
+                    minWidth: 90,
                     textAlign: "center",
                     background: "rgba(15,17,30,0.6)",
                     border: "1px solid rgba(129,140,248,0.2)",
@@ -425,43 +435,48 @@ export default function AiAdvisorPanel({
                 >
                   <div
                     style={{
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: 800,
                       color: "#818cf8",
                     }}
                   >
                     {confidencePct(advisor.confidence)}
                   </div>
-                  <div style={{ fontSize: 10, color: "#64748b", marginTop: 2 }}>
-                    Độ tin cậy
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
+                    Độ tin cậy gợi ý
                   </div>
                 </div>
               </div>
 
-              {/* Summary */}
-              <div
-                style={{
-                  fontSize: 13,
-                  color: "#cbd5e1",
-                  lineHeight: 1.7,
-                  padding: "10px 12px",
-                  background: "rgba(129,140,248,0.06)",
-                  borderRadius: 10,
-                  borderLeft: "3px solid #818cf8",
-                }}
-              >
-                {advisor.summary}
+              {/* 1. Nhận xét tổng quan */}
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#cbd5e1", marginBottom: 6 }}>
+                  📋 Nhận xét tình hình thu chi
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "#e2e8f0",
+                    lineHeight: 1.7,
+                    padding: "10px 14px",
+                    background: "rgba(129,140,248,0.06)",
+                    borderRadius: 10,
+                    borderLeft: "3px solid #818cf8",
+                  }}
+                >
+                  {advisor.summary}
+                </div>
               </div>
 
-              {/* Warnings */}
+              {/* 2. Dữ liệu liên quan & Cảnh báo */}
               {advisor.warnings.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#fbbf24", marginBottom: 6 }}>
-                    ⚠ Cảnh báo
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24", marginBottom: 6 }}>
+                    ⚠ Dấu hiệu cần lưu ý
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: 16, display: "flex", flexDirection: "column", gap: 4 }}>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
                     {advisor.warnings.map((w, i) => (
-                      <li key={i} style={{ fontSize: 12, color: "#fde68a", lineHeight: 1.55 }}>
+                      <li key={i} style={{ fontSize: 12, color: "#fde68a", lineHeight: 1.6 }}>
                         {w}
                       </li>
                     ))}
@@ -469,15 +484,15 @@ export default function AiAdvisorPanel({
                 </div>
               )}
 
-              {/* Suggestions */}
+              {/* 3. Gợi ý thực hiện */}
               {advisor.suggestions.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#86efac", marginBottom: 6 }}>
-                    💡 Gợi ý
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#86efac", marginBottom: 6 }}>
+                    💡 Gợi ý thực hiện
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: 16, display: "flex", flexDirection: "column", gap: 4 }}>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
                     {advisor.suggestions.map((s, i) => (
-                      <li key={i} style={{ fontSize: 12, color: "#bbf7d0", lineHeight: 1.55 }}>
+                      <li key={i} style={{ fontSize: 12, color: "#bbf7d0", lineHeight: 1.6 }}>
                         {s}
                       </li>
                     ))}
@@ -485,11 +500,16 @@ export default function AiAdvisorPanel({
                 </div>
               )}
 
-              {/* Forecast chart */}
+              {/* 4. Dự báo chi tiêu */}
               {forecast.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", marginBottom: 8 }}>
-                    📈 Dự báo chi tiêu {forecastDays} ngày tới
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#cbd5e1" }}>
+                      📈 Dự báo chi tiêu ({forecastDays} ngày tới)
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 8 }}>
+                    Đây là số tiền ước tính dựa trên lịch sử giao dịch gần đây, không phải khoản tiền đã chi.
                   </div>
                   <ForecastMiniChart items={forecast} />
                   <div
@@ -501,8 +521,8 @@ export default function AiAdvisorPanel({
                       marginTop: 4,
                     }}
                   >
-                    <span>{forecast[0]?.date ?? ""}</span>
-                    <span>{forecast[forecast.length - 1]?.date ?? ""}</span>
+                    <span>Từ ngày: {forecast[0]?.date ?? ""}</span>
+                    <span>Đến ngày: {forecast[forecast.length - 1]?.date ?? ""}</span>
                   </div>
                 </div>
               )}
@@ -513,11 +533,13 @@ export default function AiAdvisorPanel({
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginTop: 4,
+                  marginTop: 6,
+                  paddingTop: 10,
+                  borderTop: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
-                <span style={{ fontSize: 10, color: "#475569" }}>
-                  {advisor.model_version}
+                <span style={{ fontSize: 10, color: "#64748b" }}>
+                  Thông tin kỹ thuật: {advisor.model_version}
                 </span>
                 <button
                   id="ai-advisor-refresh-btn"
@@ -525,14 +547,15 @@ export default function AiAdvisorPanel({
                   style={{
                     fontSize: 11,
                     color: "#818cf8",
-                    background: "none",
+                    background: "rgba(129,140,248,0.1)",
                     border: "1px solid rgba(129,140,248,0.25)",
                     borderRadius: 6,
-                    padding: "3px 10px",
+                    padding: "4px 12px",
                     cursor: "pointer",
                   }}
+                  title="Tải lại phân tích mới nhất theo số liệu hiện có"
                 >
-                  ↻ Làm mới
+                  ↻ Cập nhật gợi ý
                 </button>
               </div>
             </div>

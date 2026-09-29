@@ -121,10 +121,10 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
         type="button"
         className={`ai-fab ${isOpen && !isMinimized ? "hidden" : ""}`}
         onClick={toggleOpen}
-        aria-label="Mở trợ lý tài chính AI"
-        title="Trợ lý tài chính AI"
+        aria-label="Hỏi trợ lý chi tiêu"
+        title="Hỏi trợ lý chi tiêu"
       >
-        <span className="ai-fab-icon" style={{ fontWeight: 700, fontSize: "14px" }}>AI</span>
+        <span className="ai-fab-icon" style={{ fontWeight: 700, fontSize: "13px" }}>💬</span>
       </button>
 
       {/* Floating Chat Panel */}
@@ -134,7 +134,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
         <div className="ai-floating-header">
           <div className="ai-floating-header-info" onClick={isMinimized ? toggleMinimize : undefined} style={{ cursor: isMinimized ? "pointer" : "default" }}>
             <div className="ai-floating-header-text">
-              <h3>Trợ lý tài chính AI</h3>
+              <h3>Hỏi trợ lý chi tiêu</h3>
             </div>
           </div>
           <div className="ai-floating-header-actions">
@@ -154,10 +154,10 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
               {isEmpty && (
                 <div className="ai-welcome compact">
                   <p className="ai-welcome-title compact">
-                    Xin chào! Tôi là Trợ lý tài chính AI.
+                    Xin chào! Tôi là Trợ lý chi tiêu.
                   </p>
                   <p className="ai-welcome-sub compact">
-                    Tôi có thể giúp gì cho bạn tại trang này?
+                    Bạn có thể đặt câu hỏi về chi tiêu hoặc chọn nhanh bên dưới:
                   </p>
                   <div className="ai-quick-actions">
                     {quickActions.map((q, i) => (
@@ -177,7 +177,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
 
               {messages.map(msg => (
                 <div key={msg.id} className={`ai-message-row ${msg.role}`}>
-                  {msg.role === "ai" && <div className="ai-avatar">AI</div>}
+                  {msg.role === "ai" && <div className="ai-avatar" style={{ fontSize: "10px", fontWeight: 700 }}>Trợ lý</div>}
                   <div className={`ai-bubble ${msg.role} ${msg.isError ? "error" : ""}`}>
               <AiMessageContent text={msg.text} />
                   </div>
@@ -186,12 +186,12 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
 
               {loading && (
                 <div className="ai-message-row ai">
-                  <div className="ai-avatar ai-avatar-pulse">AI</div>
+                  <div className="ai-avatar ai-avatar-pulse" style={{ fontSize: "10px", fontWeight: 700 }}>Trợ lý</div>
                   <div className="ai-bubble ai">
                     <div className="ai-loading-dots">
                       <span /><span /><span />
                     </div>
-                    <span className="ai-loading-label">Đang phân tích...</span>
+                    <span className="ai-loading-label">Đang phân tích dữ liệu...</span>
                   </div>
                 </div>
               )}
@@ -215,7 +215,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Hỏi về chi tiêu... (Shift+Enter để xuống dòng)"
+                  placeholder="Đặt câu hỏi về thu chi... (Nhấn Enter để gửi)"
                   rows={1}
                   disabled={loading}
                   maxLength={2000}
@@ -224,8 +224,8 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
                   type="submit"
                   className="ai-send-btn"
                   disabled={loading || !input.trim()}
-                  aria-label="Gửi"
-                  style={{ fontWeight: 700, fontSize: "12px" }}
+                  aria-label="Gửi câu hỏi"
+                  style={{ fontWeight: 700, fontSize: "12px", padding: "0 12px" }}
                 >
                   {loading ? "..." : "Gửi"}
                 </button>

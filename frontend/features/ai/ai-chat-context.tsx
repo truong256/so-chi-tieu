@@ -171,7 +171,7 @@ export function AiChatProvider({ children }: { children: ReactNode }) {
       } else if (errText.includes("thời gian")) {
         uiErrorMsg = "Phản hồi đang mất nhiều thời gian hơn dự kiến. Vui lòng thử lại.";
       } else if (!uiErrorMsg || uiErrorMsg === "Lỗi không xác định") {
-        uiErrorMsg = "Không thể kết nối với Trợ lý AI. Vui lòng thử lại.";
+        uiErrorMsg = "Không thể kết nối với Trợ lý chi tiêu. Vui lòng kiểm tra lại dịch vụ AI nội bộ hoặc thử lại sau.";
       }
 
       const errorMsg: ChatMessage = {

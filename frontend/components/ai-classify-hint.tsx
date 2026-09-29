@@ -125,34 +125,36 @@ export default function AiClassifyHint({
       }}
       role="status"
       aria-live="polite"
-      aria-label="AI gợi ý danh mục"
+      aria-label="Gợi ý danh mục giao dịch"
+      title="Dựa vào nội dung bạn nhập, hệ thống gợi ý danh mục phù hợp. Bạn có thể chọn danh mục khác nếu gợi ý chưa phù hợp."
     >
       {loading ? (
         <>
           <span style={{ fontSize: 12, color: "#818cf8" }}>✦</span>
-          <span style={{ color: "#818cf8" }}>AI đang phân tích…</span>
+          <span style={{ color: "#818cf8" }}>Đang tìm danh mục phù hợp…</span>
         </>
       ) : suggestion ? (
         <>
           <span style={{ fontSize: 12, color: "#818cf8" }}>✦</span>
           <span>
-            AI gợi ý:{" "}
+            Danh mục đề xuất:{" "}
             <strong style={{ color: "#c7d2fe" }}>{suggestion.category}</strong>
-            {suggestion.confidence < 0.35 ? (
+            {suggestion.confidence < 0.40 ? (
               <span style={{ color: "#f59e0b", marginLeft: 4, fontSize: 11 }}>
-                (AI chưa chắc chắn — {Math.round(suggestion.confidence * 100)}%)
+                (Gợi ý tham khảo: {Math.round(suggestion.confidence * 100)}%)
               </span>
-            ) : suggestion.confidence < 0.50 ? (
+            ) : (
               <span style={{ color: "#94a3b8", marginLeft: 4, fontSize: 11 }}>
-                ({Math.round(suggestion.confidence * 100)}% tin cậy)
+                (Mức độ tin cậy: {Math.round(suggestion.confidence * 100)}%)
               </span>
-            ) : null}
+            )}
           </span>
           <button
             id="ai-classify-accept-btn"
             onClick={handleAccept}
+            title="Áp dụng danh mục này vào giao dịch"
             style={{
-              padding: "2px 9px",
+              padding: "3px 10px",
               background: "rgba(129,140,248,0.2)",
               border: "1px solid rgba(129,140,248,0.4)",
               borderRadius: 12,
@@ -162,7 +164,7 @@ export default function AiClassifyHint({
               fontWeight: 600,
             }}
           >
-            Áp dụng
+            Áp dụng gợi ý
           </button>
           <button
             id="ai-classify-dismiss-btn"
@@ -170,13 +172,14 @@ export default function AiClassifyHint({
             style={{
               background: "none",
               border: "none",
-              color: "#475569",
+              color: "#94a3b8",
               cursor: "pointer",
-              fontSize: 13,
+              fontSize: 12,
               lineHeight: 1,
-              padding: 0,
+              padding: "2px 4px",
             }}
-            aria-label="Bỏ qua gợi ý AI"
+            aria-label="Bỏ qua gợi ý danh mục"
+            title="Bỏ qua gợi ý"
           >
             ✕
           </button>

@@ -68,7 +68,7 @@ const navItems: { id: View; label: string; en: string; icon: string }[] = [
   { id: "planning", label: "Ngân sách & mục tiêu", en: "Plans & goals", icon: "" },
   { id: "recurring", label: "Giao dịch định kỳ", en: "Recurring", icon: "" },
   { id: "reports", label: "Báo cáo", en: "Reports", icon: "" },
-  { id: "ai-assistant", label: "Trợ lý AI", en: "AI Assistant", icon: "" },
+  { id: "ai-assistant", label: "Hỏi trợ lý chi tiêu", en: "Ask Assistant", icon: "" },
   { id: "settings", label: "Cài đặt", en: "Settings", icon: "" },
 ];
 
@@ -901,9 +901,9 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
 
       let sourceBadge = "";
       if (source === "local_model_v3") {
-        sourceBadge = `Local AI V3 (${Math.round(confidence * 100)}%)`;
+        sourceBadge = `Điền tự động (${Math.round(confidence * 100)}% tin cậy)`;
       } else if (source === "local_model_v2") {
-        sourceBadge = `Local AI V2 Dự phòng (${Math.round(confidence * 100)}%)`;
+        sourceBadge = `Phương án dự phòng (${Math.round(confidence * 100)}% tin cậy)`;
       } else {
         sourceBadge = `Quy tắc ngoại tuyến`;
       }
@@ -911,26 +911,26 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (missingFields.length > 0) {
         setAiFeedback({
           type: "warning",
-          message: `[${sourceBadge}] AI đã điền form. Vui lòng chọn thêm: ${missingFields.join(", ")}.${currencyNotice}`,
+          message: `[${sourceBadge}] Đã điền sẵn thông tin. Bạn hãy chọn thêm: ${missingFields.join(", ")}.${currencyNotice}`,
         });
         showNotice(`[${sourceBadge}] Vui lòng chọn thêm: ${missingFields.join(", ")}.`);
       } else if (isLowConfidence) {
         setAiFeedback({
           type: "warning",
-          message: `[${sourceBadge}] Độ tin cậy thấp (${Math.round(confidence * 100)}%). Gợi ý: "${aiData.category_name}". Vui lòng xác nhận danh mục.${currencyNotice}`,
+          message: `[${sourceBadge}] Mức độ tin cậy tham khảo (${Math.round(confidence * 100)}%). Gợi ý: "${aiData.category_name}". Bạn hãy kiểm tra lại danh mục trước khi lưu.${currencyNotice}`,
         });
-        showNotice(`[${sourceBadge}] Độ tin cậy thấp (${Math.round(confidence * 100)}%) — vui lòng kiểm tra danh mục.`);
+        showNotice(`[${sourceBadge}] Gợi ý: "${aiData.category_name}" — vui lòng kiểm tra trước khi lưu.`);
       } else {
         setAiFeedback({
           type: "success",
-          message: `[${sourceBadge}] Đã nhận diện "${aiData.category_name}" (${money(aiData.amount || 0)}). Hãy kiểm tra trước khi lưu.${currencyNotice}`,
+          message: `[${sourceBadge}] Đã nhận diện "${aiData.category_name}" (${money(aiData.amount || 0)}). Bạn hãy kiểm tra lại thông tin trước khi lưu.${currencyNotice}`,
         });
         showNotice(`[${sourceBadge}] ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
       }
     } catch (_err: unknown) {
       console.warn("AI_CLASSIFY source=heuristic fallback=true reason=exception");
       const parsed = parseSmartTransaction(textToParse, categories, wallets);
-      applyParsedTransaction(parsed, "[Fallback Ngoại tuyến] Lỗi kết nối AI. Đã nhận diện bằng quy tắc cục bộ.");
+      applyParsedTransaction(parsed, "[Phương án dự phòng ngoại tuyến] Không thể kết nối AI nội bộ. Đã nhận diện bằng quy tắc cục bộ.");
     } finally {
       setAiParsing(false);
     }
@@ -2955,25 +2955,25 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                     className="mode-btn ai-scan-tab"
                     onClick={() => setModal({ kind: "receipt-scan" })}
                   >
-                    Quét hóa đơn bằng AI
-                    <span className="mode-ai-tag">MỚI</span>
+                    Đọc thông tin từ hóa đơn
+                    <span className="mode-ai-tag">TIỆN ÍCH</span>
                   </button>
                 </div>
               )}
               {!modal.item && (
                 <div className="smart-entry ai-quick-entry">
                   <div className="ai-entry-header">
-                    <label className="ai-entry-label">NHẬP NHANH BẰNG AI</label>
-                    <span className="ai-live-tag">LOCAL AI</span>
+                    <label className="ai-entry-label">NHẬP GIAO DỊCH BẰNG CÂU MÔ TẢ</label>
+                    <span className="ai-live-tag">Tự động điền</span>
                   </div>
                   <p className="ai-entry-desc">
-                    Nhập giao dịch bằng ngôn ngữ tự nhiên. AI sẽ nhận diện số tiền, khoản thu/chi, danh mục, ví và thời gian.
+                    Viết một câu về khoản thu hoặc chi để hệ thống điền sẵn thông tin giao dịch.
                   </p>
                   <div className="ai-entry-input-group">
                     <input
                       value={smartInput}
                       onChange={(event) => setSmartInput(event.target.value)}
-                      placeholder="Ví dụ: Ăn trưa 50k tiền mặt hôm nay"
+                      placeholder="Ví dụ: Hôm nay ăn sáng 35 nghìn"
                       disabled={aiParsing}
                       onKeyDown={(event) => {
                         if (event.key === "Enter") {
@@ -2991,56 +2991,56 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                       {aiParsing ? (
                         <>
                           <span className="ai-btn-spinner" />
-                          Đang nhận diện...
+                          Đang đọc thông tin...
                         </>
                       ) : (
-                        "Nhận diện"
+                        "Đọc thông tin giao dịch"
                       )}
                     </button>
                   </div>
 
                   {/* Example chips */}
                   <div className="ai-example-chips">
-                    <span className="chips-label">Gợi ý:</span>
+                    <span className="chips-label">Gợi ý câu mẫu:</span>
                     <button
                       type="button"
                       className="ai-chip"
                       onClick={() => {
-                        setSmartInput("Ăn trưa 50k tiền mặt hôm nay");
+                        setSmartInput("Hôm nay ăn sáng 35 nghìn");
                         setAiFeedback(null);
                       }}
                     >
-                      Ăn trưa 50k tiền mặt
+                      Hôm nay ăn sáng 35 nghìn
                     </button>
                     <button
                       type="button"
                       className="ai-chip"
                       onClick={() => {
-                        setSmartInput("Đổ xăng 100k Momo");
+                        setSmartInput("Hôm qua đổ xăng 70 nghìn");
                         setAiFeedback(null);
                       }}
                     >
-                      Đổ xăng 100k Momo
+                      Hôm qua đổ xăng 70 nghìn
                     </button>
                     <button
                       type="button"
                       className="ai-chip"
                       onClick={() => {
-                        setSmartInput("Lương tháng này 12 triệu Techcombank");
+                        setSmartInput("Nhận lương 12 triệu");
                         setAiFeedback(null);
                       }}
                     >
-                      Lương 12 triệu Techcombank
+                      Nhận lương 12 triệu
                     </button>
                     <button
                       type="button"
                       className="ai-chip"
                       onClick={() => {
-                        setSmartInput("Mua áo 350k");
+                        setSmartInput("Mua sách 15 USD");
                         setAiFeedback(null);
                       }}
                     >
-                      Mua áo 350k
+                      Mua sách 15 USD
                     </button>
                   </div>
 
@@ -3055,21 +3055,21 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   {multiDrafts.length > 0 && (
                     <div className="multi-drafts-panel" style={{ margin: "14px 0", padding: "14px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <span style={{ fontWeight: 600, fontSize: 14 }}>📋 Danh sách {multiDrafts.length} bản nháp nhận diện:</span>
+                        <span style={{ fontWeight: 600, fontSize: 14 }}>📋 Danh sách {multiDrafts.length} giao dịch nhận diện từ câu mô tả:</span>
                         <button
                           type="button"
                           className="ghost-action"
                           style={{ fontSize: 12, padding: "2px 8px" }}
                           onClick={() => {
                             setMultiDrafts([]);
-                            showNotice("Đã hủy tất cả bản nháp.");
+                            showNotice("Đã hủy các bản nháp.");
                           }}
                         >
-                          Hủy tất cả bản nháp
+                          Hủy các bản nháp này
                         </button>
                       </div>
                       <p style={{ fontSize: 12, color: "var(--text-muted, #888)", marginBottom: 12 }}>
-                        Người dùng có thể sửa từng bản nháp trước khi lưu. Chỉ khi nhấn nút lưu, dữ liệu mới được ghi vào cơ sở dữ liệu.
+                        Bạn hãy kiểm tra và chỉnh sửa từng mục nếu cần trước khi lưu. Dữ liệu chỉ được lưu vào hệ thống khi bạn bấm xác nhận.
                       </p>
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {multiDrafts.map((d, index) => (
@@ -3081,7 +3081,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                                 style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12 }}
                                 onClick={() => setMultiDrafts(prev => prev.filter(item => item.id !== d.id))}
                               >
-                                Xóa bản nháp này
+                                Xóa mục này
                               </button>
                             </div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -3151,7 +3151,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                                 style={{ padding: "4px 12px", fontSize: 12 }}
                                 onClick={() => saveSingleMultiDraft(d.id)}
                               >
-                                {saving ? "Đang lưu..." : `Lưu bản nháp #${index + 1}`}
+                                {saving ? "Đang lưu..." : `Xác nhận và lưu giao dịch #${index + 1}`}
                               </button>
                             </div>
                           </div>
@@ -3164,7 +3164,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                           disabled={saving}
                           onClick={saveAllMultiDrafts}
                         >
-                          {saving ? "Đang lưu..." : `Lưu tất cả ${multiDrafts.length} bản nháp`}
+                          {saving ? "Đang lưu..." : `Xác nhận và lưu tất cả (${multiDrafts.length} giao dịch)`}
                         </button>
                       </div>
                     </div>
@@ -3804,8 +3804,8 @@ function TransactionTable({ items, money, language, categoryById, walletById, on
         <span>{t("transactions.title", undefined, language).toUpperCase()}</span>
         <span>{language === "vi" ? "DANH MỤC / VÍ" : "CATEGORY / WALLET"}</span>
         <span>{language === "vi" ? "NGÀY & GIỜ" : "DATE & TIME"}</span>
-        <span>{t("common.amount", undefined, language).toUpperCase()}</span>
-        <span />
+        <span className="th-amount">{t("common.amount", undefined, language).toUpperCase()}</span>
+        <span className="th-actions">{language === "vi" ? "THAO TÁC" : "ACTIONS"}</span>
       </div>
       {items.map(item => {
         const category = categoryById.get(item.category_id ?? "");
@@ -3819,22 +3819,58 @@ function TransactionTable({ items, money, language, categoryById, walletById, on
                 <small>{item.note || t("common.noData", undefined, language)}</small>
               </span>
             </span>
-            <span>
+            <span className="transaction-meta">
               <b>{category?.name ?? item.category}</b>
               <small>{wallet?.name ?? (language === "vi" ? "Không gắn ví" : "No wallet")}</small>
             </span>
-            <span>{formatDate(item.occurred_at, language)}</span>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-              <strong className={item.type}>{item.type === "expense" ? "-" : "+"}{money(item.amount)}</strong>
+            <span className="transaction-date">{formatDate(item.occurred_at, language)}</span>
+            <div className="transaction-amount-col">
+              <strong className={`transaction-amount ${item.type}`}>
+                {item.type === "expense" ? "-" : "+"}
+                {money(item.amount)}
+              </strong>
               {token && item.type === "expense" && item.amount >= 2000000 && (
                 <AiRiskBadge token={token} amount={item.amount} />
               )}
             </div>
-            <span className="row-actions">
-              {item.receipt_path && <button type="button" onClick={() => onReceipt(item.receipt_path!)} title={t("transactions.viewReceipt", undefined, language)} className="tx-text-btn receipt">{t("transactions.receipt", undefined, language)}</button>}
-              <button type="button" onClick={() => onEdit(item)} title={t("common.edit", undefined, language)} className="tx-text-btn edit">{t("common.edit", undefined, language)}</button>
-              <button type="button" onClick={() => onDelete(item)} title={t("common.delete", undefined, language)} className="tx-text-btn delete">{t("common.delete", undefined, language)}</button>
-            </span>
+            <div className="transaction-actions row-actions">
+              {item.receipt_path && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReceipt(item.receipt_path!);
+                  }}
+                  title={t("transactions.viewReceipt", undefined, language)}
+                  className="tx-text-btn receipt"
+                >
+                  <span className="receipt-text-full">{t("transactions.receipt", undefined, language)}</span>
+                  <span className="receipt-text-short">{language === "vi" ? "Hóa đơn" : "Receipt"}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(item);
+                }}
+                title={t("common.edit", undefined, language)}
+                className="tx-text-btn edit"
+              >
+                {t("common.edit", undefined, language)}
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(item);
+                }}
+                title={t("common.delete", undefined, language)}
+                className="tx-text-btn delete"
+              >
+                {t("common.delete", undefined, language)}
+              </button>
+            </div>
           </div>
         );
       })}

@@ -164,13 +164,13 @@ async function postAi<T>(
       }
 
       if (isTimeout) {
-        return { ok: false, advisory: true, error: "AI service timeout." };
+        return { ok: false, advisory: true, error: "Thời gian xử lý quá lâu, vui lòng thử lại." };
       }
-      return { ok: false, advisory: true, error: "Không thể kết nối AI service." };
+      return { ok: false, advisory: true, error: "Không thể kết nối với dịch vụ AI. Vui lòng kiểm tra lại dịch vụ AI nội bộ hoặc thử lại sau." };
     }
   }
 
-  return { ok: false, advisory: true, error: "Không thể kết nối AI service." };
+  return { ok: false, advisory: true, error: "Không thể kết nối với dịch vụ AI. Vui lòng kiểm tra lại dịch vụ AI nội bộ hoặc thử lại sau." };
 }
 
 // ---------------------------------------------------------------------------

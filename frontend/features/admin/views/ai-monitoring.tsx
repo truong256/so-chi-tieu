@@ -58,8 +58,8 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
   return (
     <div className="admin-view-container">
       <AdminHeader
-        title="AI Monitoring"
-        subtitle="Giám sát hiệu năng mô hình ngôn ngữ, độ trễ và tỷ lệ thành công của các tác vụ AI."
+        title="Giám sát hoạt động AI"
+        subtitle="Theo dõi tần suất xử lý, thời gian phản hồi và tỷ lệ thành công của các tác vụ AI nội bộ."
         actions={
           <div className="admin-tab-group" role="tablist">
             <button
@@ -126,9 +126,9 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
               variant={data.errorCount > 0 ? "dark" : "default"}
             />
             <AdminStatCard
-              label="Độ trễ trung bình"
+              label="Thời gian phản hồi"
               value={`${data.avgLatencyMs.toLocaleString("vi-VN")} ms`}
-              sublabel="Thời gian xử lý mạng và sinh văn bản"
+              sublabel="Thời gian xử lý mạng và sinh văn bản (Latency)"
             />
           </div>
 
@@ -136,45 +136,45 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
           {data.canary && (
             <div className="admin-card">
               <div className="admin-card-header">
-                <h2 className="admin-card-title">AI Classification Canary (V3 Primary / V4 5% Canary)</h2>
+                <h2 className="admin-card-title">Thử nghiệm phiên bản mới trên một phần yêu cầu (Canary)</h2>
                 <span className="admin-card-subtitle">
-                  Trạng thái triển khai an toàn mô hình phân loại giao dịch
+                  Cơ chế triển khai an toàn phân chia luồng xử lý giữa phiên bản chính và phiên bản thử nghiệm
                 </span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", padding: "1rem" }}>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Primary / Canary Model</div>
-                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
-                    V3 (95%) / V4 (5%)
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Phiên bản mô hình (Model Version)</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.05rem", marginTop: "4px" }}>
+                    Chính V3 (95%) / Thử nghiệm V4 (5%)
                   </div>
                 </div>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Circuit Breaker</div>
-                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.canary.circuitBreaker === "CLOSED" ? "#10b981" : "#ef4444" }}>
-                    {data.canary.circuitBreaker} (Bình thường)
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Cơ chế tự ngắt (Circuit Breaker)</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.05rem", marginTop: "4px", color: data.canary.circuitBreaker === "CLOSED" ? "#10b981" : "#ef4444" }}>
+                    {data.canary.circuitBreaker === "CLOSED" ? "Đóng / Bình thường" : "Mở / Tự ngắt an toàn"}
                   </div>
                 </div>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Real Traffic Events</div>
-                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
-                    {data.canary.realEventsProgress}
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Dữ liệu theo dõi hoạt động (Telemetry)</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.05rem", marginTop: "4px" }}>
+                    {data.canary.realEventsProgress} sự kiện thực tế
                   </div>
                 </div>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Promotion Gate (&gt;5%)</div>
-                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.canary.promotionGate === "BLOCKED" ? "#f59e0b" : "#10b981" }}>
-                    {data.canary.promotionGate} (Cần &ge;500 sự kiện thật)
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Điều kiện cho phép đưa phiên bản mới vào sử dụng (Promotion Gate)</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.05rem", marginTop: "4px", color: data.canary.promotionGate === "BLOCKED" ? "#f59e0b" : "#10b981" }}>
+                    {data.canary.promotionGate === "BLOCKED" ? "Đang khóa (Cần ≥500 sự kiện thật)" : "Đủ điều kiện mở rộng"}
                   </div>
                 </div>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>V3 / V4 Request Distribution</div>
-                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
-                    {data.canary.v3Requests} V3 / {data.canary.v4Requests} V4
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Phân bổ số lượng yêu cầu (V3 / V4)</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.05rem", marginTop: "4px" }}>
+                    {data.canary.v3Requests} yêu cầu V3 / {data.canary.v4Requests} yêu cầu V4
                   </div>
                 </div>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>V4 Latency p95 / Success</div>
-                  <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Thời gian phản hồi p95 / Tỷ lệ thành công (V4)</div>
+                  <div style={{ fontWeight: 600, fontSize: "1.05rem", marginTop: "4px" }}>
                     {data.canary.v4LatencyP95} ms / {data.canary.v4SuccessRate}%
                   </div>
                 </div>
@@ -186,9 +186,9 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
           {data.feedback && (
             <div className="admin-card">
               <div className="admin-card-header">
-                <h2 className="admin-card-title">Chất lượng gợi ý danh mục (Feedback Loop)</h2>
+                <h2 className="admin-card-title">Chất lượng gợi ý danh mục và phản hồi người dùng (Feedback Loop)</h2>
                 <span className="admin-card-subtitle">
-                  Theo dõi phản hồi chấp nhận hoặc sửa đổi gợi ý từ người dùng thực (tuyệt đối không lưu text giao dịch)
+                  Theo dõi phản hồi chấp nhận hoặc sửa đổi gợi ý từ người dùng thực (bảo đảm quyền riêng tư, tuyệt đối không lưu văn bản giao dịch)
                 </span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", padding: "1rem" }}>
@@ -202,30 +202,30 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
                   </div>
                 </div>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Tỷ lệ người dùng sửa đổi</div>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Tỷ lệ người dùng đổi danh mục khác</div>
                   <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.feedback.correctionRate > 30 ? "#ef4444" : "#10b981" }}>
                     {data.feedback.totalEvents > 0 ? `${data.feedback.correctionRate}%` : "0%"}
                   </div>
                   <div style={{ fontSize: "0.7rem", opacity: 0.5, marginTop: "2px" }}>
-                    Sửa đổi danh mục khi AI đề xuất
+                    Người dùng chọn danh mục khác thay vì gợi ý
                   </div>
                 </div>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Sửa khi tự tin cao (High-Conf)</div>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>Tỷ lệ sửa khi hệ thống tự tin cao</div>
                   <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px", color: data.feedback.highConfidenceCorrectionRate > 15 ? "#ef4444" : "#10b981" }}>
                     {data.feedback.totalEvents > 0 ? `${data.feedback.highConfidenceCorrectionRate}%` : "0%"}
                   </div>
                   <div style={{ fontSize: "0.7rem", opacity: 0.5, marginTop: "2px" }}>
-                    Chỉ số phát hiện gợi ý sai tự tin cao
+                    Chỉ số phát hiện gợi ý chưa chính xác dù tự tin cao
                   </div>
                 </div>
                 <div style={{ padding: "0.75rem", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>V3 vs V4 Chấp nhận</div>
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>So sánh tỷ lệ chấp nhận (V3 vs V4)</div>
                   <div style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "4px" }}>
                     {data.feedback.v3AcceptanceRate}% V3 / {data.feedback.v4AcceptanceRate}% V4
                   </div>
                   <div style={{ fontSize: "0.7rem", opacity: 0.5, marginTop: "2px" }}>
-                    So sánh thực nghiệm Control vs Canary
+                    So sánh thực nghiệm Mô hình chính vs Thử nghiệm
                   </div>
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
               <div className="breakdown-item">
                 <div className="breakdown-header">
                   <div>
-                    <span className="breakdown-name">Chat Assistant (/api/chat)</span>
+                    <span className="breakdown-name">Hỏi trợ lý chi tiêu (/api/chat)</span>
                     <p className="breakdown-desc">Trợ lý hội thoại và giải đáp chi tiêu thông minh</p>
                   </div>
                   <span className="breakdown-count">
@@ -295,7 +295,7 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
               <div className="breakdown-item">
                 <div className="breakdown-header">
                   <div>
-                    <span className="breakdown-name">Transaction Parser (/api/ai/parse-transaction)</span>
+                    <span className="breakdown-name">Đọc giao dịch từ câu mô tả (/api/ai/parse-transaction)</span>
                     <p className="breakdown-desc">Tự động trích xuất ví, danh mục và số tiền từ câu nói tự nhiên</p>
                   </div>
                   <span className="breakdown-count">
@@ -315,7 +315,7 @@ export default function AiMonitoringView({ getAuthToken }: AiMonitoringProps) {
               <div className="breakdown-item">
                 <div className="breakdown-header">
                   <div>
-                    <span className="breakdown-name">Receipt Scanner (/api/receipt/parse)</span>
+                    <span className="breakdown-name">Đọc thông tin từ hóa đơn (/api/receipt/parse)</span>
                     <p className="breakdown-desc">Đọc hóa đơn ảnh, nhận dạng bảng giá và nội dung mua sắm</p>
                   </div>
                   <span className="breakdown-count">

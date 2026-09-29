@@ -15,7 +15,7 @@ interface AdminSidebarProps {
 const NAV_ITEMS: { id: AdminView; label: string }[] = [
   { id: "overview", label: "Tổng quan" },
   { id: "users", label: "Người dùng" },
-  { id: "ai-monitoring", label: "AI Monitoring" },
+  { id: "ai-monitoring", label: "Giám sát hoạt động AI" },
   { id: "notifications", label: "Thông báo" },
   { id: "audit-logs", label: "Audit Log" },
   { id: "system-settings", label: "Cấu hình" },
