@@ -15,6 +15,11 @@ import {
   formatServerFinancialContextForPrompt,
 } from "./financial-context.service.ts";
 
+import {
+  searchSystemKnowledge,
+  formatRagContextForPrompt,
+} from "./system-rag.service.ts";
+
 export { type ChatMessage, type FinancialContext, type AiChatRequest, type AiChatResult };
 
 export const FINANCE_SYSTEM_PROMPT = `Bạn là Financial Copilot của hệ thống "Sổ Chi Tiêu" (Trợ lý tài chính AI thông minh).
@@ -128,18 +133,24 @@ export async function processChat(
     return { reply: OFF_TOPIC_REPLY, status: 200 };
   }
 
-  // Build context text: Prefer server-verified financial context
-  let contextText = "";
+  // 1. Retrieve verified System Knowledge via RAG
+  const ragResults = searchSystemKnowledge(userMessage);
+  const ragContext = formatRagContextForPrompt(ragResults);
+
+  // 2. Build trusted server-verified financial context
+  let financialContext = "";
   if (options?.serverContext) {
-    contextText = formatServerFinancialContextForPrompt(
+    financialContext = formatServerFinancialContextForPrompt(
       options.serverContext,
       cleanText(currentPage, 80),
       userMessage,
     );
   }
 
-  const systemWithContext = contextText
-    ? `${FINANCE_SYSTEM_PROMPT}\n\n${contextText}`
+  const combinedContext = [ragContext, financialContext].filter(Boolean).join("\n\n");
+
+  const systemWithContext = combinedContext
+    ? `${FINANCE_SYSTEM_PROMPT}\n\n${combinedContext}`
     : FINANCE_SYSTEM_PROMPT;
 
   // Build messages array
@@ -161,7 +172,7 @@ export async function processChat(
   const result = await executeOllamaChat({
     baseUrl: ollamaBaseUrl,
     messages: ollamaMessages,
-    totalTimeoutMs: options?.totalTimeoutMs || 35_000,
+    totalTimeoutMs: options?.totalTimeoutMs || 60_000,
     signal: options?.signal,
     modelOverride: options?.modelOverride,
     temperature: 0.6,

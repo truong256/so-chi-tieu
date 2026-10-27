@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import process from "node:process";
 
 const isWin = process.platform === "win32";
-const args = [".", "--ignore-pattern", "dist", "--ignore-pattern", ".next"];
+const args = [".", "--ignore-pattern", "dist", "--ignore-pattern", ".next", "--ignore-pattern", "training_env", "--ignore-pattern", "ai_training"];
 
 if (isWin) {
   const result = spawnSync("npx", ["eslint", ...args], { stdio: "inherit", shell: true });

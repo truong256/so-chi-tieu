@@ -71,6 +71,10 @@ interface TagsCacheEntry {
 let tagsCache: TagsCacheEntry | null = null;
 const TAGS_CACHE_TTL_MS = 30_000;
 
+export function invalidateTagsCache(): void {
+  tagsCache = null;
+}
+
 // ---------------------------------------------------------------------------
 // Concurrency Limiter (Semaphore) — Max concurrent calls to Ollama
 // ---------------------------------------------------------------------------
@@ -196,8 +200,8 @@ export async function getInstalledModels(
 
     const code: OllamaErrorCode = isConnRefused ? "OLLAMA_OFFLINE" : "TIMEOUT";
     const messageVi = isConnRefused
-      ? "Dịch vụ AI nội bộ (Ollama) chưa khởi động. Vui lòng kiểm tra ứng dụng Ollama đang chạy trên máy chủ."
-      : "Kiểm tra kết nối dịch vụ AI quá thời gian chờ.";
+      ? `Dịch vụ AI nội bộ (Ollama) chưa khởi động hoặc không thể kết nối tại ${baseUrl}. Vui lòng kiểm tra tiến trình Ollama đang chạy trên cổng 11434.`
+      : `Kiểm tra kết nối dịch vụ AI tại ${baseUrl} quá thời gian chờ.`;
 
     const clientErr: OllamaClientError = {
       code,
@@ -419,7 +423,7 @@ export async function executeOllamaChat(
   }
 
   const baseUrl = getOllamaBaseUrl(opts.baseUrl);
-  const totalTimeout = opts.totalTimeoutMs || 35_000;
+  const totalTimeout = opts.totalTimeoutMs || 60_000;
   const deadline = Date.now() + totalTimeout;
 
   // 1. Acquire concurrency slot
@@ -475,6 +479,7 @@ export async function executeOllamaChat(
       model,
       messages: opts.messages,
       stream: false,
+      keep_alive: "60m",
       options: {
         temperature: opts.temperature ?? 0.7,
         num_predict: opts.numPredict ?? 1024,
@@ -493,13 +498,19 @@ export async function executeOllamaChat(
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
+      invalidateTagsCache();
       if (res.status === 404 || errText.includes("not found")) {
+        const isCorruptBlob = errText.includes("blob") || errText.includes("cannot find") || errText.includes("metadata");
+        const messageVi = isCorruptBlob
+          ? `Mô hình ${model} bị thiếu tệp trọng số GGUF trên máy chủ hoặc chưa tải hoàn tất (${errText.slice(0, 100)}). Chạy 'ollama pull ${model}' để tải lại đầy đủ.`
+          : `Mô hình ${model} chưa được cài đặt trên Ollama. Chạy 'ollama pull ${model}' để cài đặt.`;
         return {
           success: false,
           error: {
             code: "CHAT_MODEL_MISSING",
-            messageVi: `Mô hình ${model} chưa được cài đặt trên Ollama. Chạy 'ollama pull ${model}' để cài đặt.`,
+            messageVi,
             statusCode: 503,
+            details: errText.slice(0, 200),
           },
         };
       }
@@ -583,7 +594,7 @@ export async function executeOllamaChat(
         success: false,
         error: {
           code: "OLLAMA_OFFLINE",
-          messageVi: "Dịch vụ AI nội bộ (Ollama) chưa khởi động. Vui lòng kiểm tra dịch vụ Ollama đang chạy trên máy chủ.",
+          messageVi: `Dịch vụ AI nội bộ (Ollama) chưa khởi động hoặc địa chỉ kết nối không chính xác (${baseUrl}). Vui lòng kiểm tra tiến trình Ollama đang chạy trên máy chủ.`,
           statusCode: 503,
         },
       };
@@ -712,12 +723,18 @@ export async function executeOllamaVision(
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
       if (res.status === 404 || errText.includes("not found")) {
+        invalidateTagsCache();
+        const isCorruptBlob = errText.includes("blob") || errText.includes("cannot find") || errText.includes("metadata");
+        const messageVi = isCorruptBlob
+          ? `Mô hình thị giác ${model} bị thiếu tệp trọng số GGUF trên máy chủ hoặc chưa tải hoàn tất (${errText.slice(0, 100)}). Chạy 'ollama pull ${model}' để tải lại đầy đủ.`
+          : `Mô hình thị giác ${model} chưa được cài đặt trên Ollama. Chạy 'ollama pull ${model}' để cài đặt.`;
         return {
           success: false,
           error: {
             code: "VISION_MODEL_MISSING",
-            messageVi: `Mô hình thị giác ${model} chưa được cài đặt trên Ollama. Chạy 'ollama pull ${model}' để cài đặt.`,
+            messageVi,
             statusCode: 503,
+            details: errText.slice(0, 200),
           },
         };
       }
@@ -821,7 +838,7 @@ export async function executeOllamaVision(
         success: false,
         error: {
           code: "OLLAMA_OFFLINE",
-          messageVi: "Dịch vụ AI nội bộ (Ollama) chưa khởi động. Vui lòng kiểm tra dịch vụ Ollama đang chạy trên máy chủ.",
+          messageVi: `Dịch vụ AI nội bộ (Ollama) chưa khởi động hoặc địa chỉ kết nối không chính xác (${baseUrl}). Vui lòng kiểm tra tiến trình Ollama đang chạy trên máy chủ.`,
           statusCode: 503,
         },
       };

@@ -3,11 +3,9 @@ import test from "node:test";
 import crypto from "node:crypto";
 import {
   getCanaryPercent,
-  stableUserBucket,
   getCanaryDecision,
   getCircuitBreakerStatus,
   resetCircuitBreaker,
-  getAiTelemetry,
   recordClassificationProductEvent,
   getClassificationProductMetrics,
 } from "../backend/src/services/ai-local.client.ts";

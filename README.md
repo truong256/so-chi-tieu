@@ -1,6 +1,6 @@
 # 📒 Sổ Chi Tiêu (Personal Finance Manager)
 
-**Sổ Chi Tiêu** là ứng dụng quản lý tài chính cá nhân toàn diện, tích hợp Trợ lý AI (Google Gemini), hỗ trợ theo dõi thu chi, quản lý ví, ngân sách, mục tiêu tiết kiệm, giao dịch định kỳ, quét hóa đơn bằng camera và xuất báo cáo Excel.
+**Sổ Chi Tiêu** là ứng dụng quản lý tài chính cá nhân toàn diện, tích hợp Trợ lý AI (Ollama Local AI — Qwen2.5-Coder / LLaVA), hỗ trợ theo dõi thu chi, quản lý ví, ngân sách, mục tiêu tiết kiệm, giao dịch định kỳ, quét hóa đơn bằng camera và xuất báo cáo Excel.
 
 ---
 
@@ -12,8 +12,8 @@
 - 📊 **Ngân sách thông minh**: Đặt giới hạn chi tiêu theo danh mục, cảnh báo vượt hạn mức.
 - 🎯 **Mục tiêu Tiết kiệm**: Theo dõi tiến độ tích lũy tài chính cho các dự định tương lai.
 - 🔁 **Giao dịch Định kỳ**: Tự động nhắc nhở và xử lý các khoản tiền lặp lại (tiền nhà, điện, nước...).
-- 🤖 **Financial Copilot (AI Chatbot)**: Tư vấn tài chính, phân tích What-if ("nếu mua X thì sao?").
-- 📷 **AI Scan Hóa đơn**: Nhận diện ảnh hóa đơn/biên lai và tự động điền giao dịch.
+- 🤖 **Financial Copilot (AI Chatbot)**: Tư vấn tài chính, phân tích What-if ("nếu mua X thì sao?") kết hợp System RAG.
+- 📷 **AI Scan Hóa đơn**: Nhận diện ảnh hóa đơn/biên lai và tự động điền giao dịch bằng Vision AI cục bộ.
 - 📝 **Nhập liệu Ngôn ngữ Tự nhiên**: Gõ "Ăn sáng 35k tiền mặt" → AI tự động phân tích và điền form.
 - 📁 **Báo cáo & Xuất Excel**: Thống kê trực quan, biểu đồ và xuất toàn bộ sổ sách ra file Excel.
 - 🛡️ **Quản trị Hệ thống (Admin Portal)**: Bảng điều khiển riêng biệt dành cho Admin quản lý tài khoản người dùng, giám sát hiệu năng/chi phí AI, phát thông báo hệ thống, cấu hình cờ tính năng và xem nhật ký kiểm toán (Audit Logs) mà không xâm phạm dữ liệu tài chính riêng tư của người dùng.
@@ -28,7 +28,7 @@
 | **Backend / Services** | TypeScript Services, Next.js Route Handlers |
 | **Runtime & Edge Deployment** | Cloudflare Workers, Vinext (Vite 8) |
 | **Database & Authentication** | Supabase (PostgreSQL, Row-Level Security, Supabase Auth, RBAC) |
-| **AI / NLP / Vision** | Google Gemini API (ưu tiên Gemini 3.8 Flash, có fallback tương thích) |
+| **AI / NLP / Vision** | Ollama Local AI (`qwen2.5-coder:7b`, `llava:7b`) + System Knowledge RAG |
 | **Data Export** | Trình ghi OOXML nội bộ + `fflate` |
 | **Testing** | Node.js Test Runner (`node --test`) |
 
@@ -123,7 +123,7 @@ so-chi-tieu/
 
 - **Node.js**: `>=22.13.0`
 - **Tài khoản Supabase**: Đã khởi tạo database và kích hoạt Email Auth
-- **Google Gemini API Key**: Đăng ký miễn phí tại [Google AI Studio](https://aistudio.google.com/apikey)
+- **Ollama**: Cài đặt ứng dụng Ollama và tải mô hình `qwen2.5-coder:7b` (chạy tại port 11434)
 
 ---
 

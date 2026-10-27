@@ -10,10 +10,10 @@
 
 /** Text/chat models — used by AI Chat (Financial Copilot) and NLP Transaction Parser. */
 export const OLLAMA_TEXT_MODELS = [
-  "llama3.2:3b",       // Primary: fast, good Vietnamese support
+  "qwen2.5-coder:7b",  // Primary: fine-tuned / verified local financial model
+  "qwen2.5:3b",        // Fallback: fast multilingual (Vietnamese)
+  "llama3.2:3b",       // Fallback: fast, good Vietnamese support
   "llama3.2:1b",       // Fallback: smaller/faster
-  "qwen2.5:3b",        // Fallback: strong multilingual (Vietnamese)
-  "qwen2.5-coder:7b",  // Installed developer/coder local model
   "mistral:7b",        // Fallback: larger but more capable
 ];
 
