@@ -42,6 +42,8 @@ import {
 import {
   detectDuplicateTransaction,
 } from "@/frontend/services/duplicate-detection.service";
+import EmptyState from "@/frontend/components/ui/empty-state";
+import { applyThemeAccent, getContrastColor } from "@/frontend/utils/theme.utils";
 
 const AiChatView = lazy(() => import("@/frontend/features/ai/ai-chat"));
 const ReceiptScannerModal = lazy(
@@ -455,8 +457,10 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const totalReserved = useMemo(() => [...walletReservedMap.values()].reduce((sum, v) => sum + v, 0), [walletReservedMap]);
   const totalAvailable = totalBalance - totalReserved;
   const totalAssets = totalBalance; // walletBalances already includes all money (available + reserved)
-  const now = new Date();
-  const currentMonthKey = now.getFullYear() * 12 + now.getMonth();
+  const currentMonthKey = useMemo(() => {
+    const d = new Date();
+    return d.getFullYear() * 12 + d.getMonth();
+  }, []);
   const currentMonth = useMemo(() => {
     const year = Math.floor(currentMonthKey / 12);
     const month = currentMonthKey % 12;
@@ -577,12 +581,14 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   }, [monthTransactions]);
 
   const previousMonthExpense = useMemo(() => {
-    const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    const year = Math.floor(currentMonthKey / 12);
+    const month = currentMonthKey % 12;
+    const prevStart = new Date(year, month - 1, 1);
+    const prevEnd = new Date(year, month, 0, 23, 59, 59);
     return transactions
       .filter((t) => t.type === "expense" && inRange(t, prevStart, prevEnd))
       .reduce((sum, t) => sum + t.amount, 0);
-  }, [now, transactions]);
+  }, [currentMonthKey, transactions]);
 
   const duplicateWarning = useMemo(() => {
     if (!modal || modal.kind !== "transaction") return null;
@@ -927,7 +933,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         });
         showNotice(`[${sourceBadge}] ${aiData.description || textToParse} (${money(aiData.amount || 0)})`);
       }
-    } catch (_err: unknown) {
+    } catch {
       console.warn("AI_CLASSIFY source=heuristic fallback=true reason=exception");
       const parsed = parseSmartTransaction(textToParse, categories, wallets);
       applyParsedTransaction(parsed, "[Phương án dự phòng ngoại tuyến] Không thể kết nối AI nội bộ. Đã nhận diện bằng quy tắc cục bộ.");
@@ -3627,37 +3633,6 @@ const APP_THEME_PRESETS = [
   { name: "Deep Indigo", hex: "#6366F1", desc: "Chuyên nghiệp & Điềm tĩnh" },
 ];
 
-function getContrastColor(hexColor: string): string {
-  const clean = hexColor.replace("#", "");
-  if (clean.length === 6) {
-    const r = parseInt(clean.substring(0, 2), 16);
-    const g = parseInt(clean.substring(2, 4), 16);
-    const b = parseInt(clean.substring(4, 6), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 140 ? "#141c1e" : "#ffffff";
-  }
-  return "#141c1e";
-}
-
-function adjustColorBrightness(hex: string, percent: number): string {
-  const clean = hex.replace("#", "");
-  if (clean.length !== 6) return hex;
-  const num = parseInt(clean, 16);
-  if (isNaN(num)) return hex;
-  let r = (num >> 16) + percent;
-  let g = ((num >> 8) & 0x00ff) + percent;
-  let b = (num & 0x0000ff) + percent;
-  r = Math.min(255, Math.max(0, r));
-  g = Math.min(255, Math.max(0, g));
-  b = Math.min(255, Math.max(0, b));
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
-}
-
-function applyThemeAccent(hexColor: string) {
-  if (typeof document === "undefined") return;
-  document.documentElement.style.setProperty("--lime-accent", hexColor);
-  document.documentElement.style.setProperty("--lime-hover", adjustColorBrightness(hexColor, -16));
-}
 
 function ModernColorPicker({
   name = "color",
@@ -3794,7 +3769,7 @@ function WalletModalForm({ modalItem, saving, language = "vi", onSubmit }: { mod
   );
 }
 
-function Empty({ text }: { text: string }) { return <div className="empty-state"><p>{text}</p></div>; }
+function Empty({ text }: { text: string }) { return <EmptyState text={text} />; }
 
 function TransactionTable({ items, money, language, categoryById, walletById, onEdit, onDelete, onReceipt, token }: { items: Transaction[]; money: (value: number) => string; language: "vi" | "en"; categoryById: Map<string, Category>; walletById: Map<string, Wallet>; onEdit: (item: Transaction) => void; onDelete: (item: Transaction) => void; onReceipt: (path: string) => void; token?: string }) {
   if (!items.length) return <Empty text={t("transactions.empty", undefined, language)} />;

@@ -151,7 +151,7 @@ test("security: client_id and user_id spoofing prevention via server session bin
 });
 
 test("auth rejection: missing or invalid bearer token rejects with 401", async () => {
-  const { extractBearerToken, verifySupabaseAccessToken, AuthenticationError } = await import(
+  const { extractBearerToken, AuthenticationError } = await import(
     "../backend/src/services/supabase-auth.service.ts"
   );
 

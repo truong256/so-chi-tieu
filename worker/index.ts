@@ -107,7 +107,10 @@ const worker = {
           clientTime: typeof body.clientTime === "string" ? body.clientTime : undefined,
         };
 
-        const result = await processChat(ollamaBaseUrl, reqPayload);
+        const result = await processChat(ollamaBaseUrl, reqPayload, {
+          signal: request.signal,
+          totalTimeoutMs: 60_000,
+        });
 
         if (result.error) {
           return Response.json({ error: result.error }, { status: result.status });

@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     "examples/d1/**",
     "next-env.d.ts",
     "scratch/**",
+    "training_env/**",
+    "ai_training/**",
   ]),
 ]);
 

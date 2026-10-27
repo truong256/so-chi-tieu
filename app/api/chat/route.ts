@@ -24,7 +24,7 @@ import {
 import { DEFAULT_OLLAMA_BASE_URL } from "@/backend/src/services/ollama-models";
 
 export const runtime = "nodejs";
-export const maxDuration = 45;
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     const result = await processChat(ollamaBaseUrl, req, {
       serverContext,
       signal: request.signal,
-      totalTimeoutMs: 35_000,
+      totalTimeoutMs: 60_000,
     });
 
     const latencyMs = Date.now() - startTime;

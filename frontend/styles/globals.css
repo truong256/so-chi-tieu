@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 /* Startup / Loading / Error screens */
 .startup-screen {
@@ -130,6 +131,7 @@
   --sidebar-text-muted: #a3b2b5;
   --lime-accent: #d2f544;
   --lime-hover: #c4e837;
+  --lime-contrast-text: #141c1e;
   
   --canvas-bg: #e6ece8;
   --main-card-bg: #f5f8f6;
@@ -147,8 +149,18 @@
   --expense-red-bg: #fce8e6;
   --expense-red-text: #d32f2f;
 
-  --font-be-vietnam-pro: "Be Vietnam Pro", "Segoe UI", Arial, sans-serif;
-  --font-be-vietnam: var(--font-be-vietnam-pro), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Soft UI Evolution tokens (UI/UX Pro Max) */
+  --shadow-soft-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.03), 0 6px 14px -2px rgba(0, 0, 0, 0.05);
+  --shadow-soft-lg: 0 4px 12px rgba(0, 0, 0, 0.05), 0 16px 32px -8px rgba(0, 0, 0, 0.08);
+  --shadow-inset-soft: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+  --radius-soft: 14px;
+  --radius-card: 20px;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font-be-vietnam-pro: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-be-vietnam: var(--font-be-vietnam-pro);
 }
 
 * { box-sizing: border-box; }
@@ -167,6 +179,29 @@ button, input, select, textarea, table, modal, dialog, th, td { font-family: var
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; text-decoration: none; }
+
+/* WCAG 2.2 AA Focus Indicators */
+:focus-visible {
+  outline: 2px solid var(--lime-accent, #3b82f6) !important;
+  outline-offset: 2px !important;
+}
+
+/* Global Prefers Reduced Motion (Accessibility) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Accessible touch targets for touch devices (>= 44px) */
+@media (pointer: coarse) {
+  button, select, input[type="button"], input[type="submit"] {
+    min-height: 44px;
+  }
+}
 
 /* Brand Mark (Logo) */
 .brand {
@@ -8585,227 +8620,6 @@ input:focus, select:focus, textarea:focus {
 }
 .ghost-btn:hover {
   background: #f8fafc;
-}
-
-/* Monthly Review Modal */
-.review-modal-card {
-  position: relative;
-  width: 100%;
-  max-width: 860px;
-  max-height: 90vh;
-  overflow-y: auto;
-  background: #ffffff;
-  border-radius: 28px;
-  padding: 36px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
-  animation: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  z-index: 100;
-}
-.review-month-selector {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8fafc;
-  padding: 12px 18px;
-  border-radius: 16px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.selector-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #334155;
-}
-.selector-group select {
-  height: 38px;
-  padding: 0 12px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-weight: 700;
-}
-.review-metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 28px;
-}
-@media (max-width: 768px) {
-  .review-metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-.review-metric-box {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 18px 16px;
-}
-.review-metric-box.income {
-  border-left: 4px solid #10b981;
-}
-.review-metric-box.expense {
-  border-left: 4px solid #f43f5e;
-}
-.review-metric-box.cashflow {
-  border-left: 4px solid #3b82f6;
-}
-.review-metric-box.savings {
-  border-left: 4px solid #8b5cf6;
-}
-.metric-label {
-  font-size: 11.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #64748b;
-  margin: 0 0 6px;
-}
-.metric-value {
-  font-size: 19px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 4px;
-}
-.metric-sub {
-  font-size: 11.5px;
-  color: #64748b;
-  font-weight: 600;
-}
-.metric-sub.green {
-  color: #15803d;
-  font-weight: 700;
-}
-.metric-sub.orange {
-  color: #b45309;
-  font-weight: 700;
-}
-.review-section {
-  margin-bottom: 24px;
-}
-.review-section h4 {
-  font-size: 15px;
-  font-weight: 800;
-  color: #1e293b;
-  margin: 0 0 14px;
-}
-.review-categories-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.review-category-row {
-  display: grid;
-  grid-template-columns: 180px 1fr 140px;
-  align-items: center;
-  gap: 16px;
-  font-size: 13px;
-}
-@media (max-width: 600px) {
-  .review-category-row {
-    grid-template-columns: 130px 1fr 100px;
-    gap: 8px;
-  }
-}
-.cat-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.cat-color-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.cat-name {
-  font-weight: 700;
-  color: #1e293b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cat-percent {
-  font-size: 11.5px;
-  color: #64748b;
-}
-.cat-bar-wrap {
-  height: 8px;
-  background: #f1f5f9;
-  border-radius: 999px;
-  overflow: hidden;
-}
-.cat-bar {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.3s ease;
-}
-.cat-amount {
-  font-weight: 700;
-  color: #0f172a;
-  text-align: right;
-}
-.review-comparison-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-@media (max-width: 600px) {
-  .review-comparison-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.comparison-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 14px 16px;
-}
-.cmp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.cmp-badge {
-  font-size: 11.5px;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 6px;
-}
-.cmp-badge.up {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.cmp-badge.down {
-  background: #dcfce7;
-  color: #166534;
-}
-.cmp-body {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #64748b;
-}
-.review-insights-bullets {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 13.5px;
-  color: #334155;
-  line-height: 1.6;
-}
-.review-section.warning-box {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 16px;
-  padding: 16px 20px;
-}
-.review-anomaly-item {
-  font-size: 13px;
-  color: #92400e;
-  margin-top: 6px;
 }
 
 /* Financial Insights Card on Overview */
