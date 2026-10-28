@@ -571,6 +571,9 @@ export function detectPermittedCrudIntent(
   }
 
   // 5. Explicit Create Transaction
+  if (/chưa nhập|có phải là.*100%|tỷ lệ tiết kiệm/i.test(lower)) {
+    return null;
+  }
   const isCreateTransaction =
     /(?:tạo|thêm|ghi|ghi nhận|lưu|nhập)\s+(?:giúp\s+tôi\s+|cho\s+tôi\s+|mới\s+|một\s+)*(?:giao dịch|khoản chi|khoản thu|chi tiêu|thu nhập)\b/i.test(
       lower,

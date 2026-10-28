@@ -22,6 +22,9 @@ export interface SystemKnowledgeChunk {
   sourceFile: string;
   version: string;
   requiredRole: "user" | "admin" | "all";
+  updatedAt?: string;
+  contentType?: "system_architecture" | "business_rules" | "user_guide" | "security_policy" | "data_integrity";
+  trustLevel?: "VERIFIED_INTERNAL" | "HIGH" | "STANDARD";
   keywords: string[];
   content: string;
 }
@@ -478,7 +481,52 @@ export const SYSTEM_KNOWLEDGE_CHUNKS: SystemKnowledgeChunk[] = [
       "- Chống tự thăng quyền: Không có API cho phép người dùng tự đổi role sang admin; quyền admin chỉ được cấp bởi backend/database.\n" +
       "- Quyền riêng tư: Admin CHỈ xem số liệu tổng hợp (tổng người dùng, độ trễ AI, audit logs); tuyệt đối không có quyền xem giao dịch chi tiêu riêng tư của người dùng.\n" +
       "- Các tab Admin: Tổng quan (Overview), Quản lý người dùng (Users), Giám sát AI (AI Monitoring), Thông báo (Notifications), Cấu hình hệ thống (System Settings), Nhật ký kiểm toán (Audit Logs)."
-  }
+  },
+  {
+    id: "kb_missing_historical_data_rules",
+    title: "Quy tắc Xử lý Khi Thiếu Dữ liệu Lịch sử & Chống Hallucination (Historical Data Integrity)",
+    feature: "data_integrity",
+    sourceFile: "backend/src/services/financial-snapshot.service.ts",
+    version: "v3.2.0",
+    requiredRole: "all",
+    updatedAt: "2026-10-28T00:00:00.000Z",
+    contentType: "data_integrity",
+    trustLevel: "VERIFIED_INTERNAL",
+    keywords: [
+      "thiếu dữ liệu lịch sử", "không có dữ liệu", "so sánh với tháng trước",
+      "chi tiêu tháng trước", "tỷ lệ tiết kiệm 100%", "tháng trước không có giao dịch",
+      "chưa có dữ liệu", "tăng hay giảm so với tháng trước"
+    ],
+    content:
+      "Quy tắc Xử lý Khi Thiếu Dữ liệu Lịch sử & Chống Bịa Đặt Số Liệu (Anti-Hallucination):\n" +
+      "1. Khi tháng trước không có giao dịch ghi nhận:\n" +
+      "   - Tuyệt đối KHÔNG tự suy diễn chi tiêu tháng trước bằng 0đ để kết luận chi tiêu tăng vô hạn hoặc tỷ lệ tiết kiệm đạt 100%.\n" +
+      "   - Câu trả lời chuẩn mực bắt buộc: 'Tháng trước hệ thống không ghi nhận giao dịch nào, nên tôi chưa đủ dữ liệu để so sánh chính xác mức chi tiêu giữa hai tháng.'\n" +
+      "2. Phân biệt rõ ràng giữa 'Chưa có dữ liệu' (NO_DATA) và 'Chi tiêu thực tế bằng 0':\n" +
+      "   - Người dùng mới hoặc người dùng chưa ghi chép vào app không đồng nghĩa với việc họ không chi tiêu gì ngoài đời thực.\n" +
+      "   - Nếu xảy ra lỗi truy vấn cơ sở dữ liệu, phải thông báo lỗi minh bạch, tuyệt đối không bịa số liệu thay thế."
+  },
+  {
+    id: "kb_envelope_and_available_balance_rules",
+    title: "Quy tắc Quỹ Phong Bì, Tiền Phân Bổ & Số Dư Khả Dụng (Envelope & Available Balance Invariants)",
+    feature: "budgets_and_wallets",
+    sourceFile: "frontend/utils/finance-calculations.ts",
+    version: "v3.2.0",
+    requiredRole: "all",
+    updatedAt: "2026-10-28T00:00:00.000Z",
+    contentType: "business_rules",
+    trustLevel: "VERIFIED_INTERNAL",
+    keywords: [
+      "quỹ phong bì", "tiền phân bổ", "số dư khả dụng", "tổng tài sản",
+      "công thức tính khả dụng", "tiền giữ chỗ", "ngân sách phong bì", "invariants"
+    ],
+    content:
+      "Quy tắc Toán học Bất biến (Invariants) Giữa Dashboard và Chatbot:\n" +
+      "1. Tổng tài sản = Tổng số dư của tất cả các ví (theo từng loại tiền tệ riêng biệt).\n" +
+      "2. Tiền đã phân bổ / Tiền dự trữ = Tổng số tiền giữ chỗ cho các Quỹ phong bì ngân sách (remaining_amount hoặc allocated_amount) + Tiền nạp vào Mục tiêu tiết kiệm.\n" +
+      "3. Số dư khả dụng = Tổng tài sản - Tiền đã phân bổ.\n" +
+      "4. Bảo toàn giá trị: Tiền phân bổ không mất đi khỏi tài sản mà chỉ bị khóa tạm thời để bảo đảm người dùng không tiêu lạm vào các kế hoạch đã đề ra."
+  },
 ];
 
 // ---------------------------------------------------------------------------

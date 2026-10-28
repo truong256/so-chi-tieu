@@ -62,13 +62,15 @@ export function calculateReservedByWallet(
   for (const budget of budgets) {
     if (
       budget.source_wallet_id &&
-      budget.status === "active" &&
-      budget.remaining_amount > 0 &&
+      (budget.status === "active" || !budget.status) &&
       reserved.has(budget.source_wallet_id)
     ) {
+      const rem = Number(budget.remaining_amount);
+      const alloc = Number(budget.allocated_amount);
+      const rVal = Number.isFinite(rem) && rem >= 0 ? rem : (Number.isFinite(alloc) && alloc > 0 ? alloc : 0);
       reserved.set(
         budget.source_wallet_id,
-        (reserved.get(budget.source_wallet_id) ?? 0) + budget.remaining_amount,
+        (reserved.get(budget.source_wallet_id) ?? 0) + rVal,
       );
     }
   }
@@ -76,13 +78,22 @@ export function calculateReservedByWallet(
   for (const goal of goals) {
     if (
       goal.source_wallet_id &&
-      goal.reserved_in_wallet > 0 &&
       reserved.has(goal.source_wallet_id)
     ) {
+      const gRes = Number(goal.reserved_in_wallet);
+      const gCur = Number(goal.current_amount);
+      const rVal = Number.isFinite(gRes) && gRes > 0 ? gRes : (Number.isFinite(gCur) && gCur > 0 ? gCur : 0);
       reserved.set(
         goal.source_wallet_id,
-        (reserved.get(goal.source_wallet_id) ?? 0) + goal.reserved_in_wallet,
+        (reserved.get(goal.source_wallet_id) ?? 0) + rVal,
       );
+    }
+  }
+
+  for (const wallet of wallets) {
+    const explicitReserved = Number(wallet.reserved_amount);
+    if (Number.isFinite(explicitReserved) && explicitReserved > (reserved.get(wallet.id) ?? 0)) {
+      reserved.set(wallet.id, explicitReserved);
     }
   }
 

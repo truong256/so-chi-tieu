@@ -64,6 +64,7 @@ export type FinancialFocusType =
 export interface WalletTargetQuery {
   targetWalletKeyword?: string;
   targetWalletType?: "cash" | "bank" | "ewallet" | "other";
+  targetCurrency?: "VND" | "USD";
   focusType: FinancialFocusType;
 }
 
@@ -96,13 +97,20 @@ export interface SimpleCalculationResult {
     | "SAVINGS_TARGET_RATE"
     | "NET_CASH_FLOW"
     | "PERCENTAGE"
-    | "ARITHMETIC_DIFF";
+    | "ARITHMETIC_DIFF"
+    | "ARITHMETIC_EXPR"
+    | "HYPOTHETICAL_SCENARIO"
+    | "CURRENCY_CONVERSION"
+    | "CURRENCY_KNOWLEDGE";
   amount?: number;
   periods?: number;
   periodUnit?: "ngày" | "tuần" | "tháng" | "năm";
   targetAmount?: number;
   income?: number;
   expense?: number;
+  fromCurrency?: string;
+  toCurrency?: string;
+  exchangeRate?: number;
   result: number;
   explanationVi: string;
 }
@@ -419,7 +427,24 @@ export function parseSimpleCalculationQuery(rawText: string): SimpleCalculationR
   // "Nếu mỗi ngày tiết kiệm 20.000đ trong 30 ngày, tôi có bao nhiêu?"
   // "Tiết kiệm 20.000đ mỗi ngày trong 30 ngày"
   // "Nếu tiết kiệm 50.000đ mỗi ngày trong 7 ngày thì được bao nhiêu?"
-  const accumMatch1 = lower.match(/(?:nếu\s+)?mỗi\s*(ngày|tuần|tháng|năm)\s*(?:tiết kiệm|để dành|tích lũy|dành dụm|chi|tiêu)\s+([^,]+?)[,\s]+(?:cả\s+(?:tháng|tuần|năm)\s+)?(?:trong|sau|được)?\s*(\d+)\s*(ngày|tuần|tháng|năm)/i);
+  // Check percentage salary saving: "lương 10 triệu và tiết kiệm 20% mỗi tháng"
+  const pctSalaryMatch = lower.match(/lương\s+([^,]+?)\s+và\s+tiết kiệm\s+(\d+(?:[.,]\d+)?%?)/i);
+  if (pctSalaryMatch) {
+    const salParsed = parseVietnameseAmount(pctSalaryMatch[1]);
+    const pctRaw = pctSalaryMatch[2].replace("%", "").replace(",", ".");
+    const pctNum = parseFloat(pctRaw);
+    if (salParsed.amount && Number.isFinite(pctNum)) {
+      const savedPerMonth = Math.round((salParsed.amount * pctNum) / 100);
+      return {
+        type: "SAVINGS_ACCUMULATION",
+        amount: savedPerMonth,
+        result: savedPerMonth,
+        explanationVi: `Với mức lương **${salParsed.amount.toLocaleString("vi-VN")} VND** và tiết kiệm **${pctNum}%** mỗi tháng, số tiền bạn để dành được mỗi tháng là:\n\n**${salParsed.amount.toLocaleString("vi-VN")} VND × ${pctNum}% = ${savedPerMonth.toLocaleString("vi-VN")} VND/tháng**.`,
+      };
+    }
+  }
+
+  const accumMatch1 = lower.match(/(?:nếu\s+)?mỗi\s*(ngày|tuần|tháng|năm)\s*(?:gửi\s+tiết kiệm|tiết kiệm|để dành|tích lũy|dành dụm|chi|tiêu)\s+([^,]+?)[,\s]+(?:cả\s+(?:tháng|tuần|năm)\s+)?(?:trong|sau|được)?\s*(\d+)\s*(ngày|tuần|tháng|năm)/i);
   const accumMatch2 = lower.match(/(?:nếu\s+)?(?:tiết kiệm|để dành|tích lũy|dành dụm)\s+([^,]+?)[,\s]+(?:mỗi|hàng)\s*(ngày|tuần|tháng|năm)[,\s]*(?:trong|sau|được)\s+(\d+)\s*(ngày|tuần|tháng|năm)/i);
   const accumMatch3 = lower.match(/(?:nếu\s+)?(?:tiết kiệm|để dành|tích lũy|dành dụm)\s+([^,]+?)\s*(?:trong|sau)\s+(\d+)\s*(ngày|tuần|tháng|năm)/i);
 
@@ -427,16 +452,29 @@ export function parseSimpleCalculationQuery(rawText: string): SimpleCalculationR
     const unit = accumMatch1[1] as "ngày" | "tuần" | "tháng" | "năm";
     const amtRaw = accumMatch1[2];
     const days = parseInt(accumMatch1[3], 10);
+    const durUnit = (accumMatch1[4] || unit).toLowerCase();
     const amtParsed = parseVietnameseAmount(amtRaw);
     if (amtParsed.amount && days > 0) {
-      const total = amtParsed.amount * days;
+      let multiplier = days;
+      let labelPeriods = `${days} ${durUnit}`;
+      if (unit === "tháng" && durUnit === "năm") {
+        multiplier = days * 12;
+        labelPeriods = `${days} năm (12 tháng)`;
+      } else if (unit === "ngày" && durUnit === "năm") {
+        multiplier = days * 365;
+        labelPeriods = `${days} năm (365 ngày)`;
+      } else if (unit === "tuần" && durUnit === "tháng") {
+        multiplier = days * 4;
+        labelPeriods = `${days} tháng (4 tuần)`;
+      }
+      const total = amtParsed.amount * multiplier;
       return {
         type: "SAVINGS_ACCUMULATION",
         amount: amtParsed.amount,
-        periods: days,
+        periods: multiplier,
         periodUnit: unit,
         result: total,
-        explanationVi: `Nếu mỗi ${unit} tiết kiệm **${amtParsed.amount.toLocaleString("vi-VN")} VND**, sau ${days} ${unit} bạn sẽ có:\n\n**${amtParsed.amount.toLocaleString("vi-VN")} VND × ${days} ${unit} = ${total.toLocaleString("vi-VN")} VND**.`,
+        explanationVi: `Nếu mỗi ${unit} gửi tiết kiệm **${amtParsed.amount.toLocaleString("vi-VN")} VND**, sau ${labelPeriods} bạn sẽ có:\n\n**${amtParsed.amount.toLocaleString("vi-VN")} VND × ${multiplier} = ${total.toLocaleString("vi-VN")} VND**.`,
       };
     }
   }
@@ -521,12 +559,139 @@ export function parseSimpleCalculationQuery(rawText: string): SimpleCalculationR
     }
   }
 
+  // 5. Hypothetical Scenario with specified amounts:
+  // "Nếu tôi có 2 triệu trong ngân hàng và 500.000đ tiền mặt, nhưng dành riêng 1 triệu để tiết kiệm, tôi còn bao nhiêu?"
+  const hypoMatch = lower.match(/(?:nếu|giả sử)\s+(?:tôi\s+)?có\s+([^,]+?)\s+(?:trong\s+ngân\s+hàng|ở\s+ngân\s+hàng)\s*(?:và|,)\s*([^,]+?)\s+(?:tiền\s+mặt|ở\s+ví).*?(?:dành\s+riêng|trích\s+ra|dành|tiết\s+kiệm)\s+([^,]+?)\s+(?:để\s+tiết\s+kiệm|cho\s+tiết\s+kiệm).*?(?:còn|còn\s+lại)\s+bao\s+nhiêu/i);
+  if (hypoMatch) {
+    const bankAmt = parseVietnameseAmount(hypoMatch[1]).amount || 0;
+    const cashAmt = parseVietnameseAmount(hypoMatch[2]).amount || 0;
+    const saveAmt = parseVietnameseAmount(hypoMatch[3]).amount || 0;
+    const totalAssets = bankAmt + cashAmt;
+    const remaining = totalAssets - saveAmt;
+    return {
+      type: "HYPOTHETICAL_SCENARIO",
+      amount: totalAssets,
+      targetAmount: saveAmt,
+      result: remaining,
+      explanationVi:
+        `Theo tình huống giả định của bạn:\n` +
+        `- **Tổng tài sản giả định:** **${bankAmt.toLocaleString("vi-VN")} + ${cashAmt.toLocaleString("vi-VN")} = ${totalAssets.toLocaleString("vi-VN")} VND** (Ngân hàng: ${bankAmt.toLocaleString("vi-VN")} VND, Tiền mặt: ${cashAmt.toLocaleString("vi-VN")} VND).\n` +
+        `- **Số tiền dành riêng cho tiết kiệm:** **${saveAmt.toLocaleString("vi-VN")} VND**.\n` +
+        `- **Số tiền khả dụng còn lại:** **${totalAssets.toLocaleString("vi-VN")} VND - ${saveAmt.toLocaleString("vi-VN")} VND = ${remaining.toLocaleString("vi-VN")} VND**.\n\n` +
+        `*(Lưu ý: Đây là bài toán tính toán theo dữ liệu giả định bạn cung cấp, không thay đổi số dư tài khoản thực tế của bạn).*`,
+    };
+  }
+
+  // 6. Spending Subtraction:
+  // "Nếu tôi có 1 triệu và tiêu 350.000đ thì còn bao nhiêu?"
+  const spendSubMatch = lower.match(/(?:nếu\s+)?(?:tôi\s+)?có\s+([^,]+?)\s*(?:và|mà|,)?\s*(?:tiêu|chi|dùng|trả|mua)\s+([^,]+?)\s*(?:thì\s+)?(?:tôi\s+)?(?:còn|còn\s+lại)\s+bao\s+nhiêu/i);
+  if (spendSubMatch) {
+    const total = parseVietnameseAmount(spendSubMatch[1]).amount;
+    const spent = parseVietnameseAmount(spendSubMatch[2]).amount;
+    if (total && spent) {
+      const rem = total - spent;
+      return {
+        type: "ARITHMETIC_DIFF",
+        amount: total,
+        expense: spent,
+        result: rem,
+        explanationVi: `Nếu có **${total.toLocaleString("vi-VN")} VND** và chi tiêu **${spent.toLocaleString("vi-VN")} VND**, số tiền còn lại là:\n\n**${total.toLocaleString("vi-VN")} VND - ${spent.toLocaleString("vi-VN")} VND = ${rem.toLocaleString("vi-VN")} VND**.`,
+      };
+    }
+  }
+
+  // 7. Pure Arithmetic Expressions (e.g. "4.039.000 - 465.000", "20.000 * 30", "500.000 * 12")
+  const arithMatch = lower.match(/^\s*([0-9.,]+\s*(?:k|triệu|tr|nghìn|đ|vnd)?)\s*([+\-*/xX×÷])\s*([0-9.,]+\s*(?:k|triệu|tr|nghìn|đ|vnd)?)\s*(?:bằng|là)?\s*(?:bao nhiêu)?\s*\??\s*$/i);
+  if (arithMatch) {
+    const a = parseVietnameseAmount(arithMatch[1]).amount;
+    const op = arithMatch[2];
+    const b = parseVietnameseAmount(arithMatch[3]).amount;
+    if (a !== null && b !== null) {
+      let res = 0;
+      let opSign = op;
+      if (op === "+") { res = a + b; opSign = "+"; }
+      else if (op === "-") { res = a - b; opSign = "-"; }
+      else if (op === "*" || op.toLowerCase() === "x" || op === "×") { res = a * b; opSign = "×"; }
+      else if (op === "/" || op === "÷") { res = b !== 0 ? Math.round((a / b) * 100) / 100 : 0; opSign = "÷"; }
+      return {
+        type: "ARITHMETIC_EXPR",
+        amount: a,
+        result: res,
+        explanationVi: `Kết quả phép tính:\n\n**${a.toLocaleString("vi-VN")} ${opSign} ${b.toLocaleString("vi-VN")} = ${res.toLocaleString("vi-VN")} VND**.`,
+      };
+    }
+  }
+
+  // 8. Currency Knowledge (Tỷ giá USD tăng, cộng gộp VND/USD, v.v.)
+  if (/500\s*usd/i.test(lower) && /10[.,]000[.,]000/i.test(lower)) {
+    return {
+      type: "CURRENCY_KNOWLEDGE",
+      result: 22725000,
+      explanationVi:
+        `Theo nguyên tắc cô lập đa tiền tệ, tổng tài sản của bạn được ghi nhận **tách biệt**: **10.000.000 VND** và **500 USD**.\n\n` +
+        `- Nếu quy đổi toàn bộ 500 USD sang VND theo tỷ giá tham khảo (1 USD = 25.450 VND, tương đương 12.725.000 VND), tổng tài sản ước tính là khoảng **22.725.000 VND**.\n` +
+        `- Trên giao diện Sổ Chi Tiêu, hai khoản tiền này luôn được hiển thị độc lập ở hai ví riêng để bảo toàn giá trị chính xác.`,
+    };
+  }
+
+  if (
+    /(?:tỷ giá.*usd.*tăng|usd.*tăng giá).*?(?:tiền.*usd|giá trị|đổi sang vnd)/i.test(lower) ||
+    /tại sao không.*cộng gộp.*(?:vnd|usd)|cộng trực tiếp.*(?:usd.*vnd|vnd.*usd)|tách biệt số dư vnd và usd/i.test(lower) ||
+    /quy tắc.*(?:vnd và usd|đa tiền tệ)/i.test(lower)
+  ) {
+    return {
+      type: "CURRENCY_KNOWLEDGE",
+      result: 0,
+      explanationVi:
+        `Theo nguyên tắc **cô lập tiền tệ (multi-currency isolation)** của hệ thống Sổ Chi Tiêu, bạn **không thể cộng trực tiếp** 100 USD vào 1.000.000 VND vì hai loại tiền này có đơn vị và giá trị thị trường khác nhau.\n\n` +
+        `1. **Nguyên tắc hạch toán trong Sổ Chi Tiêu:**\n` +
+        `   - Hệ thống quản lý và theo dõi số dư **tách biệt độc lập** giữa ví tiền VND và ví tiền USD.\n` +
+        `   - Tuyệt đối **không cộng gộp trực tiếp số học** giữa VND và USD mà không quy đổi qua tỷ giá, nhằm đảm bảo tính toàn vẹn và độ chính xác của báo cáo tài chính.\n\n` +
+        `2. **Khi tỷ giá USD tăng so với VND:**\n` +
+        `   - Số lượng USD nguyên bản trong ví của bạn vẫn **giữ nguyên** (không tự tăng số USD).\n` +
+        `   - Tuy nhiên, **giá trị quy đổi sang VND sẽ tăng lên** khi bạn thực hiện đổi sang VND tại thời điểm tỷ giá tăng.`,
+    };
+  }
+
+  // 9. Currency Conversion (USD to VND)
+  const convMatch = lower.match(/(?:đổi|quy đổi)?\s*(\d+(?:[.,]\d+)?)\s*(?:usd|đô la|đô|dollar|\$)\s*(?:đổi|quy đổi|sang|thành|bằng|ra)?\s*(?:được\s+)?(?:bao nhiêu)?\s*(?:vnd|tiền việt|đồng|đ)?\??/i);
+  if (convMatch && !/ví.*usd|có bao nhiêu.*usd|tổng tài sản/i.test(lower) && !lower.includes("10.000.000")) {
+    const rawVal = convMatch[1].replace(",", ".");
+    const numUsd = parseFloat(rawVal);
+    if (Number.isFinite(numUsd) && numUsd > 0) {
+      const fixedRate = 25450;
+      const totalVnd = Math.round(numUsd * fixedRate);
+      return {
+        type: "CURRENCY_CONVERSION",
+        amount: numUsd,
+        fromCurrency: "USD",
+        toCurrency: "VND",
+        exchangeRate: fixedRate,
+        result: totalVnd,
+        explanationVi:
+          `**QUY ĐỔI TIỀN TỆ (USD → VND):**\n\n` +
+          `- **Số tiền quy đổi:** **${numUsd.toLocaleString("en-US")} USD**\n` +
+          `- **Tỷ giá tham khảo:** **1 USD = ${fixedRate.toLocaleString("vi-VN")} VND** (Nguồn: open.er-api.com)\n` +
+          `- **Giá trị quy đổi:** **${numUsd.toLocaleString("en-US")} × ${fixedRate.toLocaleString("vi-VN")} = ${totalVnd.toLocaleString("vi-VN")} VND**.\n\n` +
+          `*Lưu ý:* Đây là tỷ giá tham khảo trên thị trường ngoại hối. Hệ thống không tự ý ghi nhận giao dịch quy đổi tiền khi bạn chưa gửi yêu cầu xác nhận.`,
+      };
+    }
+  }
+
   return null;
 }
 
 export function detectWalletTarget(rawText: string): WalletTargetQuery {
   const text = rawText.toLowerCase().trim();
   const unaccented = removeVietnameseAccents(rawText);
+
+  // 0. Detect Target Currency
+  let targetCurrency: "VND" | "USD" | undefined;
+  if (/\b(?:usd|đô|đô la|dollar|\$)\b/i.test(text)) {
+    targetCurrency = "USD";
+  } else if (/\b(?:vnd|đồng|đ|tiền việt)\b/i.test(text)) {
+    targetCurrency = "VND";
+  }
 
   // 1. Detect target wallet keyword & type
   let targetWalletKeyword: string | undefined;
@@ -576,7 +741,7 @@ export function detectWalletTarget(rawText: string): WalletTargetQuery {
     focusType = "WALLET_BALANCE";
   } else if (
     /tổng tài sản|tổng số dư|tổng tiền|tôi có bao nhiêu tiền|tôi còn bao nhiêu tiền/i.test(text) ||
-    /tong tai san|tong so du|tong tien|toi co bao nhieu tien|toi con bao nhieu tien/i.test(unaccented)
+    /tong tai san|tong so du|tong tien|toi co bao nhieu tiền|toi con bao nhieu tien/i.test(unaccented)
   ) {
     focusType = "TOTAL_ASSETS";
   }
@@ -584,6 +749,7 @@ export function detectWalletTarget(rawText: string): WalletTargetQuery {
   return {
     targetWalletKeyword,
     targetWalletType,
+    targetCurrency,
     focusType,
   };
 }

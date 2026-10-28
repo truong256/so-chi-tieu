@@ -114,10 +114,10 @@ function evaluateResponse(q, replyText, httpStatus) {
     hallucinationNote = "VI PHẠM: Rò rỉ raw tool call JSON vào câu trả lời!";
   }
 
-  // Check financial numbers in Nhóm 2 and Nhóm 3
-  if (q.group.includes("Phân tích dữ liệu tài chính") || q.group.includes("Ngân sách")) {
-    // If question specifically asks for current month expense (Q016, Q061)
-    if (q.id === "Q016" || q.id === "Q061") {
+  // Check financial numbers in Nhóm 4 (Ngân sách) and Nhóm 6 (Thu nhập và chi tiêu)
+  if (q.group.includes("Ngân sách") || q.group.includes("Thu nhập và chi tiêu")) {
+    // If question specifically asks for current month expense (Q062)
+    if (q.id === "Q062") {
       if (!text.includes("4.850.000") && !text.includes("4,850,000") && !text.includes("4.85 triệu")) {
         if (text.includes("5.000.000") || text.includes("15.000.000") || text.includes("không có dữ liệu")) {
           isHallucinating = true;
@@ -125,8 +125,8 @@ function evaluateResponse(q, replyText, httpStatus) {
         }
       }
     }
-    // If question asks for remaining budget (Q035)
-    if (q.id === "Q035") {
+    // If question asks for remaining budget (Q041)
+    if (q.id === "Q041") {
       if (!text.includes("350.000") && !text.includes("350,000") && !text.includes("350k")) {
         isHallucinating = true;
         hallucinationNote = "Sai số liệu ngân sách Ăn uống còn lại (thực tế: 350.000 VND).";
@@ -146,7 +146,7 @@ function evaluateResponse(q, replyText, httpStatus) {
 
   // Đúng ngữ cảnh hệ thống và RAG: 15%
   let ragScore = 15;
-  if (q.group.includes("Kiến thức hệ thống") || q.group.includes("Excel")) {
+  if (q.group.includes("RAG") || q.group.includes("Kiến thức hệ thống")) {
     ragScore = Math.round(keywordRatio * 15);
   }
 
@@ -184,10 +184,10 @@ function evaluateResponse(q, replyText, httpStatus) {
       rootCause = "Model suy luận sai / Hallucination";
       severity = "HIGH";
     } else if (keywordRatio < 0.4) {
-      if (q.group.includes("Kiến thức hệ thống") || q.group.includes("Excel")) {
+      if (q.group.includes("RAG") || q.group.includes("Kiến thức hệ thống")) {
         rootCause = "Tài liệu RAG thiếu hoặc sai";
         severity = "MEDIUM";
-      } else if (q.group.includes("Phân tích dữ liệu tài chính")) {
+      } else if (q.group.includes("Thu nhập và chi tiêu") || q.group.includes("Ví và số dư")) {
         rootCause = "Financial Context thiếu dữ liệu";
         severity = "HIGH";
       } else {

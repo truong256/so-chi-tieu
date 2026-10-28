@@ -174,7 +174,7 @@ export function parseVietnameseAmount(text: string): { amount: number | null, cu
     const num = Number(usdPrefix[1].replace(",", "."));
     return { amount: num, currency: "USD", score: 100, matchedStr: usdPrefix[0] };
   }
-  const regexUsd = /(\d+(?:[.,]\d+)?)\s*(?:usd|đô|dollar|\$)\b/i;
+  const regexUsd = /(\d+(?:[.,]\d+)?)\s*(?:usd|đô la|đô|dollar|\$)(?![0-9a-zA-Z_])/i;
   const matchUsd = text.match(regexUsd);
   if (matchUsd) {
     const num = Number(matchUsd[1].replace(",", "."));

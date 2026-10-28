@@ -116,7 +116,7 @@ export function computeAuthoritativeReservedByWallet(
     if (b.source_wallet_id && (b.status === "active" || !b.status)) {
       const rem = Number(b.remaining_amount);
       const alloc = Number(b.allocated_amount);
-      const rVal = Number.isFinite(rem) && rem >= 0 ? rem : (Number.isFinite(alloc) && alloc >= 0 ? alloc : 0);
+      const rVal = Number.isFinite(rem) && rem >= 0 ? rem : (Number.isFinite(alloc) && alloc > 0 ? alloc : 0);
       if (reserved.has(b.source_wallet_id)) {
         reserved.set(b.source_wallet_id, (reserved.get(b.source_wallet_id) ?? 0) + rVal);
       }
@@ -124,13 +124,11 @@ export function computeAuthoritativeReservedByWallet(
   }
 
   for (const g of goals) {
-    if (g.source_wallet_id) {
+    if (g.source_wallet_id && reserved.has(g.source_wallet_id)) {
       const gRes = Number(g.reserved_in_wallet);
       const gCur = Number(g.current_amount);
       const rVal = Number.isFinite(gRes) && gRes > 0 ? gRes : (Number.isFinite(gCur) && gCur > 0 ? gCur : 0);
-      if (reserved.has(g.source_wallet_id)) {
-        reserved.set(g.source_wallet_id, (reserved.get(g.source_wallet_id) ?? 0) + rVal);
-      }
+      reserved.set(g.source_wallet_id, (reserved.get(g.source_wallet_id) ?? 0) + rVal);
     }
   }
 
