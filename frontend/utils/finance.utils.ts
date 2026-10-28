@@ -35,53 +35,72 @@ function getLastDayOfMonth(year: number, month: number) {
   return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 }
 
-export function advanceRecurring(value: string, frequency: Frequency, interval = 1, monthEndMode: "last_day" | "next_month" = "last_day") {
+export function advanceRecurring(
+  value: string,
+  frequency: Frequency,
+  interval = 1,
+  monthEndMode: "last_day" | "next_month" = "last_day",
+  startDate?: string | null,
+) {
   const next = new Date(value);
   if (!Number.isInteger(interval) || interval < 1) interval = 1;
-  const originalDateStr = value.includes('T') ? value.split('T')[0] : value;
-  const targetDay = parseInt(originalDateStr.split('-')[2] || "1", 10);
+  const anchorSource = startDate && startDate.trim() ? startDate.trim() : value;
+  const originalDateStr = anchorSource.includes("T") ? anchorSource.split("T")[0] : anchorSource;
+  const targetDay = parseInt(originalDateStr.split("-")[2] || "1", 10);
 
   if (frequency === "daily") {
-      next.setUTCDate(next.getUTCDate() + interval);
-    } else if (frequency === "weekly") {
-      next.setUTCDate(next.getUTCDate() + 7 * interval);
-    } else if (frequency === "biweekly") {
-      next.setUTCDate(next.getUTCDate() + 14 * interval);
-    } else if (frequency === "monthly" || frequency === "bimonthly" || frequency === "quarterly" || frequency === "semi-annually" || frequency === "custom") {
-      let monthsToAdd = interval;
-      if (frequency === "bimonthly") monthsToAdd = 2 * interval;
-      if (frequency === "quarterly") monthsToAdd = 3 * interval;
-      if (frequency === "semi-annually") monthsToAdd = 6 * interval;
-      
-      const newMonth = next.getUTCMonth() + monthsToAdd;
-      
-      // Temporarily set day to 1 to avoid month overflow when setting month
-      next.setUTCDate(1);
-      next.setUTCMonth(newMonth);
-      
-      const actualNewMonth = next.getUTCMonth();
-      const actualNewYear = next.getUTCFullYear();
-      const lastDayOfNewMonth = getLastDayOfMonth(actualNewYear, actualNewMonth);
-      
-      if (targetDay > lastDayOfNewMonth) {
-        if (monthEndMode === "last_day") {
-          next.setUTCDate(lastDayOfNewMonth);
-        } else {
-          // next_month
-          next.setUTCMonth(actualNewMonth + 1);
-          next.setUTCDate(1);
-        }
+    next.setUTCDate(next.getUTCDate() + interval);
+  } else if (frequency === "weekly") {
+    next.setUTCDate(next.getUTCDate() + 7 * interval);
+  } else if (frequency === "biweekly") {
+    next.setUTCDate(next.getUTCDate() + 14 * interval);
+  } else if (
+    frequency === "monthly" ||
+    frequency === "bimonthly" ||
+    frequency === "quarterly" ||
+    frequency === "semi-annually" ||
+    frequency === "custom"
+  ) {
+    let monthsToAdd = interval;
+    if (frequency === "bimonthly") monthsToAdd = 2 * interval;
+    if (frequency === "quarterly") monthsToAdd = 3 * interval;
+    if (frequency === "semi-annually") monthsToAdd = 6 * interval;
+
+    const newMonth = next.getUTCMonth() + monthsToAdd;
+
+    // Temporarily set day to 1 to avoid month overflow when setting month
+    next.setUTCDate(1);
+    next.setUTCMonth(newMonth);
+
+    const actualNewMonth = next.getUTCMonth();
+    const actualNewYear = next.getUTCFullYear();
+    const lastDayOfNewMonth = getLastDayOfMonth(actualNewYear, actualNewMonth);
+
+    if (targetDay > lastDayOfNewMonth) {
+      if (monthEndMode === "last_day") {
+        next.setUTCDate(lastDayOfNewMonth);
       } else {
-        next.setUTCDate(targetDay);
+        // next_month
+        next.setUTCMonth(actualNewMonth + 1);
+        next.setUTCDate(1);
       }
-    } else if (frequency === "yearly") {
-      const targetYear = next.getUTCFullYear() + interval;
-      const targetMonth = next.getUTCMonth();
-      next.setUTCDate(1);
-      next.setUTCFullYear(targetYear);
-      next.setUTCMonth(targetMonth);
-      next.setUTCDate(Math.min(targetDay, getLastDayOfMonth(targetYear, targetMonth)));
+    } else {
+      next.setUTCDate(targetDay);
     }
+  } else if (frequency === "yearly") {
+    const targetYear = next.getUTCFullYear() + interval;
+    const targetMonth = next.getUTCMonth();
+    next.setUTCDate(1);
+    next.setUTCFullYear(targetYear);
+    next.setUTCMonth(targetMonth);
+    const lastDay = getLastDayOfMonth(targetYear, targetMonth);
+    if (targetDay > lastDay && monthEndMode === "next_month") {
+      next.setUTCMonth(targetMonth + 1);
+      next.setUTCDate(1);
+    } else {
+      next.setUTCDate(Math.min(targetDay, lastDay));
+    }
+  }
 
   return next.toISOString();
 }
@@ -125,19 +144,19 @@ export function getRelativeTime(dateString: string, language: "vi" | "en" = "vi"
   const now = new Date();
   // Reset time part for accurate day calculation
   now.setHours(0, 0, 0, 0);
-  
+
   const targetDate = new Date(dateString);
   targetDate.setHours(0, 0, 0, 0);
-  
+
   const diffTime = targetDate.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) return language === "vi" ? "Hôm nay" : "Today";
   if (diffDays === 1) return language === "vi" ? "Ngày mai" : "Tomorrow";
   if (diffDays === -1) return language === "vi" ? "Hôm qua" : "Yesterday";
-  
+
   if (diffDays > 1 && diffDays <= 7) return language === "vi" ? `Còn ${diffDays} ngày` : `In ${diffDays} days`;
   if (diffDays >= -7 && diffDays < -1) return language === "vi" ? `Quá hạn ${Math.abs(diffDays)} ngày` : `Overdue ${Math.abs(diffDays)} days`;
-  
+
   return formatDateOnly(dateString, language);
 }

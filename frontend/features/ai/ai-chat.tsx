@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useAiChat } from "./ai-chat-context";
 import type { FinancialContext } from "./ai-chat-context";
 import AiMessageContent from "./ai-message-content";
+import AiActionConfirmCard from "./ai-action-confirm-card";
 
 // ─── Suggested questions ─────────────────────────────────────────────────────
 const SUGGESTED_QUESTIONS = [
@@ -11,8 +12,8 @@ const SUGGESTED_QUESTIONS = [
   "Danh mục nào tôi chi nhiều nhất?",
   "Tình hình ngân sách của tôi thế nào?",
   "Tôi còn bao nhiêu tiền trong các ví?",
-  "Tôi có thể chi thêm 250k mà không vượt ngân sách không?",
-  "Khoản chi lớn nhất gần đây là gì?",
+  "Tạo danh mục chi tiêu Cà phê",
+  "Tạo ngân sách Ăn uống 3 triệu mỗi tháng",
 ];
 
 interface Props {
@@ -22,7 +23,15 @@ interface Props {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function AiChatView({ financialContext }: Props) {
-  const { messages, loading, sendMessage, clearMessages, stopGeneration } = useAiChat();
+  const {
+    messages,
+    loading,
+    sendMessage,
+    confirmAction,
+    cancelAction,
+    clearMessages,
+    stopGeneration,
+  } = useAiChat();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -62,7 +71,7 @@ export default function AiChatView({ financialContext }: Props) {
       <div className="ai-chat-header">
         <div className="ai-chat-header-text">
           <h2>Hỏi trợ lý chi tiêu</h2>
-          <p>Đặt câu hỏi bằng tiếng Việt về thu chi và cách sử dụng ứng dụng</p>
+          <p>Đặt câu hỏi về thu chi, tạo danh mục, lập ngân sách hoặc giao dịch định kỳ</p>
         </div>
         {messages.length > 0 && (
           <button
@@ -81,7 +90,7 @@ export default function AiChatView({ financialContext }: Props) {
         {isEmpty && (
           <div className="ai-welcome">
             <p className="ai-welcome-title">Xin chào! Tôi là Trợ lý chi tiêu của bạn.</p>
-            <p className="ai-welcome-sub">Hệ thống hỗ trợ tra cứu thu chi, số dư ví và ngân sách theo dữ liệu thực tế của bạn. Chọn câu hỏi gợi ý hoặc nhập câu hỏi bên dưới:</p>
+            <p className="ai-welcome-sub">Hệ thống hỗ trợ phân tích tài chính, tra cứu số dư và tạo danh mục, ngân sách, giao dịch hoặc lịch định kỳ bằng ngôn ngữ tự nhiên:</p>
             <div className="ai-suggestions">
               {SUGGESTED_QUESTIONS.map((q, i) => (
                 <button
@@ -105,6 +114,14 @@ export default function AiChatView({ financialContext }: Props) {
             )}
             <div className={`ai-bubble ${msg.role} ${msg.isError ? "error" : ""}`}>
               <AiMessageContent text={msg.text} />
+              {msg.pendingAction && (
+                <AiActionConfirmCard
+                  messageId={msg.id}
+                  action={msg.pendingAction}
+                  onConfirm={id => void confirmAction(id)}
+                  onCancel={id => void cancelAction(id)}
+                />
+              )}
             </div>
           </div>
         ))}
@@ -142,7 +159,7 @@ export default function AiChatView({ financialContext }: Props) {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Đặt câu hỏi về chi tiêu của bạn... (Nhấn Enter để gửi, Shift+Enter để xuống dòng)"
+            placeholder="Đặt câu hỏi hoặc yêu cầu tạo danh mục, ngân sách, giao dịch... (Enter để gửi)"
             rows={1}
             disabled={loading}
             maxLength={2000}

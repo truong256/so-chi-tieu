@@ -49,9 +49,10 @@ export function generateSmartAlerts(params: {
   budgets: Budget[];
   goals: SavingsGoal[];
   recurring: RecurringTransaction[];
-  formatMoney: (amount: number) => string;
+  formatMoney?: (amount: number) => string;
 }): SmartAlert[] {
-  const { wallets, availableBalances, transactions, budgets, goals, recurring, formatMoney } = params;
+  const formatMoney = params.formatMoney ?? ((val: number) => `${Number(val || 0).toLocaleString("vi-VN")} ₫`);
+  const { wallets, availableBalances, transactions, budgets, goals, recurring } = params;
   const alerts: SmartAlert[] = [];
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);

@@ -4,16 +4,18 @@
  * Seeds deterministic test fixture data for test_copilot@sochitieu.com in Supabase.
  */
 
-const TEST_TOKEN = 'eyJhbGciOiJFUzI1NiIsImtpZCI6IjEyYTllMTBhLWVkOTUtNDlmMy1hZTU0LWNhZjJlY2JkNGQyZCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3hxY2xoZ3lya3dhaXB3b2tvb3hlLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJjOTIxYjZlZS05MTBmLTRkNGEtOWI1NS1lYzI3M2MwNDgzMGUiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzkzMTE0NTkxLCJpYXQiOjE3OTMxMTA5OTEsImVtYWlsIjoidGVzdF9jb3BpbG90QHNvY2hpdGlldS5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoidGVzdF9jb3BpbG90QHNvY2hpdGlldS5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJzdWIiOiJjOTIxYjZlZS05MTBmLTRkNGEtOWI1NS1lYzI3M2MwNDgzMGUifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc5MzExMDk5MX1dLCJzZXNzaW9uX2lkIjoiMjlhODQwMzItZjU4Ny00MGQ1LWFiOTctY2FlNTY3NmNhMzBjIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.uSPKvcLPsr3WYO36gpmS001JwaeYK01gV5gWwx-wUA_Jbcwzv5kRB-kPO3sXuw1POKVYJXpCkwgLD4QeymFRRQ';
+import { getTestAuthToken } from './auth-helper.mjs';
+
 const USER_ID = 'c921b6ee-910f-4d4a-9b55-ec273c04830e';
-const SUPABASE_URL = 'https://xqclhgyrkwaipwokooxe.supabase.co';
-const API_KEY = 'sb_publishable_7A3Jnp28OveJw8Tvg9cY6A_tQ67V5oh';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xqclhgyrkwaipwokooxe.supabase.co';
+const API_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_7A3Jnp28OveJw8Tvg9cY6A_tQ67V5oh';
 
 async function seedData() {
-  console.log('Seeding deterministic financial fixtures for test user...');
+  console.log('Authenticating test user and seeding deterministic financial fixtures...');
+  const token = await getTestAuthToken();
   const headers = {
     'apikey': API_KEY,
-    'Authorization': `Bearer ${TEST_TOKEN}`,
+    'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
@@ -21,6 +23,10 @@ async function seedData() {
   // 1. Get or create wallets
   const walletsRes = await fetch(`${SUPABASE_URL}/rest/v1/wallets?select=*`, { headers });
   let wallets = await walletsRes.json();
+  if (!Array.isArray(wallets)) {
+    throw new Error(`Failed to fetch wallets: ${JSON.stringify(wallets)}`);
+  }
+
   let cashWallet = wallets.find(w => w.name === 'Tiền mặt');
   if (cashWallet) {
     await fetch(`${SUPABASE_URL}/rest/v1/wallets?id=eq.${cashWallet.id}`, {
@@ -28,10 +34,33 @@ async function seedData() {
       headers,
       body: JSON.stringify({ balance: 5000000, reserved_amount: 500000 })
     });
+  } else {
+    const createCash = await fetch(`${SUPABASE_URL}/rest/v1/wallets`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        user_id: USER_ID,
+        name: 'Tiền mặt',
+        type: 'cash',
+        balance: 5000000,
+        currency: 'VND',
+        color: '#D9F45F',
+        icon: '💵',
+        reserved_amount: 500000
+      })
+    });
+    const created = await createCash.json();
+    cashWallet = created[0];
   }
 
   let bankWallet = wallets.find(w => w.name === 'Tài khoản VCB');
-  if (!bankWallet) {
+  if (bankWallet) {
+    await fetch(`${SUPABASE_URL}/rest/v1/wallets?id=eq.${bankWallet.id}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ balance: 10000000, reserved_amount: 0 })
+    });
+  } else {
     const createBank = await fetch(`${SUPABASE_URL}/rest/v1/wallets`, {
       method: 'POST',
       headers,
@@ -67,7 +96,7 @@ async function seedData() {
   // Current month: 2026-10
   // Previous month: 2026-09
   const transactionsToInsert = [
-    // Current month income
+    // Current month income (15.000.000 VND)
     {
       user_id: USER_ID,
       wallet_id: bankWallet?.id || cashWallet.id,
@@ -100,7 +129,7 @@ async function seedData() {
       amount: 1500000,
       type: 'expense',
       occurred_at: '2026-10-02T09:00:00Z',
-      note: 'Khoản chi lớn nhất'
+      note: 'Tiền nhà tháng 10'
     },
     {
       user_id: USER_ID,
@@ -157,7 +186,7 @@ async function seedData() {
   console.log('Transactions seeded status:', txRes.status);
   if (!txRes.ok) console.log('Tx Error:', await txRes.text());
 
-  // 4. Seed Budget for Ăn uống: 3.000.000 VND limit
+  // 4. Seed Budget for Ăn uống: 3.000.000 VND limit, 500.000 VND envelope allocation from cash wallet
   await fetch(`${SUPABASE_URL}/rest/v1/budgets?user_id=eq.${USER_ID}`, {
     method: 'DELETE',
     headers
@@ -171,9 +200,12 @@ async function seedData() {
         name: 'Ngân sách Ăn uống',
         category_id: foodCat.id,
         amount: 3000000,
-        spent_amount: 2100000,
-        remaining_amount: 900000,
-        period: 'monthly'
+        allocated_amount: 500000,
+        remaining_amount: 500000,
+        source_wallet_id: cashWallet.id,
+        spent_amount: 2650000,
+        period: 'monthly',
+        alert_percent: 80
       }
     ])
   });

@@ -119,14 +119,14 @@ export default function ImportModal({
         const chunk = rowsToImport.slice(i, i + batchSize);
         const payload = chunk.map((r) => ({
           user_id: userId,
-          title: r.title,
+          title: (r.title || "Giao dịch").slice(0, 120),
           amount: r.amount,
           type: r.type,
-          category: r.categoryName || "Khác",
+          category: (r.categoryName || "Khác").slice(0, 60),
           category_id: r.categoryId || null,
           wallet_id: r.walletId || wallets[0]?.id || null,
           occurred_at: r.occurredAt,
-          note: r.note || "",
+          note: (r.note || "").slice(0, 500),
           payment_source_type: "wallet",
         }));
 
@@ -142,7 +142,12 @@ export default function ImportModal({
       onClose();
     } catch (err) {
       console.error("Import execute error:", err);
-      showNotice(err instanceof Error ? err.message : "Có lỗi xảy ra khi lưu giao dịch.");
+      const dbMsg = err instanceof Error
+        ? err.message
+        : (err && typeof err === "object" && typeof (err as { message?: unknown }).message === "string"
+            ? String((err as { message: string }).message)
+            : "");
+      showNotice(dbMsg || "Có lỗi xảy ra khi lưu giao dịch.");
     } finally {
       setImporting(false);
     }

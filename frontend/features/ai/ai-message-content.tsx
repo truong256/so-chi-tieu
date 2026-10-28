@@ -1,7 +1,8 @@
 export default function AiMessageContent({ text }: { text: string }) {
+  const visibleText = text.replace(/<!--[\s\S]*?-->/g, "").trim();
   return (
     <div className="ai-message-content">
-      {text.split("\n").map((line, index) => {
+      {visibleText.split("\n").map((line, index) => {
         if (!line.trim()) return <br key={index} />;
         const className = /^[-•*]\s|^\d+\.\s/.test(line)
           ? "ai-list-item"

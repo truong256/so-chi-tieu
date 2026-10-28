@@ -18,6 +18,7 @@ import type {
 import { advanceRecurring, formatDate, inRange, localDateTime, periodBounds, toNumber } from "@/frontend/utils/finance.utils";
 import {
   calculateAvailableBalances,
+  calculateBudgetMetrics,
   calculateReservedByWallet,
   calculateTransactionTotals,
   calculateWalletBalances,
@@ -54,12 +55,12 @@ type View = "overview" | "transactions" | "wallets" | "categories" | "planning" 
 type UserInfo = { id: string; name: string; email: string };
 
 const defaultCategories = [
-  ["Ăn uống", "expense", "", "#FF9466"], ["Di chuyển", "expense", "", "#7C8CFF"],
-  ["Nhà ở", "expense", "", "#E5CB54"], ["Mua sắm", "expense", "", "#FF7898"],
-  ["Giải trí", "expense", "", "#A47BE8"], ["Sức khỏe", "expense", "", "#58B999"],
-  ["Giáo dục", "expense", "", "#4B9BE8"], ["Lương", "income", "", "#78B732"],
-  ["Thưởng", "income", "", "#8CBF42"], ["Trợ cấp", "income", "", "#56B4D3"],
-  ["Thu khác", "income", "", "#69A9D8"],
+  ["Ăn uống", "expense", "utensils", "#FF9466"], ["Di chuyển", "expense", "bike", "#7C8CFF"],
+  ["Nhà ở", "expense", "home", "#E5CB54"], ["Mua sắm", "expense", "shopping-bag", "#FF7898"],
+  ["Giải trí", "expense", "film", "#A47BE8"], ["Sức khỏe", "expense", "heart-pulse", "#58B999"],
+  ["Giáo dục", "expense", "book-open", "#4B9BE8"], ["Lương", "income", "briefcase", "#78B732"],
+  ["Thưởng", "income", "gift", "#8CBF42"], ["Trợ cấp", "income", "hand-coins", "#56B4D3"],
+  ["Thu khác", "income", "sparkles", "#69A9D8"],
 ] as const;
 
 const navItems: { id: View; label: string; en: string; icon: string }[] = [
@@ -84,6 +85,56 @@ function mapRecurring(row: Record<string, unknown>): RecurringTransaction { retu
 const MAX_MONEY_AMOUNT = 1_000_000_000_000_000;
 function isValidMoneyAmount(value: number, allowZero = false): boolean {
   return Number.isFinite(value) && value <= MAX_MONEY_AMOUNT && (allowZero ? value >= 0 : value > 0);
+}
+
+function extractDbErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object") {
+    const maybeMsg = (error as { message?: unknown }).message;
+    if (typeof maybeMsg === "string" && maybeMsg.trim()) return maybeMsg.trim();
+  }
+  return "";
+}
+
+function isMissingRpcError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const code = (error as { code?: unknown }).code;
+  if (code === "PGRST202" || code === "42883") return true;
+  const msg = extractDbErrorMessage(error);
+  return /Could not find the function/i.test(msg);
+}
+
+function translateSaveErrorVi(error: unknown, fallback: string): string {
+  const raw = extractDbErrorMessage(error);
+  if (!raw) return fallback;
+  const code = error && typeof error === "object" ? String((error as { code?: unknown }).code ?? "") : "";
+
+  if (code === "23505" || /duplicate key|unique constraint/i.test(raw)) {
+    if (/wallets/i.test(raw)) return "Tên ví này đã tồn tại. Vui lòng chọn tên khác.";
+    if (/categories/i.test(raw)) return "Danh mục này đã tồn tại trong cùng nhóm Thu/Chi.";
+    if (/username/i.test(raw)) return "Tên tài khoản (username) này đã được sử dụng.";
+    return "Dữ liệu này đã tồn tại, vui lòng kiểm tra lại để tránh trùng lặp.";
+  }
+  if (code === "23514" || /violates check constraint/i.test(raw)) {
+    if (/wallets_name_check|categories_name_check/i.test(raw)) return "Tên phải từ 1 đến 80 ký tự.";
+    if (/budgets_name_check/i.test(raw)) return "Tên ngân sách phải từ 1 đến 100 ký tự.";
+    if (/wallets_icon_check|categories_icon_check/i.test(raw)) return "Biểu tượng mặc định không hợp lệ.";
+    if (/color_check/i.test(raw)) return "Mã màu không hợp lệ (cần định dạng HEX như #D9F45F).";
+    if (/note_check/i.test(raw)) return "Ghi chú quá dài (tối đa 500 ký tự).";
+    if (/amount_check/i.test(raw)) return "Số tiền phải lớn hơn 0.";
+  }
+  if (raw.includes("INSUFFICIENT_BALANCE")) return "Số dư khả dụng trong ví không đủ để thực hiện thao tác này.";
+  if (raw.includes("INSUFFICIENT_BUDGET")) return "Ngân sách không đủ số dư còn lại.";
+  if (raw.includes("INSUFFICIENT_GOAL")) return "Số tiền rút vượt quá số dư hiện có trong mục tiêu.";
+  if (raw.includes("GOAL_LIMIT")) return "Số tiền gửi vượt quá mục tiêu tiết kiệm.";
+  if (raw.includes("AUTH_REQUIRED") || /JWT|row-level security/i.test(raw)) {
+    return "Phiên đăng nhập đã hết hạn hoặc không có quyền ghi dữ liệu. Vui lòng đăng nhập lại.";
+  }
+  const colonIdx = raw.indexOf(":");
+  if (colonIdx > 0 && /^[A-Z0-9_]+$/.test(raw.slice(0, colonIdx))) {
+    return raw.slice(colonIdx + 1).trim() || fallback;
+  }
+  return raw;
 }
 
 function Modal({ title, eyebrow, onClose, children }: { title: string; eyebrow: string; onClose: () => void; children: React.ReactNode }) {
@@ -319,7 +370,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       const walletsQuerySucceeded = walletResult.status === "fulfilled" && !walletResult.value.error;
       if (walletsQuerySucceeded && !loadedWallets.length) {
         try {
-          const { data, error } = await supabase.from("wallets").insert({ user_id: user.id, name: "Tiền mặt", type: "cash", balance: 0, currency: loadedProfile.currency, color: "#D9F45F", icon: "" }).select("id,user_id,name,type,balance,currency,color,icon").single();
+          const { data, error } = await supabase.from("wallets").insert({ user_id: user.id, name: "Tiền mặt", type: "cash", balance: 0, currency: loadedProfile.currency, color: "#D9F45F", icon: "wallet" }).select("id,user_id,name,type,balance,reserved_amount,currency,color,icon").single();
           if (!error && data) loadedWallets = [mapWallet(data as Record<string, unknown>)];
         } catch (e) {
           console.warn("Could not auto-insert default wallet:", e);
@@ -339,61 +390,130 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       }
 
       if (runAutomation && loadedRecurring.length) {
-        let automated = false;
-        let skippedDueToBalance = 0;
-
-        const projectedAvailable = calculateAvailableBalances(
-          calculateWalletBalances(
-            loadedWallets,
-            loadedTransactions,
-            loadedTransfers,
-            loadedBudgets,
-          ),
-          calculateReservedByWallet(loadedWallets, loadedBudgets, loadedGoals),
+        const dueAutoItems = loadedRecurring.filter(
+          (item) => item.active && item.auto_create && new Date(item.next_run_at) <= new Date(),
         );
+        if (dueAutoItems.length > 0) {
+          let automated = false;
+          let skippedDueToBalance = 0;
+          let handledByBackend = false;
 
-        for (const schedule of loadedRecurring.filter((item) => item.active && item.auto_create && new Date(item.next_run_at) <= new Date())) {
-          if (schedule.type === "expense" && schedule.wallet_id) {
-            const avail = projectedAvailable.get(schedule.wallet_id) ?? 0;
-            if (avail < schedule.amount) {
-              skippedDueToBalance++;
-              continue;
+          try {
+            const { data: sessionRes } = await supabase.auth.getSession();
+            const token = sessionRes?.session?.access_token ?? "";
+            if (token) {
+              const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Ho_Chi_Minh";
+              const procRes = await fetch("/api/recurring/process", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ timeZone: tz }),
+              });
+              if (procRes.ok) {
+                const procSummary = (await procRes.json()) as {
+                  executedCount?: number;
+                  results?: Array<{ status?: string }>;
+                };
+                handledByBackend = true;
+                automated = Number(procSummary.executedCount ?? 0) > 0;
+                skippedDueToBalance = (procSummary.results ?? []).filter(
+                  (r) => r.status === "failed_balance",
+                ).length;
+              }
             }
+          } catch (procErr) {
+            console.warn("Backend recurring scheduler fallback to client:", procErr);
           }
 
-          const { error } = await supabase.rpc("record_recurring_transaction", {
-            p_recurring_id: schedule.id,
-            p_occurred_at: schedule.next_run_at,
-            p_next_run_at: advanceRecurring(schedule.next_run_at, schedule.frequency),
-          });
-          if (!error) {
-            automated = true;
-            if (schedule.type === "expense" && schedule.wallet_id) {
-              projectedAvailable.set(
-                schedule.wallet_id,
-                (projectedAvailable.get(schedule.wallet_id) ?? 0) - schedule.amount,
+          if (!handledByBackend) {
+            const projectedAvailable = calculateAvailableBalances(
+              calculateWalletBalances(
+                loadedWallets,
+                loadedTransactions,
+                loadedTransfers,
+                loadedBudgets,
+              ),
+              calculateReservedByWallet(loadedWallets, loadedBudgets, loadedGoals),
+            );
+            for (const schedule of dueAutoItems) {
+              if (schedule.type === "expense" && schedule.wallet_id) {
+                const avail = projectedAvailable.get(schedule.wallet_id) ?? 0;
+                if (avail < schedule.amount) {
+                  skippedDueToBalance++;
+                  continue;
+                }
+              }
+              const nextRunIso = advanceRecurring(
+                schedule.next_run_at,
+                schedule.frequency,
+                schedule.interval ?? 1,
+                schedule.month_end_mode ?? "last_day",
+                schedule.start_date,
               );
+              let { error } = await supabase.rpc("record_recurring_transaction", {
+                p_recurring_id: schedule.id,
+                p_occurred_at: schedule.next_run_at,
+                p_next_run_at: nextRunIso,
+              });
+              if (error && isMissingRpcError(error)) {
+                const catName = loadedCategories.find((c) => c.id === schedule.category_id)?.name
+                  ?? (schedule.type === "income" ? "Thu khác" : "Khác");
+                const txIns = await supabase.from("transactions").insert({
+                  user_id: user.id,
+                  title: schedule.title.slice(0, 120),
+                  amount: schedule.amount,
+                  type: schedule.type,
+                  category: catName.slice(0, 60),
+                  category_id: schedule.category_id,
+                  wallet_id: schedule.wallet_id,
+                  occurred_at: schedule.next_run_at,
+                  note: (schedule.note || "").slice(0, 500),
+                  recurrence_id: schedule.id,
+                  payment_source_type: "wallet",
+                });
+                if (!txIns.error) {
+                  const recUpd = await supabase.from("recurring_transactions").update({
+                    next_run_at: nextRunIso,
+                    last_processed_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  }).eq("id", schedule.id).eq("user_id", user.id);
+                  error = recUpd.error;
+                } else {
+                  error = txIns.error;
+                }
+              }
+              if (!error) {
+                automated = true;
+                if (schedule.type === "expense" && schedule.wallet_id) {
+                  projectedAvailable.set(
+                    schedule.wallet_id,
+                    (projectedAvailable.get(schedule.wallet_id) ?? 0) - schedule.amount,
+                  );
+                }
+              }
             }
           }
-        }
-        if (automated) {
-          const [freshTransactions, freshRecurring] = await Promise.allSettled([
-            supabase.from("transactions").select("id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id,budget_id,payment_source_type").eq("user_id", user.id).order("occurred_at", { ascending: false }).limit(500),
-            supabase.from("recurring_transactions").select("id,user_id,wallet_id,category_id,title,amount,type,frequency,next_run_at,active,auto_create,note").eq("user_id", user.id).order("next_run_at"),
-          ]);
-          if (freshTransactions.status === "fulfilled" && !freshTransactions.value.error) {
-            loadedTransactions = (freshTransactions.value.data ?? []).map((row: Record<string, unknown>) => mapTransaction(row));
+
+          if (automated) {
+            const [freshTransactions, freshRecurring] = await Promise.allSettled([
+              supabase.from("transactions").select("id,user_id,title,amount,type,category,category_id,wallet_id,occurred_at,note,receipt_path,recurrence_id,budget_id,payment_source_type").eq("user_id", user.id).order("occurred_at", { ascending: false }).limit(500),
+              supabase.from("recurring_transactions").select("id,user_id,wallet_id,category_id,title,amount,type,frequency,next_run_at,active,auto_create,note").eq("user_id", user.id).order("next_run_at"),
+            ]);
+            if (freshTransactions.status === "fulfilled" && !freshTransactions.value.error) {
+              loadedTransactions = (freshTransactions.value.data ?? []).map((row: Record<string, unknown>) => mapTransaction(row));
+            }
+            if (freshRecurring.status === "fulfilled" && !freshRecurring.value.error) {
+              loadedRecurring = (freshRecurring.value.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row));
+            }
+            showNotice("Đã tự động ghi nhận giao dịch định kỳ đến hạn.");
           }
-          if (freshRecurring.status === "fulfilled" && !freshRecurring.value.error) {
-            loadedRecurring = (freshRecurring.value.data ?? []).map((row: Record<string, unknown>) => mapRecurring(row));
+          if (skippedDueToBalance > 0) {
+            showNotice(`Có ${skippedDueToBalance} giao dịch định kỳ chưa thể ghi nhận tự động do ví không đủ số dư.`);
           }
-          showNotice("Đã tự động ghi nhận giao dịch định kỳ đến hạn.");
-        }
-        if (skippedDueToBalance > 0) {
-          showNotice(`Có ${skippedDueToBalance} giao dịch định kỳ chưa thể ghi nhận tự động do ví không đủ số dư.`);
         }
       }
-
       setProfile(loadedProfile);
       setWallets(loadedWallets);
       setCategories(loadedCategories);
@@ -1004,7 +1124,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       setQuickTopupModal(null);
       await loadData(false);
     } catch (err) {
-      showNotice(err instanceof Error ? err.message : "Không thể bổ sung số dư.");
+      showNotice(translateSaveErrorVi(err, "Không thể bổ sung số dư."));
     } finally {
       setSaving(false);
     }
@@ -1056,7 +1176,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       showNotice(`Đã lưu giao dịch: ${draft.title}`);
       await loadData(false);
     } catch (err) {
-      showNotice(err instanceof Error ? err.message : "Không thể lưu giao dịch.");
+      showNotice(translateSaveErrorVi(err, "Không thể lưu giao dịch."));
     } finally {
       setSaving(false);
     }
@@ -1106,7 +1226,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       showNotice(`Đã lưu thành công ${multiDrafts.length} giao dịch.`);
       await loadData(false);
     } catch (err) {
-      showNotice(err instanceof Error ? err.message : "Lỗi khi lưu các bản nháp.");
+      showNotice(translateSaveErrorVi(err, "Lỗi khi lưu các bản nháp."));
     } finally {
       setSaving(false);
     }
@@ -1203,16 +1323,21 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         actualWalletId = budgets.find(b => b.id === transactionDraft.budgetId)?.source_wallet_id ?? actualWalletId;
       }
 
+      const cleanTitle = transactionDraft.title.trim();
+      if (cleanTitle.length > 120) throw new Error("Tên giao dịch tối đa 120 ký tự.");
+      const cleanNote = transactionDraft.note.trim();
+      if (cleanNote.length > 500) throw new Error("Ghi chú tối đa 500 ký tự.");
+
       const payload: Record<string, unknown> = {
         user_id: user.id,
-        title: transactionDraft.title.trim(),
+        title: cleanTitle,
         amount,
         type: transactionDraft.type,
-        category: category?.name ?? "Khác",
+        category: (category?.name ?? "Khác").slice(0, 60),
         category_id: transactionDraft.categoryId,
         wallet_id: isBudgetSource ? null : actualWalletId,
         occurred_at: new Date(transactionDraft.occurredAt).toISOString(),
-        note: transactionDraft.note.trim(),
+        note: cleanNote,
         receipt_path: receiptPath,
         budget_id: isBudgetSource ? transactionDraft.budgetId : null,
         payment_source_type: transactionDraft.paymentSourceType,
@@ -1234,9 +1359,12 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         if (error) throw error;
         if (uploadedPath && oldReceipt) await supabase.storage.from("receipts").remove([oldReceipt]);
       } else {
-        // The database trigger atomically validates funds and adjusts a budget.
+        const priorBudget = isBudgetSource ? budgets.find(b => b.id === transactionDraft.budgetId) : undefined;
         const { error } = await supabase.from("transactions").insert(payload);
         if (error) throw error;
+        if (isBudgetSource && priorBudget) {
+          await syncBudgetAfterTxInsertIfNeeded(priorBudget, amount);
+        }
       }
 
       setModal(null);
@@ -1244,7 +1372,10 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       await loadData(false);
     } catch (error) {
       if (uploadedPath) await supabase.storage.from("receipts").remove([uploadedPath]);
-      const errMsg = error instanceof Error ? error.message : "Không thể lưu giao dịch.";
+      const rawErrMsg = extractDbErrorMessage(error);
+      const errMsg = rawErrMsg.includes("INSUFFICIENT_BALANCE")
+        ? rawErrMsg
+        : translateSaveErrorVi(error, "Không thể lưu giao dịch.");
       if (errMsg.includes("INSUFFICIENT_BALANCE")) {
         if (transactionDraft.paymentSourceType === "budget" && transactionDraft.budgetId) {
           const budget = budgets.find(b => b.id === transactionDraft.budgetId);
@@ -1366,8 +1497,12 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         payment_source_type: paymentSourceType,
       };
 
+      const priorBudget = isBudgetSource ? budgets.find(b => b.id === budgetId) : undefined;
       const { error: insertErr } = await supabase.from("transactions").insert(payload);
       if (insertErr) throw insertErr;
+      if (isBudgetSource && priorBudget) {
+        await syncBudgetAfterTxInsertIfNeeded(priorBudget, amount);
+      }
 
       setModal(null);
       showNotice("Đã tạo giao dịch thành công từ hóa đơn.");
@@ -1376,10 +1511,46 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (uploadedPath) {
         await supabase.storage.from("receipts").remove([uploadedPath]).catch(() => { });
       }
-      const errMsg = error instanceof Error ? error.message : "Không thể lưu giao dịch từ hóa đơn.";
-      showNotice(errMsg);
+      showNotice(translateSaveErrorVi(error, "Không thể lưu giao dịch từ hóa đơn."));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function syncBudgetAfterTxInsertIfNeeded(priorBudget: Budget, expenseAmount: number): Promise<void> {
+    const { data: dbBudget } = await supabase
+      .from("budgets")
+      .select("spent_amount, remaining_amount, source_wallet_id, status")
+      .eq("id", priorBudget.id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!dbBudget) return;
+    // Only sync if DB trigger trg_validate_transaction is absent and did not already deduct
+    if (Math.abs(toNumber(dbBudget.spent_amount) - priorBudget.spent_amount) > 0.001) return;
+    const nextSpent = priorBudget.spent_amount + expenseAmount;
+    const nextRemaining = Math.max(0, priorBudget.remaining_amount - expenseAmount);
+    await supabase
+      .from("budgets")
+      .update({
+        spent_amount: nextSpent,
+        remaining_amount: nextRemaining,
+        status: nextRemaining <= 0 && priorBudget.allocated_amount > 0 ? "completed" : (dbBudget.status || "active"),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", priorBudget.id)
+      .eq("user_id", user.id);
+    if (priorBudget.source_wallet_id) {
+      const targetWallet = wallets.find(w => w.id === priorBudget.source_wallet_id);
+      if (targetWallet) {
+        await supabase
+          .from("wallets")
+          .update({
+            reserved_amount: Math.max(0, (targetWallet.reserved_amount ?? 0) - expenseAmount),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", targetWallet.id)
+          .eq("user_id", user.id);
+      }
     }
   }
 
@@ -1392,6 +1563,36 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const { error } = await supabase.rpc("adjust_budget_funds", {
       p_budget_id: budgetId, p_wallet_id: walletId, p_amount: amount, p_direction: "allocate",
     });
+    if (error && isMissingRpcError(error)) {
+      const currentBudget = budgets.find(b => b.id === budgetId);
+      if (!currentBudget) throw new Error("Không tìm thấy ngân sách.");
+      if (currentBudget.source_wallet_id && currentBudget.source_wallet_id !== walletId && currentBudget.remaining_amount > 0) {
+        throw new Error("Hãy rút hết số dư ngân sách hiện tại trước khi đổi ví nguồn.");
+      }
+      const nowIso = new Date().toISOString();
+      const { error: bErr } = await supabase.from("budgets").update({
+        allocated_amount: currentBudget.allocated_amount + amount,
+        remaining_amount: currentBudget.remaining_amount + amount,
+        source_wallet_id: walletId,
+        status: "active",
+        updated_at: nowIso,
+      }).eq("id", budgetId).eq("user_id", user.id);
+      if (bErr) throw bErr;
+      const { error: wErr } = await supabase.from("wallets").update({
+        reserved_amount: (wallet.reserved_amount ?? 0) + amount,
+        updated_at: nowIso,
+      }).eq("id", walletId).eq("user_id", user.id);
+      if (wErr) throw wErr;
+      await supabase.from("fund_allocations").insert({
+        user_id: user.id,
+        type: "wallet_to_budget",
+        wallet_id: walletId,
+        budget_id: budgetId,
+        amount,
+        note: "Phân bổ ngân sách",
+      });
+      return;
+    }
     if (error) throw error;
   }
 
@@ -1402,6 +1603,32 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const { error } = await supabase.rpc("adjust_budget_funds", {
       p_budget_id: budget.id, p_wallet_id: budget.source_wallet_id, p_amount: amount, p_direction: "return",
     });
+    if (error && isMissingRpcError(error)) {
+      const wallet = wallets.find(w => w.id === budget.source_wallet_id);
+      const nowIso = new Date().toISOString();
+      const { error: bErr } = await supabase.from("budgets").update({
+        allocated_amount: Math.max(0, budget.allocated_amount - amount),
+        remaining_amount: Math.max(0, budget.remaining_amount - amount),
+        updated_at: nowIso,
+      }).eq("id", budget.id).eq("user_id", user.id);
+      if (bErr) throw bErr;
+      if (wallet) {
+        const { error: wErr } = await supabase.from("wallets").update({
+          reserved_amount: Math.max(0, (wallet.reserved_amount ?? 0) - amount),
+          updated_at: nowIso,
+        }).eq("id", wallet.id).eq("user_id", user.id);
+        if (wErr) throw wErr;
+      }
+      await supabase.from("fund_allocations").insert({
+        user_id: user.id,
+        type: "budget_to_wallet",
+        wallet_id: budget.source_wallet_id,
+        budget_id: budget.id,
+        amount,
+        note: "Rút tiền khỏi ngân sách",
+      });
+      return;
+    }
     if (error) throw error;
   }
 
@@ -1411,38 +1638,99 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     try {
       const name = String(form.get("name") || "").trim();
       const amount = Number(form.get("amount"));
-      const walletId = String(form.get("sourceWalletId") || "");
+      const walletId = String(form.get("sourceWalletId") || "") || null;
       const categoryId = String(form.get("categoryId") || "") || null;
       const period = String(form.get("period") || "monthly");
       const periodStart = String(form.get("periodStart") || new Date().toISOString().slice(0, 10));
       const alertPercent = Number(form.get("alertPercent") || 80);
       const existingBudget = modal?.kind === "budget" ? modal.item : undefined;
 
-      if (!name) throw new Error("Hãy nhập tên ngân sách.");
+      if (!name || name.length > 100) throw new Error("Tên ngân sách phải từ 1 đến 100 ký tự.");
+      if (!isValidMoneyAmount(amount)) throw new Error("Hạn mức ngân sách phải lớn hơn 0 và nằm trong giới hạn cho phép.");
+
       if (!existingBudget) {
-        if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
-        if (!walletId) throw new Error("Hãy chọn ví nguồn.");
-        const sourceWallet = wallets.find(w => w.id === walletId);
-        const avail = availableBalances.get(walletId) ?? 0;
-        if (amount > avail) {
-          throw new Error(`Ví “${sourceWallet?.name ?? "Ví"}” không đủ số dư khả dụng (${money(avail)}) để cấp vốn ${money(amount)} cho ngân sách.`);
+        const sourceWallet = walletId ? wallets.find(w => w.id === walletId) : undefined;
+        if (walletId) {
+          const avail = availableBalances.get(walletId) ?? 0;
+          if (amount > avail) {
+            throw new Error(`Ví “${sourceWallet?.name ?? "Ví"}” không đủ số dư khả dụng (${money(avail)}) để cấp vốn ${money(amount)} cho ngân sách.`);
+          }
         }
-      }
-      if (existingBudget) {
-        // Editing: just update metadata, don't change allocation
-        const { error } = await supabase.from("budgets").update({
-          name, category_id: categoryId, period, period_start: periodStart, alert_percent: alertPercent,
-        }).eq("id", existingBudget.id).eq("user_id", user.id);
-        if (error) throw error;
-      } else {
         const { error } = await supabase.rpc("create_budget_with_allocation", {
-          p_name: name, p_amount: amount, p_wallet_id: walletId, p_category_id: categoryId,
-          p_period: period, p_period_start: periodStart, p_alert_percent: alertPercent,
+          p_name: name,
+          p_amount: amount,
+          p_wallet_id: walletId,
+          p_category_id: categoryId,
+          p_period: period,
+          p_period_start: periodStart,
+          p_alert_percent: alertPercent,
         });
-        if (error) throw error;
+        if (error && isMissingRpcError(error)) {
+          const allocAmount = walletId ? amount : 0;
+          const { data: createdBudget, error: insErr } = await supabase.from("budgets").insert({
+            user_id: user.id,
+            name,
+            amount,
+            allocated_amount: allocAmount,
+            spent_amount: 0,
+            remaining_amount: allocAmount,
+            category_id: categoryId,
+            source_wallet_id: walletId,
+            period,
+            period_start: periodStart,
+            alert_percent: alertPercent,
+            status: "active",
+          }).select("id").single();
+          if (insErr) throw insErr;
+          if (walletId && allocAmount > 0 && sourceWallet && createdBudget?.id) {
+            const nowIso = new Date().toISOString();
+            const { error: wErr } = await supabase.from("wallets").update({
+              reserved_amount: (sourceWallet.reserved_amount ?? 0) + allocAmount,
+              updated_at: nowIso,
+            }).eq("id", walletId).eq("user_id", user.id);
+            if (wErr) throw wErr;
+            await supabase.from("fund_allocations").insert({
+              user_id: user.id,
+              type: "wallet_to_budget",
+              wallet_id: walletId,
+              budget_id: createdBudget.id,
+              amount: allocAmount,
+              note: "Phân bổ ngân sách ban đầu",
+            });
+          }
+        } else if (error) {
+          throw error;
+        }
+      } else {
+        // Editing existing budget
+        let updateAmountDirect = false;
+        if (amount !== existingBudget.amount) {
+          const { error: limitError } = await supabase.rpc("update_budget_limit", {
+            p_budget_id: existingBudget.id,
+            p_amount: amount,
+          });
+          if (limitError && isMissingRpcError(limitError)) {
+            updateAmountDirect = true;
+          } else if (limitError) {
+            throw limitError;
+          }
+        }
+
+        const metaPayload: Record<string, unknown> = {
+          name,
+          category_id: categoryId,
+          period,
+          period_start: periodStart,
+          alert_percent: alertPercent,
+        };
+        if (updateAmountDirect) {
+          metaPayload.amount = amount;
+        }
+        const { error: metaError } = await supabase.from("budgets").update(metaPayload).eq("id", existingBudget.id).eq("user_id", user.id);
+        if (metaError) throw metaError;
       }
       setModal(null); showNotice("Đã lưu ngân sách."); await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể lưu ngân sách."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể lưu ngân sách.")); }
     finally { setSaving(false); }
   }
 
@@ -1452,11 +1740,47 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     if (!window.confirm(`Xóa ngân sách “${budget.name}”?${returnNote}${historyNote}`)) return;
     setSaving(true);
     try {
-      const { data, error } = await supabase.rpc("close_budget", { p_budget_id: budget.id });
+      let { data, error } = await supabase.rpc("close_budget", { p_budget_id: budget.id });
+      if (error && isMissingRpcError(error)) {
+        const nowIso = new Date().toISOString();
+        if (budget.source_wallet_id && budget.remaining_amount > 0) {
+          const wallet = wallets.find(w => w.id === budget.source_wallet_id);
+          if (wallet) {
+            await supabase.from("wallets").update({
+              reserved_amount: Math.max(0, (wallet.reserved_amount ?? 0) - budget.remaining_amount),
+              updated_at: nowIso,
+            }).eq("id", wallet.id).eq("user_id", user.id);
+          }
+          await supabase.from("fund_allocations").insert({
+            user_id: user.id,
+            type: "budget_to_wallet",
+            wallet_id: budget.source_wallet_id,
+            budget_id: budget.id,
+            amount: budget.remaining_amount,
+            note: "Hoàn trả khi đóng/xóa ngân sách",
+          });
+        }
+        const hasLinkedTx = transactions.some(t => t.budget_id === budget.id);
+        if (hasLinkedTx) {
+          const { error: archErr } = await supabase.from("budgets").update({
+            remaining_amount: 0,
+            status: "cancelled",
+            updated_at: nowIso,
+          }).eq("id", budget.id).eq("user_id", user.id);
+          if (archErr) throw archErr;
+          data = "closed";
+          error = null;
+        } else {
+          const { error: delErr } = await supabase.from("budgets").delete().eq("id", budget.id).eq("user_id", user.id);
+          if (delErr) throw delErr;
+          data = "deleted";
+          error = null;
+        }
+      }
       if (error) throw error;
       showNotice(data === "closed" ? "Đã đóng ngân sách và giữ lại lịch sử giao dịch." : "Đã xóa ngân sách.");
       await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể xóa."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể xóa ngân sách.")); }
     finally { setSaving(false); }
   }
 
@@ -1469,7 +1793,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       await allocateToBudget(walletId, budget.id, amount);
       setModal(null); showNotice(`Đã nạp thêm ${money(amount)} vào ngân sách.`); await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể nạp tiền."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể nạp tiền.")); }
     finally { setSaving(false); }
   }
 
@@ -1481,7 +1805,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       await returnBudgetToWallet(budget, amount);
       setModal(null); showNotice(`Đã rút ${money(amount)} về ví.`); await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể rút tiền."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể rút tiền.")); }
     finally { setSaving(false); }
   }
 
@@ -1494,6 +1818,38 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const { error } = await supabase.rpc("adjust_goal_funds", {
       p_goal_id: goalId, p_wallet_id: walletId, p_amount: amount, p_direction: "allocate",
     });
+    if (error && isMissingRpcError(error)) {
+      const currentGoal = goals.find(g => g.id === goalId);
+      if (!currentGoal) throw new Error("Không tìm thấy mục tiêu.");
+      if (currentGoal.source_wallet_id && currentGoal.source_wallet_id !== walletId && currentGoal.reserved_in_wallet > 0) {
+        throw new Error("Hãy rút hết tiền mục tiêu hiện tại trước khi đổi ví nguồn.");
+      }
+      if (currentGoal.current_amount + amount > currentGoal.target_amount) {
+        throw new Error("Số tiền nạp vượt mục tiêu tiết kiệm.");
+      }
+      const nowIso = new Date().toISOString();
+      const { error: gErr } = await supabase.from("savings_goals").update({
+        current_amount: currentGoal.current_amount + amount,
+        reserved_in_wallet: currentGoal.reserved_in_wallet + amount,
+        source_wallet_id: walletId,
+        updated_at: nowIso,
+      }).eq("id", goalId).eq("user_id", user.id);
+      if (gErr) throw gErr;
+      const { error: wErr } = await supabase.from("wallets").update({
+        reserved_amount: (wallet.reserved_amount ?? 0) + amount,
+        updated_at: nowIso,
+      }).eq("id", walletId).eq("user_id", user.id);
+      if (wErr) throw wErr;
+      await supabase.from("fund_allocations").insert({
+        user_id: user.id,
+        type: "wallet_to_goal",
+        wallet_id: walletId,
+        goal_id: goalId,
+        amount,
+        note: "Phân bổ mục tiêu",
+      });
+      return;
+    }
     if (error) throw error;
   }
 
@@ -1504,6 +1860,32 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const { error } = await supabase.rpc("adjust_goal_funds", {
       p_goal_id: goal.id, p_wallet_id: goal.source_wallet_id, p_amount: amount, p_direction: "return",
     });
+    if (error && isMissingRpcError(error)) {
+      const wallet = wallets.find(w => w.id === goal.source_wallet_id);
+      const nowIso = new Date().toISOString();
+      const { error: gErr } = await supabase.from("savings_goals").update({
+        current_amount: Math.max(0, goal.current_amount - amount),
+        reserved_in_wallet: Math.max(0, goal.reserved_in_wallet - amount),
+        updated_at: nowIso,
+      }).eq("id", goal.id).eq("user_id", user.id);
+      if (gErr) throw gErr;
+      if (wallet) {
+        const { error: wErr } = await supabase.from("wallets").update({
+          reserved_amount: Math.max(0, (wallet.reserved_amount ?? 0) - amount),
+          updated_at: nowIso,
+        }).eq("id", wallet.id).eq("user_id", user.id);
+        if (wErr) throw wErr;
+      }
+      await supabase.from("fund_allocations").insert({
+        user_id: user.id,
+        type: "goal_to_wallet",
+        wallet_id: goal.source_wallet_id,
+        goal_id: goal.id,
+        amount,
+        note: "Rút tiền khỏi mục tiêu",
+      });
+      return;
+    }
     if (error) throw error;
   }
 
@@ -1517,7 +1899,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       const walletId = String(form.get("sourceWalletId") || "");
       const deadline = String(form.get("deadline") || "") || null;
       const color = String(form.get("color") || "#D9F45F");
-      if (!title) throw new Error("Hãy nhập tên mục tiêu.");
+      if (!title || title.length > 120) throw new Error("Tên mục tiêu phải từ 1 đến 120 ký tự.");
       if (!isValidMoneyAmount(targetAmount)) throw new Error("Số tiền mục tiêu phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       if (!isValidMoneyAmount(initialDeposit, true) || initialDeposit > targetAmount) throw new Error("Khoản gửi ban đầu không hợp lệ.");
       const existingGoal = modal?.kind === "goal" ? modal.item : undefined;
@@ -1525,8 +1907,11 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         const { error } = await supabase.from("savings_goals").update({ title, target_amount: targetAmount, deadline, color }).eq("id", existingGoal.id).eq("user_id", user.id);
         if (error) throw error;
       } else {
+        if (initialDeposit > 0 && !walletId) {
+          throw new Error("Hãy chọn ví nguồn cho khoản gửi ban đầu.");
+        }
+        const sourceWallet = walletId ? wallets.find(w => w.id === walletId) : undefined;
         if (initialDeposit > 0 && walletId) {
-          const sourceWallet = wallets.find(w => w.id === walletId);
           const avail = availableBalances.get(walletId) ?? 0;
           if (initialDeposit > avail) {
             throw new Error(`Ví “${sourceWallet?.name ?? "Ví"}” không đủ số dư khả dụng (${money(avail)}) để gửi ${money(initialDeposit)} vào mục tiêu.`);
@@ -1536,10 +1921,41 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
           p_title: title, p_target_amount: targetAmount, p_initial_deposit: initialDeposit,
           p_wallet_id: walletId || null, p_deadline: deadline, p_color: color,
         });
-        if (error) throw error;
+        if (error && isMissingRpcError(error)) {
+          const deposit = walletId && initialDeposit > 0 ? initialDeposit : 0;
+          const { data: createdGoal, error: insErr } = await supabase.from("savings_goals").insert({
+            user_id: user.id,
+            title,
+            target_amount: targetAmount,
+            current_amount: deposit,
+            reserved_in_wallet: deposit,
+            source_wallet_id: walletId || null,
+            deadline,
+            color,
+          }).select("id").single();
+          if (insErr) throw insErr;
+          if (deposit > 0 && walletId && sourceWallet && createdGoal?.id) {
+            const nowIso = new Date().toISOString();
+            const { error: wErr } = await supabase.from("wallets").update({
+              reserved_amount: (sourceWallet.reserved_amount ?? 0) + deposit,
+              updated_at: nowIso,
+            }).eq("id", walletId).eq("user_id", user.id);
+            if (wErr) throw wErr;
+            await supabase.from("fund_allocations").insert({
+              user_id: user.id,
+              type: "wallet_to_goal",
+              wallet_id: walletId,
+              goal_id: createdGoal.id,
+              amount: deposit,
+              note: "Phân bổ mục tiêu ban đầu",
+            });
+          }
+        } else if (error) {
+          throw error;
+        }
       }
       setModal(null); showNotice("Đã lưu mục tiêu."); await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể lưu mục tiêu."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể lưu mục tiêu.")); }
     finally { setSaving(false); }
   }
 
@@ -1552,7 +1968,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       await allocateToGoal(walletId, goal.id, amount);
       setModal(null); showNotice(`Đã gửi ${money(amount)} vào mục tiêu.`); await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể nạp tiền."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể nạp tiền.")); }
     finally { setSaving(false); }
   }
 
@@ -1564,7 +1980,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (!isValidMoneyAmount(amount)) throw new Error("Số tiền phải lớn hơn 0 và nằm trong giới hạn cho phép.");
       await returnGoalToWallet(goal, amount);
       setModal(null); showNotice(`Đã rút ${money(amount)} về ví.`); await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể rút tiền."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể rút tiền.")); }
     finally { setSaving(false); }
   }
 
@@ -1573,18 +1989,62 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     const form = new FormData(event.currentTarget);
     try {
       let table = ""; let payload: Record<string, unknown> = { user_id: user.id };
-      if (kind === "wallet") { table = "wallets"; payload = { ...payload, name: String(form.get("name") || "").trim(), type: form.get("type"), balance: Number(form.get("balance")), currency: profile.currency, color: form.get("color"), icon: form.get("icon") }; }
-      if (kind === "category") { table = "categories"; payload = { ...payload, name: String(form.get("name") || "").trim(), kind: form.get("type"), parent_id: form.get("parentId") || null, icon: form.get("icon"), color: form.get("color"), is_default: false }; }
-      if (kind === "recurring") { table = "recurring_transactions"; payload = { ...payload, title: String(form.get("title") || "").trim(), amount: Number(form.get("amount")), type: recurringType, wallet_id: form.get("walletId") || null, category_id: form.get("categoryId") || null, frequency: form.get("frequency"), next_run_at: new Date(String(form.get("nextRun"))).toISOString(), active: form.get("active") === "on", auto_create: form.get("autoCreate") === "on", note: String(form.get("note") || "").trim() }; }
-      const label = String(payload.name ?? payload.title ?? "").trim();
-      if (!label || label.length > 120) throw new Error("Tên phải có từ 1 đến 120 ký tự.");
+      const current = modal && (modal.kind === kind) ? (modal as { kind: string; item?: Record<string, unknown> }).item : undefined;
+      const currentId = current ? String((current as { id: string }).id) : null;
+
+      if (kind === "wallet") {
+        table = "wallets";
+        const wName = String(form.get("name") || "").trim();
+        const wIcon = String(form.get("icon") || "").trim() || (typeof current?.icon === "string" && current.icon.trim() ? current.icon.trim() : "wallet");
+        const wColor = String(form.get("color") || "#D9F45F").trim();
+        if (!wName || wName.length > 80) throw new Error("Tên ví phải có từ 1 đến 80 ký tự.");
+        if (wallets.some(w => w.id !== currentId && w.name.trim().toLowerCase() === wName.toLowerCase())) {
+          throw new Error(`Ví “${wName}” đã tồn tại. Vui lòng chọn tên khác.`);
+        }
+        payload = { ...payload, name: wName, type: form.get("type"), balance: Number(form.get("balance")), currency: profile.currency, color: wColor, icon: wIcon };
+      }
+      if (kind === "category") {
+        table = "categories";
+        const cName = String(form.get("name") || "").trim();
+        const cKind = String(form.get("type") || "expense");
+        const cIcon = String(form.get("icon") || "").trim() || (typeof current?.icon === "string" && current.icon.trim() ? current.icon.trim() : "circle");
+        const cColor = String(form.get("color") || "#7C8CFF").trim();
+        if (!cName || cName.length > 80) throw new Error("Tên danh mục phải có từ 1 đến 80 ký tự.");
+        if (categories.some(c => c.id !== currentId && c.kind === cKind && c.name.trim().toLowerCase() === cName.toLowerCase())) {
+          throw new Error(`Danh mục “${cName}” đã tồn tại trong nhóm này.`);
+        }
+        payload = { ...payload, name: cName, kind: cKind, parent_id: form.get("parentId") || null, icon: cIcon, color: cColor, is_default: false };
+      }
+      if (kind === "recurring") {
+        table = "recurring_transactions";
+        const rTitle = String(form.get("title") || "").trim();
+        const rNote = String(form.get("note") || "").trim();
+        const isActive = form.get("active") === "on";
+        const isAuto = form.get("autoCreate") === "on";
+        if (!rTitle || rTitle.length > 120) throw new Error("Tên giao dịch định kỳ phải có từ 1 đến 120 ký tự.");
+        if (rNote.length > 500) throw new Error("Ghi chú tối đa 500 ký tự.");
+        payload = {
+          ...payload,
+          title: rTitle,
+          amount: Number(form.get("amount")),
+          type: recurringType,
+          wallet_id: form.get("walletId") || null,
+          category_id: form.get("categoryId") || null,
+          frequency: form.get("frequency"),
+          next_run_at: new Date(String(form.get("nextRun"))).toISOString(),
+          active: isActive,
+          auto_create: isAuto,
+          status: isActive ? "active" : "paused",
+          processing_mode: isAuto ? "auto" : "remind",
+          note: rNote,
+        };
+      }
       if (kind === "wallet" && !isValidMoneyAmount(Number(payload.balance), true)) throw new Error("Số dư ví không hợp lệ.");
       if (kind === "recurring" && !isValidMoneyAmount(Number(payload.amount))) throw new Error("Số tiền định kỳ không hợp lệ.");
-      const current = modal && (modal.kind === kind) ? (modal as { kind: string; item?: Record<string, unknown> }).item : undefined;
-      const result = current ? await supabase.from(table).update(payload).eq("id", (current as { id: string }).id).eq("user_id", user.id) : await supabase.from(table).insert(payload);
+      const result = currentId ? await supabase.from(table).update(payload).eq("id", currentId).eq("user_id", user.id) : await supabase.from(table).insert(payload);
       if (result.error) throw result.error;
       setModal(null); showNotice("Đã lưu thay đổi."); await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể lưu dữ liệu."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể lưu dữ liệu.")); }
     finally { setSaving(false); }
   }
 
@@ -1598,6 +2058,8 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     try {
       if (from === to) throw new Error("Ví nhận phải khác ví chuyển.");
       if (!isValidMoneyAmount(amount)) throw new Error("Số tiền chuyển phải lớn hơn 0 và nằm trong giới hạn cho phép.");
+      const cleanNote = String(form.get("note") || "").trim();
+      if (cleanNote.length > 500) throw new Error("Ghi chú tối đa 500 ký tự.");
       const fromWallet = wallets.find(w => w.id === from);
       const avail = availableBalances.get(from) ?? 0;
       if (amount > avail) {
@@ -1609,11 +2071,11 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         to_wallet_id: to,
         amount,
         occurred_at: new Date(String(form.get("occurredAt"))).toISOString(),
-        note: String(form.get("note") || "").trim()
+        note: cleanNote
       });
       if (error) throw error;
       setModal(null); showNotice("Đã chuyển tiền giữa hai ví."); await loadData(false);
-    } catch (error) { showNotice(error instanceof Error ? error.message : "Không thể chuyển tiền."); }
+    } catch (error) { showNotice(translateSaveErrorVi(error, "Không thể chuyển tiền.")); }
     finally { setSaving(false); }
   }
 
@@ -1642,16 +2104,67 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       if (!window.confirm(`Xóa ${label}? Thao tác này không thể hoàn tác.`)) return;
     }
 
-    // Database triggers restore budget funds and release reservations atomically.
+    const deletedTx = table === "transactions" ? transactions.find(t => t.id === id) : undefined;
+    const deletedGoal = table === "savings_goals" ? goals.find(g => g.id === id) : undefined;
+    const priorBudget = deletedTx?.payment_source_type === "budget" && deletedTx.budget_id
+      ? budgets.find(b => b.id === deletedTx.budget_id)
+      : undefined;
+    const priorGoalWallet = deletedGoal?.source_wallet_id && deletedGoal.reserved_in_wallet > 0
+      ? wallets.find(w => w.id === deletedGoal.source_wallet_id)
+      : undefined;
+
     const { error } = await supabase.from(table).delete().eq("id", id).eq("user_id", user.id);
-    if (error) return showNotice(error.message);
+    if (error) return showNotice(translateSaveErrorVi(error, "Không thể xóa dữ liệu."));
+
+    // Sync budget/wallet reserved amounts if DB delete triggers are absent
+    if (deletedTx && priorBudget) {
+      const { data: dbBudget } = await supabase
+        .from("budgets")
+        .select("spent_amount, remaining_amount, status")
+        .eq("id", priorBudget.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (dbBudget && Math.abs(toNumber(dbBudget.remaining_amount) - priorBudget.remaining_amount) < 0.001) {
+        const nowIso = new Date().toISOString();
+        await supabase.from("budgets").update({
+          spent_amount: Math.max(0, priorBudget.spent_amount - deletedTx.amount),
+          remaining_amount: priorBudget.remaining_amount + deletedTx.amount,
+          status: dbBudget.status === "completed" ? "active" : dbBudget.status,
+          updated_at: nowIso,
+        }).eq("id", priorBudget.id).eq("user_id", user.id);
+        if (priorBudget.source_wallet_id) {
+          const w = wallets.find(item => item.id === priorBudget.source_wallet_id);
+          if (w) {
+            await supabase.from("wallets").update({
+              reserved_amount: (w.reserved_amount ?? 0) + deletedTx.amount,
+              updated_at: nowIso,
+            }).eq("id", w.id).eq("user_id", user.id);
+          }
+        }
+      }
+    }
+    if (deletedGoal && priorGoalWallet) {
+      const { data: dbWallet } = await supabase
+        .from("wallets")
+        .select("reserved_amount")
+        .eq("id", priorGoalWallet.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (dbWallet && Math.abs(toNumber(dbWallet.reserved_amount) - (priorGoalWallet.reserved_amount ?? 0)) < 0.001) {
+        await supabase.from("wallets").update({
+          reserved_amount: Math.max(0, (priorGoalWallet.reserved_amount ?? 0) - deletedGoal.reserved_in_wallet),
+          updated_at: new Date().toISOString(),
+        }).eq("id", priorGoalWallet.id).eq("user_id", user.id);
+      }
+    }
+
     if (receiptPath) await supabase.storage.from("receipts").remove([receiptPath]);
     showNotice("Đã xóa dữ liệu."); await loadData(false);
   }
 
   async function openReceipt(path: string) {
     const { data, error } = await supabase.storage.from("receipts").createSignedUrl(path, 120);
-    if (error) return showNotice(error.message);
+    if (error) return showNotice(translateSaveErrorVi(error, "Không thể mở hóa đơn."));
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
@@ -1671,12 +2184,39 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
         return;
       }
     }
-    const { error } = await supabase.rpc("record_recurring_transaction", {
+    const nextRunIso = advanceRecurring(item.next_run_at, item.frequency, item.interval ?? 1, item.month_end_mode ?? "last_day", item.start_date);
+    let { error } = await supabase.rpc("record_recurring_transaction", {
       p_recurring_id: item.id,
       p_occurred_at: item.next_run_at,
-      p_next_run_at: advanceRecurring(item.next_run_at, item.frequency),
+      p_next_run_at: nextRunIso,
     });
-    if (error) return showNotice(error.message);
+    if (error && isMissingRpcError(error)) {
+      const catName = categoryById.get(item.category_id ?? "")?.name ?? (item.type === "income" ? "Thu khác" : "Khác");
+      const txIns = await supabase.from("transactions").insert({
+        user_id: user.id,
+        title: item.title.slice(0, 120),
+        amount: item.amount,
+        type: item.type,
+        category: catName.slice(0, 60),
+        category_id: item.category_id,
+        wallet_id: item.wallet_id,
+        occurred_at: item.next_run_at,
+        note: (item.note || "").slice(0, 500),
+        recurrence_id: item.id,
+        payment_source_type: "wallet",
+      });
+      if (!txIns.error) {
+        const recUpd = await supabase.from("recurring_transactions").update({
+          next_run_at: nextRunIso,
+          last_processed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", item.id).eq("user_id", user.id);
+        error = recUpd.error;
+      } else {
+        error = txIns.error;
+      }
+    }
+    if (error) return showNotice(translateSaveErrorVi(error, "Không thể ghi nhận giao dịch định kỳ."));
     showNotice(`Đã ghi nhận giao dịch "${item.title}" (${money(item.amount)}).`);
     await loadData(false);
   }
@@ -1687,6 +2227,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
     try {
       const fullName = String(form.get("fullName") || "").trim();
       const username = String(form.get("username") || "").trim().toLowerCase();
+      if (fullName.length > 100) throw new Error("Họ và tên tối đa 100 ký tự.");
       if (!/^[a-z0-9_]{3,24}$/.test(username)) throw new Error("Tên tài khoản phải có 3–24 ký tự, chỉ gồm chữ cái, số hoặc dấu gạch dưới.");
       const nextLang = (String(form.get("language")) || "vi") as Language;
       const nextCurr = String(form.get("currency")) || "VND";
@@ -1699,7 +2240,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
       setProfile(payload as Profile);
       showNotice(t("notifications.profileUpdated", undefined, nextLang));
     } catch (error) {
-      showNotice(error instanceof Error ? error.message : t("notifications.errorOccurred", undefined, profile.language));
+      showNotice(translateSaveErrorVi(error, t("notifications.errorOccurred", undefined, profile.language)));
     }
     finally { setSaving(false); }
   }
@@ -1796,7 +2337,7 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
   const comparison = (current: number, previous: number) => previous ? Math.round((current - previous) / previous * 100) : current ? 100 : 0;
 
   return (
-    <AiChatProvider>
+    <AiChatProvider onDataMutated={async () => { await loadData(false); }}>
       <main className="dashboard-shell">
         <aside className={`sidebar ${mobileNav ? "open" : ""}`}>
           <div className="brand"><span className="brand-mark"><i /><i /><i /></span><span>{t("common.total", undefined, language) === "Total" ? "EXPENSE BOOK" : "SỔ CHI TIÊU"}</span></div>
@@ -2258,24 +2799,19 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   </div>
                   <div className="budget-stack">
                     {budgets.length ? budgets.slice(0, 3).map(budget => {
-                      const totalCapacity = Math.max(budget.amount, budget.allocated_amount);
-                      const withdrawnAmount = Math.max(0, totalCapacity - budget.remaining_amount - budget.spent_amount);
-                      const totalUsed = budget.spent_amount + withdrawnAmount;
-                      const pct = totalCapacity > 0 ? Math.min(100, Math.round((totalUsed / totalCapacity) * 100)) : 0;
-                      const isClosed = budget.remaining_amount <= 0 || budget.status === "completed" || budget.status === "cancelled";
+                      const m = calculateBudgetMetrics(budget, transactions);
+                      const tagClass = m.isOverLimit ? "danger" : m.isNearLimit ? "warning" : "";
                       return (
                         <div key={budget.id} className="budget-item">
                           <div className="budget-item-head">
                             <b>{budget.name}</b>
-                            <span className={pct >= 100 ? "danger" : pct >= budget.alert_percent ? "warning" : ""}>{pct}%</span>
+                            <span className={tagClass}>{m.usagePercent}%</span>
                           </div>
-                          <div className="meter"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>
-                          <small>
-                            {isClosed
-                              ? `${money(totalUsed)} / ${money(totalCapacity)}`
-                              : `${money(totalUsed)} / ${money(totalCapacity)}`
-                            }
-                          </small>
+                          <div className="meter"><i className={tagClass} style={{ width: `${Math.min(100, m.usagePercent)}%` }} /></div>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--text-subtle)", marginTop: "4px" }}>
+                            <span>{money(m.actualSpent)} / {money(m.limit)}</span>
+                            {m.isFunded && <span>Quỹ ví: {money(m.fundedRemaining)}</span>}
+                          </div>
                         </div>
                       );
                     }) : <Empty text={t("dashboard.emptyBudgets", undefined, language)} />}
@@ -2416,36 +2952,77 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                   <div className="panel-head"><div><p>{t("budgets.title", undefined, language).toUpperCase()}</p><h3>{language === "vi" ? "Ngân sách đang theo dõi" : "Active budgets"}</h3></div></div>
                   <div className="plan-list">
                     {budgets.map(budget => {
-                      const totalCapacity = Math.max(budget.amount, budget.allocated_amount);
-                      const withdrawnAmount = Math.max(0, totalCapacity - budget.remaining_amount - budget.spent_amount);
-                      const totalUsed = budget.spent_amount + withdrawnAmount;
-                      const pct = totalCapacity > 0 ? Math.min(100, Math.round((totalUsed / totalCapacity) * 100)) : 0;
+                      const m = calculateBudgetMetrics(budget, transactions);
                       const sourceWallet = walletById.get(budget.source_wallet_id ?? "");
-                      const isClosed = budget.remaining_amount <= 0 || budget.status === "completed" || budget.status === "cancelled";
-                      const isOver = isClosed;
-                      const isNear = !isOver && pct >= budget.alert_percent;
+                      const cardClass = m.isOverLimit ? "over" : m.isNearLimit ? "near" : "";
+                      const statusText = language === "vi" ? m.statusLabelVi : m.statusLabelEn;
                       return (
-                        <div className={`plan-card ${isOver ? "over" : isNear ? "near" : ""}`} key={budget.id}>
+                        <div className={`plan-card ${cardClass}`} key={budget.id}>
                           <header>
                             <span>
                               <b>{budget.name}</b>
-                              <small>{budget.category_id ? categoryById.get(budget.category_id)?.name : t("categories.title", undefined, language)} · {budget.period === "weekly" ? t("budgets.weekly", undefined, language) : budget.period === "yearly" ? t("budgets.yearly", undefined, language) : t("budgets.monthly", undefined, language)}</small>
+                              <small>
+                                {budget.category_id ? categoryById.get(budget.category_id)?.name : (language === "vi" ? "Tất cả danh mục" : "All categories")} · {budget.period === "weekly" ? t("budgets.weekly", undefined, language) : budget.period === "yearly" ? t("budgets.yearly", undefined, language) : t("budgets.monthly", undefined, language)}
+                              </small>
                             </span>
-                            <strong>{pct}%</strong>
+                            <div style={{ textAlign: "right" }}>
+                              <strong>{m.usagePercent}%</strong>
+                              <span className={`status-pill ${m.statusVariant}`} style={{ display: "block", fontSize: "11px", fontWeight: 700, marginTop: "2px" }}>
+                                {statusText}
+                              </span>
+                            </div>
                           </header>
-                          <div className="meter"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>
-                          <div className="budget-detail-rows">
-                            <div className="budget-detail-row"><span>{language === "vi" ? "Tổng phân bổ" : "Allocated"}</span><b>{money(totalCapacity)}</b></div>
-                            <div className="budget-detail-row"><span>{t("budgets.spent", undefined, language)}</span><b className="expense">{money(budget.spent_amount)}</b></div>
-                            {withdrawnAmount > 0 && <div className="budget-detail-row"><span>{language === "vi" ? "Đã rút về ví" : "Withdrawn"}</span><b>{money(withdrawnAmount)}</b></div>}
-                            <div className="budget-detail-row highlight"><span>{t("budgets.remaining", undefined, language)}</span><b className={isOver ? "expense" : "income"}>{money(budget.remaining_amount)}</b></div>
-                            {sourceWallet && <div className="budget-detail-row"><span>{language === "vi" ? "Nguồn tiền" : "Source"}</span><b>{sourceWallet.name}</b></div>}
+                          <div className="meter">
+                            <i
+                              style={{
+                                width: `${Math.min(100, m.usagePercent)}%`,
+                                backgroundColor: m.isOverLimit ? "#ef4444" : m.isNearLimit ? "#f59e0b" : "var(--lime-accent)",
+                              }}
+                            />
                           </div>
-                          {isClosed && <em>{t("budgets.overbudget", undefined, language)} ({pct}%)</em>}
-                          {isNear && !isClosed && <em>{t("budgets.warning", undefined, language)} ({budget.alert_percent}%)</em>}
+                          <div className="budget-detail-rows">
+                            <div className="budget-detail-row">
+                              <span>{language === "vi" ? "Hạn mức kỳ" : "Period limit"}</span>
+                              <b>{money(m.limit)}</b>
+                            </div>
+                            <div className="budget-detail-row">
+                              <span>{language === "vi" ? "Chi tiêu thực tế" : "Actual spent"}</span>
+                              <b className="expense">{money(m.actualSpent)}</b>
+                            </div>
+                            <div className="budget-detail-row highlight">
+                              <span>{language === "vi" ? "Còn được chi theo hạn mức" : "Remaining limit"}</span>
+                              <b className={m.isOverLimit ? "expense" : "income"}>
+                                {m.isOverLimit
+                                  ? `${language === "vi" ? "Vượt" : "Over"} ${money(m.actualSpent - m.limit)}`
+                                  : money(m.limitRemaining)}
+                              </b>
+                            </div>
+                            {m.isFunded && (
+                              <>
+                                <div className="budget-detail-row" style={{ borderTop: "1px dashed var(--border-light)", paddingTop: "6px", marginTop: "4px" }}>
+                                  <span>{language === "vi" ? "Tiền cấp vốn từ ví" : "Funded allocation"}</span>
+                                  <b>{money(m.allocated)}</b>
+                                </div>
+                                <div className="budget-detail-row">
+                                  <span>{language === "vi" ? "Quỹ ví còn lại" : "Funded balance"}</span>
+                                  <b className={m.isOutOfFunds ? "expense" : "income"}>{money(m.fundedRemaining)}</b>
+                                </div>
+                                {sourceWallet && (
+                                  <div className="budget-detail-row">
+                                    <span>{language === "vi" ? "Ví nguồn" : "Source wallet"}</span>
+                                    <b>{sourceWallet.name}</b>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
                           <footer>
-                            <button type="button" onClick={() => openModal({ kind: "budget-topup", budget })} title="Topup">{language === "vi" ? "Nạp thêm" : "Top up"}</button>
-                            <button type="button" onClick={() => openModal({ kind: "budget-return", budget })} title="Withdraw" disabled={budget.remaining_amount <= 0}>{language === "vi" ? "Rút tiền" : "Withdraw"}</button>
+                            {m.isFunded && (
+                              <>
+                                <button type="button" onClick={() => openModal({ kind: "budget-topup", budget })} title="Topup">{language === "vi" ? "Nạp thêm" : "Top up"}</button>
+                                <button type="button" onClick={() => openModal({ kind: "budget-return", budget })} title="Withdraw" disabled={budget.remaining_amount <= 0}>{language === "vi" ? "Rút tiền" : "Withdraw"}</button>
+                              </>
+                            )}
                             <button type="button" onClick={() => openModal({ kind: "budget", item: budget })}>{t("common.edit", undefined, language)}</button>
                             <button type="button" onClick={() => deleteBudget(budget)}>{t("common.delete", undefined, language)}</button>
                           </footer>
@@ -3371,27 +3948,100 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                 <label>{t("categories.kind", undefined, language)}<select name="type" defaultValue={modal.item?.kind ?? "expense"}><option value="expense">{t("categories.expense", undefined, language)}</option><option value="income">{t("categories.income", undefined, language)}</option></select></label>
                 <label>{language === "vi" ? "Danh mục cha" : "Parent category"}<select name="parentId" defaultValue={modal.item?.parent_id ?? ""}><option value="">{t("common.all", undefined, language)}</option>{categories.filter(item => item.id !== modal.item?.id).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
               </div>
-              <input name="icon" type="hidden" value="" />
+              <input name="icon" type="hidden" value={modal.item?.icon || "circle"} />
               <ModernColorPicker name="color" defaultValue={modal.item?.color ?? "#7C8CFF"} label={t("categories.color", undefined, language)} />
               <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : (modal.item ? t("common.save", undefined, language) : t("common.add", undefined, language))}</button>
             </form>
           </Modal>
         )}
 
-        {modal?.kind === "budget" && <Modal title={modal.item ? t("budgets.editTitle", undefined, language) : t("budgets.addTitle", undefined, language)} eyebrow={t("budgets.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={saveBudget}>
-          <label>{t("budgets.name", undefined, language)}<input name="name" defaultValue={modal.item?.name} required placeholder={language === "vi" ? "Ví dụ: Tiền đổ xăng, Mua sắm…" : "E.g. Groceries, Fuel…"} /></label>
-          {!modal.item && <label>{t("budgets.amount", undefined, language)}<FormattedMoneyInput name="amount" required placeholder="0" /></label>}
-          {!modal.item && <label>{t("budgets.sourceWallet", undefined, language)}<select name="sourceWalletId" required><option value="">{language === "vi" ? "Chọn ví…" : "Select wallet…"}</option>{wallets.map(w => <option key={w.id} value={w.id}>{w.name} · {money(availableBalances.get(w.id) ?? 0)}</option>)}</select></label>}
-          <div className="form-grid">
-            <label>{t("budgets.category", undefined, language)}<select name="categoryId" defaultValue={modal.item?.category_id ?? ""}><option value="">{language === "vi" ? "Tổng chi tiêu" : "All Expenses"}</option>{categories.filter(item => item.kind === "expense").map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-            <label>{t("budgets.period", undefined, language)}<select name="period" defaultValue={modal.item?.period ?? "monthly"}><option value="weekly">{t("budgets.weekly", undefined, language)}</option><option value="monthly">{t("budgets.monthly", undefined, language)}</option><option value="yearly">{t("budgets.yearly", undefined, language)}</option></select></label>
-          </div>
-          <div className="form-grid">
-            <label>{language === "vi" ? "Ngày bắt đầu" : "Start date"}<input name="periodStart" type="date" defaultValue={modal.item?.period_start ?? new Date().toISOString().slice(0, 10)} required /></label>
-            <label>{t("budgets.alertPercent", undefined, language)}<input name="alertPercent" type="number" min="1" max="100" defaultValue={modal.item?.alert_percent ?? 80} required /></label>
-          </div>
-          <button className="save-button" disabled={saving}>{saving ? t("common.saving", undefined, language) : (modal.item ? t("common.save", undefined, language) : t("common.add", undefined, language))}</button>
-        </form></Modal>}
+        {modal?.kind === "budget" && (
+          <Modal
+            title={modal.item ? t("budgets.editTitle", undefined, language) : t("budgets.addTitle", undefined, language)}
+            eyebrow={t("budgets.title", undefined, language).toUpperCase()}
+            onClose={() => setModal(null)}
+          >
+            <form onSubmit={saveBudget}>
+              <label>
+                {t("budgets.name", undefined, language)}
+                <input
+                  name="name"
+                  defaultValue={modal.item?.name}
+                  required
+                  placeholder={language === "vi" ? "Ví dụ: Ăn uống, Tiền điện, Mua sắm…" : "E.g. Dining, Utilities, Shopping…"}
+                />
+              </label>
+              <label>
+                {t("budgets.amount", undefined, language)} ({language === "vi" ? "Hạn mức chi tiêu trong kỳ" : "Period spending limit"})
+                <FormattedMoneyInput
+                  name="amount"
+                  defaultValue={modal.item?.amount}
+                  required
+                  placeholder="0"
+                />
+              </label>
+              {!modal.item && (
+                <label>
+                  {t("budgets.sourceWallet", undefined, language)} ({language === "vi" ? "Cấp vốn từ ví - Tùy chọn" : "Wallet allocation - Optional"})
+                  <select name="sourceWalletId">
+                    <option value="">
+                      {language === "vi" ? "-- Không cấp vốn (chỉ đặt hạn mức theo dõi) --" : "-- No wallet funding (track limit only) --"}
+                    </option>
+                    {wallets.map(w => (
+                      <option key={w.id} value={w.id}>
+                        {w.name} · {money(availableBalances.get(w.id) ?? 0)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <div className="form-grid">
+                <label>
+                  {t("budgets.category", undefined, language)}
+                  <select name="categoryId" defaultValue={modal.item?.category_id ?? ""}>
+                    <option value="">{language === "vi" ? "Tổng chi tiêu (mọi danh mục)" : "All Expenses"}</option>
+                    {categories.filter(item => item.kind === "expense").map(item => (
+                      <option key={item.id} value={item.id}>{item.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  {t("budgets.period", undefined, language)}
+                  <select name="period" defaultValue={modal.item?.period ?? "monthly"}>
+                    <option value="weekly">{t("budgets.weekly", undefined, language)}</option>
+                    <option value="monthly">{t("budgets.monthly", undefined, language)}</option>
+                    <option value="yearly">{t("budgets.yearly", undefined, language)}</option>
+                  </select>
+                </label>
+              </div>
+              <div className="form-grid">
+                <label>
+                  {language === "vi" ? "Ngày bắt đầu" : "Start date"}
+                  <input
+                    name="periodStart"
+                    type="date"
+                    defaultValue={modal.item?.period_start ?? new Date().toISOString().slice(0, 10)}
+                    required
+                  />
+                </label>
+                <label>
+                  {t("budgets.alertPercent", undefined, language)} (%)
+                  <input
+                    name="alertPercent"
+                    type="number"
+                    min="1"
+                    max="100"
+                    defaultValue={modal.item?.alert_percent ?? 80}
+                    required
+                  />
+                </label>
+              </div>
+              <button className="save-button" disabled={saving}>
+                {saving ? t("common.saving", undefined, language) : (modal.item ? t("common.save", undefined, language) : t("common.add", undefined, language))}
+              </button>
+            </form>
+          </Modal>
+        )}
 
         {modal?.kind === "budget-topup" && <Modal title={`${language === "vi" ? "Nạp thêm" : "Top up"}: ${modal.budget.name}`} eyebrow={t("budgets.title", undefined, language).toUpperCase()} onClose={() => setModal(null)}><form onSubmit={e => handleBudgetTopup(e, modal.budget)}>
           <p className="allocation-info-box">{language === "vi" ? `Ngân sách hiện còn ${money(modal.budget.remaining_amount)}.` : `Current budget remaining: ${money(modal.budget.remaining_amount)}.`}</p>
@@ -3758,7 +4408,7 @@ function WalletModalForm({ modalItem, saving, language = "vi", onSubmit }: { mod
         </label>
       </div>
 
-      <input name="icon" type="hidden" value="" />
+      <input name="icon" type="hidden" value={modalItem?.icon || "wallet"} />
 
       <ModernColorPicker name="color" defaultValue={modalItem?.color ?? "#D9F45F"} label={t("wallets.color", undefined, language)} />
 
