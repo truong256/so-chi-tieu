@@ -1,0 +1,1003 @@
+/**
+ * tests/ai-evaluation/generate_savings_100_questions.mjs
+ * ======================================================
+ * Creates exactly 100 benchmark questions for Savings Reasoning:
+ * - Group 1: Mục tiêu tổng cộng (20 tests)
+ * - Group 2: Khoản tiết kiệm định kỳ (15 tests)
+ * - Group 3: Tính tiền theo ngày/tháng (15 tests)
+ * - Group 4: Mục tiêu có tiền tích lũy (10 tests)
+ * - Group 5: Hội thoại nhiều lượt (20 tests)
+ * - Group 6: Thay đổi mục tiêu (10 tests)
+ * - Group 7: Câu hỏi mơ hồ và nhập sai (10 tests)
+ * Total: 100 tests.
+ */
+
+import fs from 'node:fs';
+import path from 'node:path';
+
+const questions = [
+  // -------------------------------------------------------------
+  // Group 1: Mục tiêu tổng cộng (20 tests)
+  // -------------------------------------------------------------
+  {
+    id: "SR_001",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tiết kiệm 5 triệu trong 3 tháng, mỗi ngày bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["5.000.000", "55.556", "90 ngày"],
+    expectedMath: { target: 5000000, days: 90, daily: 55556 },
+    note: "Critical Test 1: Must calculate 55.556 VND/day, NOT 15M."
+  },
+  {
+    id: "SR_002",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tiết kiệm 5 triệu đồng trong 3 tháng thì mỗi ngày cần dành ra bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["5.000.000", "55.556"],
+    expectedMath: { target: 5000000, days: 90, daily: 55556 }
+  },
+  {
+    id: "SR_003",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tiết kiệm 5 triệu trong 3 tháng.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["5.000.000", "1.666.667", "55.556"],
+    expectedMath: { target: 5000000, months: 3, monthly: 1666667, daily: 55556 }
+  },
+  {
+    id: "SR_004",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn có 6 triệu sau 60 ngày.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["6.000.000", "100.000"],
+    expectedMath: { target: 6000000, days: 60, daily: 100000 },
+    note: "Critical Test 5: 100.000 VND/day"
+  },
+  {
+    id: "SR_005",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn để dành 5 củ trong 3 tháng.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["5.000.000", "55.556"],
+    expectedMath: { target: 5000000, days: 90, daily: 55556 }
+  },
+  {
+    id: "SR_006",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tiết kiệm tổng cộng 5 triệu, không phải mỗi tháng.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["5.000.000", "không phải"],
+    expectedMath: { target: 5000000 },
+    note: "Critical Test 3: Must maintain total 5.000.000 VND."
+  },
+  {
+    id: "SR_007",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tích lũy 5 triệu, không phải 5 triệu mỗi tháng.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["5.000.000", "không phải"],
+    expectedMath: { target: 5000000 }
+  },
+  {
+    id: "SR_008",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn có 3 triệu sau 60 ngày thì mỗi ngày tiết kiệm bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["3.000.000", "50.000"],
+    expectedMath: { target: 3000000, days: 60, daily: 50000 }
+  },
+  {
+    id: "SR_009",
+    group: "Mục tiêu tổng cộng",
+    question: "Mục tiêu của tôi là tích lũy 10 triệu trong 100 ngày.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["10.000.000", "100.000"],
+    expectedMath: { target: 10000000, days: 100, daily: 100000 }
+  },
+  {
+    id: "SR_010",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn để dành 12 triệu trong 1 năm thì mỗi tháng cần bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["12.000.000", "1.000.000"],
+    expectedMath: { target: 12000000, months: 12, monthly: 1000000 }
+  },
+  {
+    id: "SR_011",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn gom 15 triệu trong 5 tháng.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["15.000.000", "3.000.000", "100.000"],
+    expectedMath: { target: 15000000, months: 5, monthly: 3000000 }
+  },
+  {
+    id: "SR_012",
+    group: "Mục tiêu tổng cộng",
+    question: "Cần tích lũy 20 triệu trong 10 tháng thì mỗi tháng để dành bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["20.000.000", "2.000.000"],
+    expectedMath: { target: 20000000, months: 10, monthly: 2000000 }
+  },
+  {
+    id: "SR_013",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tiết kiệm 2 triệu trong 20 ngày thì mỗi ngày cần bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["2.000.000", "100.000"],
+    expectedMath: { target: 2000000, days: 20, daily: 100000 }
+  },
+  {
+    id: "SR_014",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn gom 9 triệu trong 90 ngày thì mỗi ngày bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["9.000.000", "100.000"],
+    expectedMath: { target: 9000000, days: 90, daily: 100000 }
+  },
+  {
+    id: "SR_015",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tích lũy 30 triệu trong 6 tháng.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["30.000.000", "5.000.000"],
+    expectedMath: { target: 30000000, months: 6, monthly: 5000000 }
+  },
+  {
+    id: "SR_016",
+    group: "Mục tiêu tổng cộng",
+    question: "Muốn để dành 10 củ trong 100 ngày thì mỗi ngày dành bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["10.000.000", "100.000"],
+    expectedMath: { target: 10000000, days: 100, daily: 100000 }
+  },
+  {
+    id: "SR_017",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tiết kiệm 1 triệu trong 10 ngày.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["1.000.000", "100.000"],
+    expectedMath: { target: 1000000, days: 10, daily: 100000 }
+  },
+  {
+    id: "SR_018",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn có 4 triệu sau 40 ngày.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["4.000.000", "100.000"],
+    expectedMath: { target: 4000000, days: 40, daily: 100000 }
+  },
+  {
+    id: "SR_019",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tích lũy 50 triệu trong 10 tháng.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["50.000.000", "5.000.000"],
+    expectedMath: { target: 50000000, months: 10, monthly: 5000000 }
+  },
+  {
+    id: "SR_020",
+    group: "Mục tiêu tổng cộng",
+    question: "Tôi muốn tiết kiệm tổng cộng 10 triệu trong 2 tháng.",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["10.000.000", "5.000.000", "166.667"],
+    expectedMath: { target: 10000000, months: 2, monthly: 5000000 }
+  },
+
+  // -------------------------------------------------------------
+  // Group 2: Khoản tiết kiệm định kỳ (15 tests)
+  // -------------------------------------------------------------
+  {
+    id: "SR_021",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Tôi tiết kiệm 5 triệu mỗi tháng trong 3 tháng.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["5.000.000", "15.000.000"],
+    expectedMath: { recurring: 5000000, periods: 3, total: 15000000 },
+    note: "Critical Test 2: Must calculate 15.000.000 VND."
+  },
+  {
+    id: "SR_022",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi tháng tiết kiệm 500k trong 12 tháng.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["500.000", "6.000.000"],
+    expectedMath: { recurring: 500000, periods: 12, total: 6000000 },
+    note: "Critical Test 8: Must calculate 6.000.000 VND."
+  },
+  {
+    id: "SR_023",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi tháng bỏ 500k thì một năm có bao nhiêu?",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["500.000", "6.000.000"],
+    expectedMath: { recurring: 500000, periods: 12, total: 6000000 }
+  },
+  {
+    id: "SR_024",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi ngày tiết kiệm 20k trong 30 ngày.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["20.000", "600.000"],
+    expectedMath: { recurring: 20000, periods: 30, total: 600000 },
+    note: "Critical Test 7: Must calculate 600.000 VND."
+  },
+  {
+    id: "SR_025",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Nếu mỗi ngày để dành 50.000đ trong 7 ngày thì được bao nhiêu?",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["50.000", "350.000"],
+    expectedMath: { recurring: 50000, periods: 7, total: 350000 }
+  },
+  {
+    id: "SR_026",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Tôi tiết kiệm 50.000đ mỗi ngày trong 30 ngày.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["50.000", "1.500.000"],
+    expectedMath: { recurring: 50000, periods: 30, total: 1500000 }
+  },
+  {
+    id: "SR_027",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi tháng tiết kiệm 2 triệu trong 6 tháng.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["2.000.000", "12.000.000"],
+    expectedMath: { recurring: 2000000, periods: 6, total: 12000000 }
+  },
+  {
+    id: "SR_028",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi ngày bỏ ra 100k trong 60 ngày thì được bao nhiêu?",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["100.000", "6.000.000"],
+    expectedMath: { recurring: 100000, periods: 60, total: 6000000 }
+  },
+  {
+    id: "SR_029",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Tôi gửi tiết kiệm 1 triệu mỗi tháng trong 12 tháng.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["1.000.000", "12.000.000"],
+    expectedMath: { recurring: 1000000, periods: 12, total: 12000000 }
+  },
+  {
+    id: "SR_030",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi tuần để dành 200k trong 10 tuần.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["200.000", "2.000.000"],
+    expectedMath: { recurring: 200000, periods: 10, total: 2000000 }
+  },
+  {
+    id: "SR_031",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Nếu mỗi ngày để dành 30k trong 30 ngày thì có bao nhiêu?",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["30.000", "900.000"],
+    expectedMath: { recurring: 30000, periods: 30, total: 900000 }
+  },
+  {
+    id: "SR_032",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi tháng tiết kiệm 3 triệu trong 4 tháng thì được bao nhiêu?",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["3.000.000", "12.000.000"],
+    expectedMath: { recurring: 3000000, periods: 4, total: 12000000 }
+  },
+  {
+    id: "SR_033",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi ngày tiết kiệm 10k trong 100 ngày.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["10.000", "1.000.000"],
+    expectedMath: { recurring: 10000, periods: 100, total: 1000000 }
+  },
+  {
+    id: "SR_034",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Tôi tích lũy 500k mỗi tuần trong 4 tuần.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["500.000", "2.000.000"],
+    expectedMath: { recurring: 500000, periods: 4, total: 2000000 }
+  },
+  {
+    id: "SR_035",
+    group: "Khoản tiết kiệm định kỳ",
+    question: "Mỗi tháng tiết kiệm 10 triệu trong 6 tháng.",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["10.000.000", "60.000.000"],
+    expectedMath: { recurring: 10000000, periods: 6, total: 60000000 }
+  },
+
+  // -------------------------------------------------------------
+  // Group 3: Tính tiền theo ngày/tháng (15 tests)
+  // -------------------------------------------------------------
+  {
+    id: "SR_036",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Cần tiết kiệm bao nhiêu mỗi ngày để sau 20 ngày có 1.000.000đ?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["1.000.000", "50.000"],
+    expectedMath: { target: 1000000, days: 20, daily: 50000 }
+  },
+  {
+    id: "SR_037",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Để có 2 triệu trong 40 ngày thì mỗi ngày cần bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["2.000.000", "50.000"],
+    expectedMath: { target: 2000000, days: 40, daily: 50000 }
+  },
+  {
+    id: "SR_038",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Nếu mỗi ngày bỏ 30k thì bao lâu được 1 triệu?",
+    expectedIntent: "SAVINGS_TIMELINE",
+    expectedKeywords: ["30.000", "1.000.000", "34 ngày"],
+    expectedMath: { rate: 30000, target: 1000000, days: 34 }
+  },
+  {
+    id: "SR_039",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Nếu mỗi ngày bỏ 50k thì bao lâu được 5 triệu?",
+    expectedIntent: "SAVINGS_TIMELINE",
+    expectedKeywords: ["50.000", "5.000.000", "100 ngày"],
+    expectedMath: { rate: 50000, target: 5000000, days: 100 }
+  },
+  {
+    id: "SR_040",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Mỗi ngày tiết kiệm 100k thì mất bao lâu để có 10 triệu?",
+    expectedIntent: "SAVINGS_TIMELINE",
+    expectedKeywords: ["100.000", "10.000.000", "100 ngày"],
+    expectedMath: { rate: 100000, target: 10000000, days: 100 }
+  },
+  {
+    id: "SR_041",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Muốn có 15 triệu sau 30 ngày thì mỗi ngày tiết kiệm bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["15.000.000", "500.000"],
+    expectedMath: { target: 15000000, days: 30, daily: 500000 }
+  },
+  {
+    id: "SR_042",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Để tích lũy 6 triệu trong 3 tháng thì mỗi tháng để dành bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["6.000.000", "2.000.000"],
+    expectedMath: { target: 6000000, months: 3, monthly: 2000000 }
+  },
+  {
+    id: "SR_043",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Tôi muốn có 8 triệu trong 80 ngày thì mỗi ngày cần bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["8.000.000", "100.000"],
+    expectedMath: { target: 8000000, days: 80, daily: 100000 }
+  },
+  {
+    id: "SR_044",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Mỗi ngày bỏ ra 200k thì sau 15 ngày được bao nhiêu?",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["200.000", "3.000.000"],
+    expectedMath: { recurring: 200000, periods: 15, total: 3000000 }
+  },
+  {
+    id: "SR_045",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Cần tích lũy 5 triệu trong 50 ngày thì mỗi ngày tiết kiệm bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["5.000.000", "100.000"],
+    expectedMath: { target: 5000000, days: 50, daily: 100000 }
+  },
+  {
+    id: "SR_046",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Mỗi tháng tiết kiệm 1,5 triệu trong 4 tháng thì được bao nhiêu?",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["1.500.000", "6.000.000"],
+    expectedMath: { recurring: 1500000, periods: 4, total: 6000000 }
+  },
+  {
+    id: "SR_047",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Để có 10 triệu trong 5 tháng thì mỗi tháng cần bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["10.000.000", "2.000.000"],
+    expectedMath: { target: 10000000, months: 5, monthly: 2000000 }
+  },
+  {
+    id: "SR_048",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Mỗi ngày để dành 25k trong 40 ngày thì có bao nhiêu?",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["25.000", "1.000.000"],
+    expectedMath: { recurring: 25000, periods: 40, total: 1000000 }
+  },
+  {
+    id: "SR_049",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Muốn có 18 triệu trong 6 tháng thì mỗi tháng tiết kiệm bao nhiêu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["18.000.000", "3.000.000"],
+    expectedMath: { target: 18000000, months: 6, monthly: 3000000 }
+  },
+  {
+    id: "SR_050",
+    group: "Tính tiền theo ngày/tháng",
+    question: "Nếu mỗi ngày tiết kiệm 40k thì bao lâu được 2 triệu?",
+    expectedIntent: "SAVINGS_TIMELINE",
+    expectedKeywords: ["40.000", "2.000.000", "50 ngày"],
+    expectedMath: { rate: 40000, target: 2000000, days: 50 }
+  },
+
+  // -------------------------------------------------------------
+  // Group 4: Mục tiêu có tiền tích lũy (10 tests)
+  // -------------------------------------------------------------
+  {
+    id: "SR_051",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi muốn có 10 triệu, đã có 4 triệu, còn 100 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["10.000.000", "4.000.000", "6.000.000", "60.000"],
+    expectedMath: { target: 10000000, saved: 4000000, needed: 6000000, days: 100, daily: 60000 },
+    note: "Critical Test 6: 60.000 VND/day"
+  },
+  {
+    id: "SR_052",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi muốn có 5 triệu, hiện đã tiết kiệm 2 triệu, còn 30 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["5.000.000", "2.000.000", "3.000.000", "100.000"],
+    expectedMath: { target: 5000000, saved: 2000000, needed: 3000000, days: 30, daily: 100000 }
+  },
+  {
+    id: "SR_053",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi cần thêm 2 triệu trong 20 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["2.000.000", "100.000"],
+    expectedMath: { needed: 2000000, days: 20, daily: 100000 },
+    note: "Critical Test 9: 100.000 VND/day"
+  },
+  {
+    id: "SR_054",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi có sẵn 2 triệu, cần thêm 3 triệu trong 60 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["2.000.000", "3.000.000", "50.000"],
+    expectedMath: { saved: 2000000, needed: 3000000, days: 60, daily: 50000 }
+  },
+  {
+    id: "SR_055",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi muốn có 6 triệu, hiện đã tích lũy 1 triệu, còn 50 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["6.000.000", "1.000.000", "5.000.000", "100.000"],
+    expectedMath: { target: 6000000, saved: 1000000, needed: 5000000, days: 50, daily: 100000 }
+  },
+  {
+    id: "SR_056",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Mục tiêu 15 triệu, có sẵn 5 triệu, thời hạn còn 100 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["15.000.000", "5.000.000", "10.000.000", "100.000"],
+    expectedMath: { target: 15000000, saved: 5000000, needed: 10000000, days: 100, daily: 100000 }
+  },
+  {
+    id: "SR_057",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi cần thêm 5 triệu trong 50 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["5.000.000", "100.000"],
+    expectedMath: { needed: 5000000, days: 50, daily: 100000 }
+  },
+  {
+    id: "SR_058",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi muốn có 20 triệu, đã có 8 triệu, còn 120 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["20.000.000", "8.000.000", "12.000.000", "100.000"],
+    expectedMath: { target: 20000000, saved: 8000000, needed: 12000000, days: 120, daily: 100000 }
+  },
+  {
+    id: "SR_059",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi có sẵn 5 triệu, cần thêm 5 triệu trong 2 tháng.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["5.000.000", "83.334", "60 ngày"],
+    expectedMath: { saved: 5000000, needed: 5000000, days: 60, daily: 83334 }
+  },
+  {
+    id: "SR_060",
+    group: "Mục tiêu có tiền tích lũy",
+    question: "Tôi cần thêm 3 triệu trong 30 ngày.",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["3.000.000", "100.000"],
+    expectedMath: { needed: 3000000, days: 30, daily: 100000 }
+  },
+
+  // -------------------------------------------------------------
+  // Group 5: Hội thoại nhiều lượt (20 tests)
+  // -------------------------------------------------------------
+  {
+    id: "SR_061",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi ngày tôi cần dành bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 5 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Mục tiêu của bạn là 5.000.000 VND trong 3 tháng." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["5.000.000", "55.556", "90 ngày"],
+    expectedMath: { target: 5000000, days: 90, daily: 55556 },
+    note: "Critical Test 4: Follow up after Total Target"
+  },
+  {
+    id: "SR_062",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi ngày tôi cần dành ra bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 5 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Nếu tiết kiệm 5.000.000 VND mỗi tháng, sau 3 tháng bạn có 15.000.000 VND." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["Xin lỗi", "hiểu nhầm", "5.000.000", "55.556"],
+    expectedMath: { target: 5000000, days: 90, daily: 55556 },
+    note: "Critical Test: Auto-correction of previous AI miscalculation"
+  },
+  {
+    id: "SR_063",
+    group: "Hội thoại nhiều lượt",
+    question: "Vậy mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn có 6 triệu sau 60 ngày." }] },
+      { role: "model", parts: [{ text: "Đã ghi nhận mục tiêu 6.000.000 VND trong 60 ngày." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["6.000.000", "100.000"],
+    expectedMath: { target: 6000000, days: 60, daily: 100000 }
+  },
+  {
+    id: "SR_064",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi tháng thì sao?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 6 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 6 triệu trong 3 tháng." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["6.000.000", "2.000.000"],
+    expectedMath: { target: 6000000, months: 3, monthly: 2000000 }
+  },
+  {
+    id: "SR_065",
+    group: "Hội thoại nhiều lượt",
+    question: "Nếu tôi tăng lên 50k/ngày thì sao?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 5 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 55.556 VND/ngày." }] }
+    ],
+    expectedIntent: "SAVINGS_RATE_CHANGE",
+    expectedKeywords: ["50.000", "4.500.000", "thiếu"],
+    expectedMath: { newRate: 50000, days: 90, total: 4500000 }
+  },
+  {
+    id: "SR_066",
+    group: "Hội thoại nhiều lượt",
+    question: "Nếu tôi tăng lên 70k/ngày thì sao?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 5 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 55.556 VND/ngày." }] }
+    ],
+    expectedIntent: "SAVINGS_RATE_CHANGE",
+    expectedKeywords: ["70.000", "6.300.000", "vượt mục tiêu"],
+    expectedMath: { newRate: 70000, days: 90, total: 6300000 }
+  },
+  {
+    id: "SR_067",
+    group: "Hội thoại nhiều lượt",
+    question: "Nếu bỏ lỡ 5 ngày tiết kiệm thì mức tiết kiệm còn lại thay đổi thế nào?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 5 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 55.556 VND/ngày." }] }
+    ],
+    expectedIntent: "SAVINGS_MISSED_DAYS",
+    expectedKeywords: ["85 ngày", "58.824", "tăng thêm"],
+    expectedMath: { remainingDays: 85, newDaily: 58824 }
+  },
+  {
+    id: "SR_068",
+    group: "Hội thoại nhiều lượt",
+    question: "Nếu quên 3 ngày không tiết kiệm thì sao?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 3 triệu trong 30 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 100.000 VND/ngày." }] }
+    ],
+    expectedIntent: "SAVINGS_MISSED_DAYS",
+    expectedKeywords: ["27 ngày", "111.112", "tăng thêm"],
+    expectedMath: { remainingDays: 27, newDaily: 111112 }
+  },
+  {
+    id: "SR_069",
+    group: "Hội thoại nhiều lượt",
+    question: "Vậy mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tích lũy 10 triệu trong 100 ngày." }] },
+      { role: "model", parts: [{ text: "Đã ghi nhận mục tiêu 10 triệu trong 100 ngày." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["10.000.000", "100.000"],
+    expectedMath: { target: 10000000, days: 100, daily: 100000 }
+  },
+  {
+    id: "SR_070",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 12 triệu trong 1 năm." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 12 triệu trong 1 năm." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["12.000.000", "32.877", "365 ngày"],
+    expectedMath: { target: 12000000, days: 365, daily: 32877 }
+  },
+  {
+    id: "SR_071",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi ngày cần bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn có 9 triệu trong 90 ngày." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 9 triệu trong 90 ngày." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["9.000.000", "100.000"],
+    expectedMath: { target: 9000000, days: 90, daily: 100000 }
+  },
+  {
+    id: "SR_072",
+    group: "Hội thoại nhiều lượt",
+    question: "Nếu tôi tăng lên 150k/ngày thì sao?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 10 triệu trong 100 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 100.000 VND/ngày." }] }
+    ],
+    expectedIntent: "SAVINGS_RATE_CHANGE",
+    expectedKeywords: ["150.000", "15.000.000", "vượt mục tiêu"],
+    expectedMath: { newRate: 150000, days: 100, total: 15000000 }
+  },
+  {
+    id: "SR_073",
+    group: "Hội thoại nhiều lượt",
+    question: "Nếu bỏ lỡ 10 ngày thì sao?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 10 triệu trong 100 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 100.000 VND/ngày." }] }
+    ],
+    expectedIntent: "SAVINGS_MISSED_DAYS",
+    expectedKeywords: ["90 ngày", "111.112"],
+    expectedMath: { remainingDays: 90, newDaily: 111112 }
+  },
+  {
+    id: "SR_074",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi tháng tôi cần dành bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn gom 15 triệu trong 5 tháng." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 15 triệu trong 5 tháng." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["15.000.000", "3.000.000"],
+    expectedMath: { target: 15000000, months: 5, monthly: 3000000 }
+  },
+  {
+    id: "SR_075",
+    group: "Hội thoại nhiều lượt",
+    question: "Vậy mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 2 triệu trong 20 ngày." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 2 triệu trong 20 ngày." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["2.000.000", "100.000"],
+    expectedMath: { target: 2000000, days: 20, daily: 100000 }
+  },
+  {
+    id: "SR_076",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi ngày tôi cần dành ra bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 10 triệu trong 5 tháng." }] },
+      { role: "model", parts: [{ text: "Nếu tiết kiệm 10.000.000 VND mỗi tháng, sau 5 tháng bạn có 50.000.000 VND." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["10.000.000", "66.667"],
+    expectedMath: { target: 10000000, days: 150, daily: 66667 }
+  },
+  {
+    id: "SR_077",
+    group: "Hội thoại nhiều lượt",
+    question: "Nếu tôi tăng lên 200k/ngày thì sao?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn có 6 triệu sau 60 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 100.000 VND/ngày." }] }
+    ],
+    expectedIntent: "SAVINGS_RATE_CHANGE",
+    expectedKeywords: ["200.000", "12.000.000", "vượt mục tiêu"],
+    expectedMath: { newRate: 200000, days: 60, total: 12000000 }
+  },
+  {
+    id: "SR_078",
+    group: "Hội thoại nhiều lượt",
+    question: "Nếu quên 5 ngày không tiết kiệm thì sao?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn có 6 triệu sau 60 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 100.000 VND/ngày." }] }
+    ],
+    expectedIntent: "SAVINGS_MISSED_DAYS",
+    expectedKeywords: ["55 ngày", "109.091"],
+    expectedMath: { remainingDays: 55, newDaily: 109091 }
+  },
+  {
+    id: "SR_079",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 4 triệu trong 40 ngày." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 4 triệu trong 40 ngày." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["4.000.000", "100.000"],
+    expectedMath: { target: 4000000, days: 40, daily: 100000 }
+  },
+  {
+    id: "SR_080",
+    group: "Hội thoại nhiều lượt",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn gom 3 củ trong 1 tháng." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 3 củ trong 1 tháng." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["3.000.000", "100.000"],
+    expectedMath: { target: 3000000, days: 30, daily: 100000 }
+  },
+
+  // -------------------------------------------------------------
+  // Group 6: Thay đổi mục tiêu (10 tests)
+  // -------------------------------------------------------------
+  {
+    id: "SR_081",
+    group: "Thay đổi mục tiêu",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 5 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 5 triệu trong 3 tháng." }] },
+      { role: "user", parts: [{ text: "Tôi muốn đổi thành 10 triệu trong 6 tháng." }] },
+      { role: "model", parts: [{ text: "Đã đổi mục tiêu thành 10 triệu trong 6 tháng." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["10.000.000", "55.556", "180 ngày"],
+    expectedMath: { target: 10000000, days: 180, daily: 55556 },
+    note: "Must use 10M, NOT 5M!"
+  },
+  {
+    id: "SR_082",
+    group: "Thay đổi mục tiêu",
+    question: "Vậy mỗi ngày cần bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 3 triệu trong 30 ngày." }] },
+      { role: "model", parts: [{ text: "Mục tiêu 3 triệu trong 30 ngày." }] },
+      { role: "user", parts: [{ text: "Đổi mục tiêu sang 6 triệu trong 60 ngày." }] },
+      { role: "model", parts: [{ text: "Đã cập nhật mục tiêu sang 6 triệu trong 60 ngày." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["6.000.000", "100.000"],
+    expectedMath: { target: 6000000, days: 60, daily: 100000 }
+  },
+  {
+    id: "SR_083",
+    group: "Thay đổi mục tiêu",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 2 triệu trong 20 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 100k." }] },
+      { role: "user", parts: [{ text: "Tôi muốn đổi thành 5 triệu trong 50 ngày." }] },
+      { role: "model", parts: [{ text: "Đã đổi thành 5 triệu." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["5.000.000", "100.000"],
+    expectedMath: { target: 5000000, days: 50, daily: 100000 }
+  },
+  {
+    id: "SR_084",
+    group: "Thay đổi mục tiêu",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 10 triệu trong 100 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày cần 100k." }] },
+      { role: "user", parts: [{ text: "Tôi muốn đổi thành 20 triệu trong 200 ngày." }] },
+      { role: "model", parts: [{ text: "Đã đổi sang 20 triệu." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["20.000.000", "100.000"],
+    expectedMath: { target: 20000000, days: 200, daily: 100000 }
+  },
+  {
+    id: "SR_085",
+    group: "Thay đổi mục tiêu",
+    question: "Vậy mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn để dành 5 triệu trong 50 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày 100k." }] },
+      { role: "user", parts: [{ text: "Đổi mục tiêu thành 8 triệu trong 80 ngày." }] },
+      { role: "model", parts: [{ text: "Đã cập nhật sang 8 triệu." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["8.000.000", "100.000"],
+    expectedMath: { target: 8000000, days: 80, daily: 100000 }
+  },
+  {
+    id: "SR_086",
+    group: "Thay đổi mục tiêu",
+    question: "Mỗi tháng bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tích lũy 6 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Mỗi tháng 2 triệu." }] },
+      { role: "user", parts: [{ text: "Tôi muốn đổi thành 12 triệu trong 6 tháng." }] },
+      { role: "model", parts: [{ text: "Đã đổi sang 12 triệu trong 6 tháng." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["12.000.000", "2.000.000"],
+    expectedMath: { target: 12000000, months: 6, monthly: 2000000 }
+  },
+  {
+    id: "SR_087",
+    group: "Thay đổi mục tiêu",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn gom 1 triệu trong 10 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày 100k." }] },
+      { role: "user", parts: [{ text: "Đổi mục tiêu sang 3 triệu trong 30 ngày." }] },
+      { role: "model", parts: [{ text: "Đã đổi sang 3 triệu." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["3.000.000", "100.000"],
+    expectedMath: { target: 3000000, days: 30, daily: 100000 }
+  },
+  {
+    id: "SR_088",
+    group: "Thay đổi mục tiêu",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 15 triệu trong 5 tháng." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày 100k." }] },
+      { role: "user", parts: [{ text: "Tôi muốn đổi thành 9 triệu trong 3 tháng." }] },
+      { role: "model", parts: [{ text: "Đã đổi sang 9 triệu trong 3 tháng." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["9.000.000", "100.000"],
+    expectedMath: { target: 9000000, days: 90, daily: 100000 }
+  },
+  {
+    id: "SR_089",
+    group: "Thay đổi mục tiêu",
+    question: "Vậy mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn tiết kiệm 4 triệu trong 40 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày 100k." }] },
+      { role: "user", parts: [{ text: "Chuyển thành 2 triệu trong 20 ngày." }] },
+      { role: "model", parts: [{ text: "Đã chuyển sang 2 triệu trong 20 ngày." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["2.000.000", "100.000"],
+    expectedMath: { target: 2000000, days: 20, daily: 100000 }
+  },
+  {
+    id: "SR_090",
+    group: "Thay đổi mục tiêu",
+    question: "Mỗi ngày bao nhiêu?",
+    history: [
+      { role: "user", parts: [{ text: "Tôi muốn có 5 củ trong 50 ngày." }] },
+      { role: "model", parts: [{ text: "Mỗi ngày 100k." }] },
+      { role: "user", parts: [{ text: "Đổi mục tiêu thành 10 củ trong 100 ngày." }] },
+      { role: "model", parts: [{ text: "Đã đổi sang 10 củ." }] }
+    ],
+    expectedIntent: "FOLLOW_UP_SAVINGS",
+    expectedKeywords: ["10.000.000", "100.000"],
+    expectedMath: { target: 10000000, days: 100, daily: 100000 }
+  },
+
+  // -------------------------------------------------------------
+  // Group 7: Câu hỏi mơ hồ và nhập sai (10 tests)
+  // -------------------------------------------------------------
+  {
+    id: "SR_091",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "Tôi muốn tiết kiệm tiền trong vài tháng.",
+    expectedIntent: "AMBIGUOUS_SAVINGS",
+    expectedKeywords: ["cung cấp thêm", "Số tiền mục tiêu", "Thời hạn cụ thể"],
+    expectedMath: {},
+    note: "Critical Test 10: Must ask for missing target/duration"
+  },
+  {
+    id: "SR_092",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "Tôi muốn để dành một khoản tiền trong thời gian tới.",
+    expectedIntent: "AMBIGUOUS_SAVINGS",
+    expectedKeywords: ["cung cấp thêm", "Số tiền mục tiêu"],
+    expectedMath: {}
+  },
+  {
+    id: "SR_093",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "Tôi định tiết kiệm tiền trong vài tháng.",
+    expectedIntent: "AMBIGUOUS_SAVINGS",
+    expectedKeywords: ["cung cấp thêm", "Số tiền mục tiêu"],
+    expectedMath: {}
+  },
+  {
+    id: "SR_094",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "Tôi muốn tích lũy tiền trong vài tháng.",
+    expectedIntent: "AMBIGUOUS_SAVINGS",
+    expectedKeywords: ["cung cấp thêm", "Số tiền mục tiêu"],
+    expectedMath: {}
+  },
+  {
+    id: "SR_095",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "Toi muon tiet kiem 5 trieu trong 3 thang thi moi ngay can danh ra bao nhieu?",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["5.000.000", "55.556"],
+    expectedMath: { target: 5000000, days: 90, daily: 55556 }
+  },
+  {
+    id: "SR_096",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "tiet kiem 50k moi ngay trong 30 ngay",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["50.000", "1.500.000"],
+    expectedMath: { recurring: 50000, periods: 30, total: 1500000 }
+  },
+  {
+    id: "SR_097",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "muon co 3 trieu sau 60 ngay moi ngay bao nhieu",
+    expectedIntent: "TOTAL_SAVINGS_TARGET",
+    expectedKeywords: ["3.000.000", "50.000"],
+    expectedMath: { target: 3000000, days: 60, daily: 50000 }
+  },
+  {
+    id: "SR_098",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "Toi can them 2 tr trong 20 ngay",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["2.000.000", "100.000"],
+    expectedMath: { needed: 2000000, days: 20, daily: 100000 }
+  },
+  {
+    id: "SR_099",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "Moi thang tiet kiem 500k trong 12 thang thi duoc bao nhieu",
+    expectedIntent: "RECURRING_SAVINGS_AMOUNT",
+    expectedKeywords: ["500.000", "6.000.000"],
+    expectedMath: { recurring: 500000, periods: 12, total: 6000000 }
+  },
+  {
+    id: "SR_100",
+    group: "Câu hỏi mơ hồ và nhập sai",
+    question: "Toi muon co 10 tr, da co 4 tr, con 100 ngay",
+    expectedIntent: "REMAINING_SAVINGS",
+    expectedKeywords: ["10.000.000", "4.000.000", "6.000.000", "60.000"],
+    expectedMath: { target: 10000000, saved: 4000000, needed: 6000000, days: 100, daily: 60000 }
+  }
+];
+
+const outputPath = path.resolve('tests/ai-evaluation/savings-reasoning-100-questions.json');
+fs.writeFileSync(outputPath, JSON.stringify(questions, null, 2), 'utf8');
+
+console.log(`Generated ${questions.length} savings benchmark questions in ${outputPath}`);

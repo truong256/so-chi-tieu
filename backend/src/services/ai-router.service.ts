@@ -32,6 +32,7 @@ import {
   type DetectedCrudIntent,
 } from "./ai-crud-tools.service.ts";
 import { parseVietnameseAmount } from "../../../frontend/utils/smart-parser.ts";
+import { parseSavingsReasoningQuery } from "./savings-calculator.service.ts";
 import type { ChatMessage } from "../types/ai.types.ts";
 
 export type CanonicalIntent =
@@ -95,6 +96,17 @@ export interface SimpleCalculationResult {
   type:
     | "SAVINGS_ACCUMULATION"
     | "SAVINGS_TARGET_RATE"
+    | "TOTAL_SAVINGS_TARGET"
+    | "RECURRING_SAVINGS_AMOUNT"
+    | "DAILY_SAVINGS"
+    | "REQUIRED_DAILY_SAVINGS"
+    | "REQUIRED_MONTHLY_SAVINGS"
+    | "REMAINING_SAVINGS"
+    | "SAVINGS_TIMELINE"
+    | "SAVINGS_RATE_CHANGE"
+    | "SAVINGS_MISSED_DAYS"
+    | "AMBIGUOUS_SAVINGS"
+    | "FOLLOW_UP_SAVINGS"
     | "NET_CASH_FLOW"
     | "PERCENTAGE"
     | "ARITHMETIC_DIFF"
@@ -160,6 +172,23 @@ function extractRecentNumbersFromHistory(
   history: Array<{ role: string; parts?: Array<{ text: string }> }>,
 ): number[] {
   const numbers: number[] = [];
+  // Prioritize user messages first to avoid propagating errors from model responses!
+  for (let i = history.length - 1; i >= 0; i--) {
+    const msg = history[i];
+    if (msg.role === "user") {
+      const text = msg.parts?.[0]?.text || "";
+      const matches = text.matchAll(/(?:[\s\b]|^)(\d{1,3}(?:\.\d{3})+|\d{4,9})\s*(?:vnd|đ|đồng)?/gi);
+      for (const m of matches) {
+        const clean = m[1].replace(/\./g, "");
+        const val = parseFloat(clean);
+        if (!isNaN(val) && val > 0 && !numbers.includes(val)) {
+          numbers.push(val);
+        }
+      }
+      if (numbers.length > 0) return numbers;
+    }
+  }
+  // Fallback to model only if no numbers were present in user messages
   for (let i = history.length - 1; i >= 0; i--) {
     const msg = history[i];
     if (msg.role === "model" || msg.role === "assistant") {
@@ -366,13 +395,16 @@ export function parseTransactionListQuery(
  *        "Cần tiết kiệm bao nhiêu mỗi ngày để đạt 1 triệu trong 20 ngày?",
  *        "Nếu thu nhập 3.124.000đ và chi tiêu 65.000đ thì chênh lệch bao nhiêu?")
  */
-export function parseSimpleCalculationQuery(rawText: string): SimpleCalculationResult | null {
+export function parseSimpleCalculationQuery(
+  rawText: string,
+  history: Array<{ role: string; parts?: Array<{ text: string }> }> = []
+): SimpleCalculationResult | null {
   const text = rawText.trim();
   const lower = text.toLowerCase();
   const unacc = removeVietnameseAccents(text);
 
   // Exclude explicit questions asking about user's personal existing balances or goals
-  if (/^(?:tôi|mình)\s+(?:đã|dang|đang)\s+(?:tiết kiệm|tích lũy)/i.test(lower) || /tôi có bao nhiêu tiền tiết kiệm/i.test(lower)) {
+  if (/^(?:tôi|mình)\s+(?:đã|dang|đang)\s+(?:tiết kiệm|tích lũy)\s+(?:được\s+)?bao nhiêu/i.test(lower) || /tôi có bao nhiêu tiền tiết kiệm/i.test(lower)) {
     return null;
   }
   if (/(?:mục tiêu|laptop).*đã tích lũy|còn thiếu bao nhiêu/i.test(lower)) {
@@ -380,6 +412,20 @@ export function parseSimpleCalculationQuery(rawText: string): SimpleCalculationR
   }
   if (/muốn tạo mục tiêu|thêm mục tiêu/i.test(lower)) {
     return null;
+  }
+
+  // 0. Dedicated Savings Reasoning Engine (Handles Total Target vs Recurring, Multi-turn memory, etc.)
+  const savingsRes = parseSavingsReasoningQuery(rawText, history);
+  if (savingsRes) {
+    return {
+      type: savingsRes.intent as any,
+      amount: savingsRes.dailySaving || savingsRes.monthlySaving || savingsRes.remainingAmount,
+      periods: savingsRes.durationPeriods,
+      periodUnit: savingsRes.durationUnit,
+      targetAmount: savingsRes.targetAmount,
+      result: savingsRes.dailySaving || savingsRes.targetAmount,
+      explanationVi: savingsRes.explanationVi,
+    };
   }
 
   // 1. Savings target rate: "Cần tiết kiệm bao nhiêu mỗi ngày để đạt 1 triệu trong 20 ngày?"
@@ -767,7 +813,7 @@ export function routeUserIntent(
   const unaccented = removeVietnameseAccents(rawText);
 
   // 0. Check Simple Math / Hypothetical Calculation (0ms, 100% deterministic, no DB needed)
-  const simpleCalculation = parseSimpleCalculationQuery(rawText);
+  const simpleCalculation = parseSimpleCalculationQuery(rawText, history);
   if (simpleCalculation) {
     return {
       primaryIntent: "SIMPLE_CALCULATION",

@@ -214,13 +214,13 @@ export function parseVietnameseAmount(text: string): { amount: number | null, cu
   }
 
   // 3. Match generic multipliers (k, nghìn, ngàn, tr, triệu)
-  const regexUnit = /(\d+(?:[.,]\d+)?)\s*(k|nghìn|ngàn|tr|triệu|tỷ|tỉ|ty|củ)(?=\s|$|[.,;!?])/i;
+  const regexUnit = /(\d+(?:[.,]\d+)?)\s*(k|nghìn|ngàn|nghin|ngan|tr|triệu|trieu|tỷ|tỉ|ty|củ)(?=\s|$|[.,;!?])/i;
   const matchUnit = text.match(regexUnit);
   if (matchUnit) {
     const num = Number(matchUnit[1].replace(/,/g, "."));
     const unit = matchUnit[2].toLowerCase();
     const multiplier = ["tỷ", "tỉ", "ty"].includes(unit) ? 1_000_000_000
-      : ["tr", "triệu", "củ"].includes(unit) ? 1_000_000 : 1_000;
+      : ["tr", "triệu", "trieu", "củ"].includes(unit) ? 1_000_000 : 1_000;
     const amount = Math.round(num * multiplier);
     return { amount: Number.isSafeInteger(amount) && amount <= 1_000_000_000_000_000 ? amount : null, currency: "VND", score: 100, matchedStr: matchUnit[0] };
   }
