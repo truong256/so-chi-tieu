@@ -397,13 +397,14 @@ export function parseBudgetPlanQuery(
   }
 
   // 7. Detect SAVINGS_GOAL_PLAN
-  // Guard against definition or comparison queries ("sự khác biệt", "là gì", "như thế nào")
   const isDefinitionQuery =
-    /sự khác biệt|khác nhau|dùng để làm gì|hoạt động như thế nào/i.test(
-      normalized,
-    );
+    /sự khác biệt|khác nhau|dùng để làm gì|hoạt động như thế nào/i.test(normalized);
 
-  if (!isDefinitionQuery) {
+  const isAffordabilityQuery =
+    /(?:có\s+)?đủ tiền\s+(?:để\s+)?(?:tiết kiệm|mua|chi)/i.test(normalized) ||
+    /du tien (de )?(tiet kiem|mua|chi)/i.test(unaccented);
+
+  if (!isDefinitionQuery && !isAffordabilityQuery) {
     // 7.1. Max potential savings capacity (Requirement 5)
     // E.g. "Tháng này tôi có thể tiết kiệm được bao nhiêu?", "tối đa có thể tiết kiệm"
     const isMaxSavingsCapacity =
@@ -443,14 +444,11 @@ export function parseBudgetPlanQuery(
       };
     }
 
-    // 7.3. Querying already saved amounts / status (Requirement 2)
+
+    // 7.3. Status of savings goals (Requirement 2 & 3)
     const isSavingsStatus =
-      /(?:tôi\s+)?(?:đã\s+)(?:tiết kiệm|tích lũy)\s+(?:được\s+)?(?:bao nhiêu|như thế nào)|số tiền\s+(?:đã\s+)?(?:tiết kiệm|tích lũy)|tiến độ\s+(?:các\s+)?mục tiêu\s+tiết kiệm|tôi có bao nhiêu tiền tiết kiệm|đang tiết kiệm được bao nhiêu/i.test(
-        normalized,
-      ) ||
-      /toi da tiet kiem duoc bao nhieu|so tien da tiet kiem|tien do muc tieu tiet kiem/i.test(
-        unaccented,
-      );
+      /(?:tôi\s+)?(?:đã\s+)(?:tiết kiệm|tích lũy)\s+(?:được\s+)?(?:bao nhiêu|như thế nào)|số tiền\s+(?:đã\s+)?(?:tiết kiệm|tích lũy)|tiến độ\s+(?:các\s+)?mục tiêu\s+tiết kiệm|tôi có bao nhiêu tiền tiết kiệm/i.test(normalized) ||
+      /toi da tiet kiem duoc bao nhieu|so tien da tiet kiem|tien do muc tieu tiet kiem/i.test(unaccented);
 
     if (isSavingsStatus) {
       return {

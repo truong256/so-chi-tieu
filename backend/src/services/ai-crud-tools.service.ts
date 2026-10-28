@@ -409,8 +409,13 @@ const HOW_TO_OR_QUESTION_EXCLUSIONS = [
   /(?:tạo|thêm|lập)\s+(?:danh mục|ngân sách|giao dịch|lịch định kỳ).*(?:ở đâu|như thế nào|ra sao|thế nào)/i,
   /(?:hệ thống|app|ứng dụng|bạn)\s+có\s+(?:hỗ trợ|cho phép|thể)\s+(?:tạo|thêm|lập)/i,
   /(?:tôi\s+)?có\s+(?:nên|đủ\s+tiền)\s+/i,
+  /(?:nếu|giả sử).*(?:có thể|kết luận|được không|không\?|tiết kiệm)/i,
+  /(?:có thể kết luận|tỷ lệ tiết kiệm 100%)/i,
+  /(?:tại sao|vì sao|có ảnh hưởng|có được|được không\?)/i,
   /(?:nếu|giả sử)\s+(?:tôi\s+)?(?:mua|chi|tiêu|tạo|xóa)/i,
+  /(?:nếu mua.*xong|mua.*xong.*còn|còn lại bao nhiêu|ví.*còn bao nhiêu)/i,
   /(?:xem|liệt kê|danh sách|tìm|lọc|thống kê|đếm|bao nhiêu)\s+(?:các\s+)?(?:giao dịch|danh mục|ngân sách)/i,
+  /(?:người dùng khác|người khác|tài khoản admin|service role key|access token|không cần xác nhận)/i,
 ];
 
 const DESTRUCTIVE_ACTION_EXCLUSIONS = [
@@ -577,11 +582,17 @@ export function detectPermittedCrudIntent(
     return { kind: "CRUD_CREATE", actionType: "create_transaction" };
   }
 
-  // 6. Multi-turn Slot-Filling Follow-up (only if awaiting slots AND user message is not a question)
-  const pendingDraftType = activeSlotDraft?.actionType || historyMeta.isAwaitingSlotFill;
+  // 6. Multi-turn Slot-Filling Follow-up
+  // Strictly require that the immediate conversation history is actively awaiting slot filling!
+  // If the conversation is fresh or last assistant message wasn't slot filling, clear any stale slot draft.
+  if (userId && !historyMeta.isAwaitingSlotFill) {
+    slotDraftByUser.delete(userId);
+  }
+
+  const pendingDraftType = historyMeta.isAwaitingSlotFill || (history.length > 0 ? activeSlotDraft?.actionType : undefined);
   const looksLikeQuestion =
     /\?$/.test(text) ||
-    /^(?:tôi có|cho tôi biết|hãy cho biết|tổng|số dư|ai là|ngân sách của tôi|tháng này tôi|làm sao|hệ thống)/i.test(
+    /^(?:tôi có|cho tôi biết|hãy cho biết|tổng|số dư|ai là|ngân sách của tôi|tháng này tôi|làm sao|hệ thống|liệt kê|chi tiết|tiền tiết kiệm|mục tiêu)/i.test(
       lower,
     );
 

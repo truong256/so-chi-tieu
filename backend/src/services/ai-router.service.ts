@@ -31,6 +31,7 @@ import {
   detectPermittedCrudIntent,
   type DetectedCrudIntent,
 } from "./ai-crud-tools.service.ts";
+import { parseVietnameseAmount } from "../../../frontend/utils/smart-parser.ts";
 import type { ChatMessage } from "../types/ai.types.ts";
 
 export type CanonicalIntent =
@@ -39,7 +40,8 @@ export type CanonicalIntent =
   | "FINANCIAL_ANALYSIS"
   | "FINANCIAL_ADVICE"
   | "ACTION_REQUEST"
-  | "GENERAL_CHAT";
+  | "GENERAL_CHAT"
+  | "SIMPLE_CALCULATION";
 
 export type UserIntent =
   | CanonicalIntent
@@ -47,7 +49,8 @@ export type UserIntent =
   | "SYSTEM_KNOWLEDGE"
   | "GENERAL_KNOWLEDGE"
   | "REALTIME_INFORMATION"
-  | "CONVERSATION_SUMMARY";
+  | "CONVERSATION_SUMMARY"
+  | "SIMPLE_CALCULATION";
 
 export type FinancialFocusType =
   | "TOTAL_ASSETS"
@@ -87,6 +90,23 @@ export interface TransactionListQueryParams {
   limit?: number;
 }
 
+export interface SimpleCalculationResult {
+  type:
+    | "SAVINGS_ACCUMULATION"
+    | "SAVINGS_TARGET_RATE"
+    | "NET_CASH_FLOW"
+    | "PERCENTAGE"
+    | "ARITHMETIC_DIFF";
+  amount?: number;
+  periods?: number;
+  periodUnit?: "ngày" | "tuần" | "tháng" | "năm";
+  targetAmount?: number;
+  income?: number;
+  expense?: number;
+  result: number;
+  explanationVi: string;
+}
+
 export interface RoutingResult {
   primaryIntent: UserIntent;
   canonicalIntent: CanonicalIntent;
@@ -102,6 +122,7 @@ export interface RoutingResult {
   transactionListQuery?: TransactionListQueryParams | null;
   walletTargetQuery?: WalletTargetQuery | null;
   crudIntent?: DetectedCrudIntent | null;
+  simpleCalculation?: SimpleCalculationResult | null;
   multiTurnRef?: MultiTurnReferenceResult | null;
   multiTurnContext?: {
     referencedAmount?: number;
@@ -330,6 +351,179 @@ export function parseTransactionListQuery(
 /**
  * Detect specific target wallet and financial focus type from user query.
  */
+
+/**
+ * Parses simple mathematical or hypothetical calculations.
+ * (e.g. "Nếu mỗi ngày tiết kiệm 20.000đ sau 30 ngày có bao nhiêu?",
+ *        "Cần tiết kiệm bao nhiêu mỗi ngày để đạt 1 triệu trong 20 ngày?",
+ *        "Nếu thu nhập 3.124.000đ và chi tiêu 65.000đ thì chênh lệch bao nhiêu?")
+ */
+export function parseSimpleCalculationQuery(rawText: string): SimpleCalculationResult | null {
+  const text = rawText.trim();
+  const lower = text.toLowerCase();
+  const unacc = removeVietnameseAccents(text);
+
+  // Exclude explicit questions asking about user's personal existing balances or goals
+  if (/^(?:tôi|mình)\s+(?:đã|dang|đang)\s+(?:tiết kiệm|tích lũy)/i.test(lower) || /tôi có bao nhiêu tiền tiết kiệm/i.test(lower)) {
+    return null;
+  }
+  if (/(?:mục tiêu|laptop).*đã tích lũy|còn thiếu bao nhiêu/i.test(lower)) {
+    return null;
+  }
+  if (/muốn tạo mục tiêu|thêm mục tiêu/i.test(lower)) {
+    return null;
+  }
+
+  // 1. Savings target rate: "Cần tiết kiệm bao nhiêu mỗi ngày để đạt 1 triệu trong 20 ngày?"
+  const rateMatch1 = lower.match(/(?:cần|muốn|phải)\s+(?:tiết kiệm|để dành|tích lũy|dành)\s+bao nhiêu\s+(?:mỗi\s+)?(ngày|tuần|tháng|năm)\s+để\s+(?:đạt|có|được)\s+([^?]+?)\s*(?:trong|sau)\s+(\d+)\s*(ngày|tuần|tháng|năm)/i);
+  const rateMatch2 = lower.match(/(?:để|muốn)\s+(?:đạt|có|được)\s+([^,]+?)\s*(?:trong|sau)\s+(\d+)\s*(ngày|tuần|tháng|năm)\s*(?:thì|,)?\s*(?:mỗi\s+)?(ngày|tuần|tháng|năm)?\s*(?:cần|phải|nên)?\s*(?:tiết kiệm|để dành|dành)\s+bao nhiêu/i);
+  const rateMatch3 = lower.match(/(?:cần|muốn|phải)\s+(?:tiết kiệm|để dành|tích lũy|dành)\s+bao nhiêu\s+(?:mỗi\s+)?(ngày|tuần|tháng|năm)\s+để\s+(?:sau|trong)\s+(\d+)\s*(ngày|tuần|tháng|năm)\s+(?:có|đạt|được)\s+([^?]+)/i);
+
+  if (rateMatch1 || rateMatch3) {
+    const unit = (rateMatch1 ? rateMatch1[1] : rateMatch3[1]) as "ngày" | "tuần" | "tháng" | "năm";
+    const targetRaw = rateMatch1 ? rateMatch1[2] : rateMatch3[4];
+    const days = parseInt(rateMatch1 ? rateMatch1[3] : rateMatch3[2], 10);
+    const targetParsed = parseVietnameseAmount(targetRaw);
+    if (targetParsed.amount && days > 0) {
+      const rate = Math.ceil(targetParsed.amount / days);
+      return {
+        type: "SAVINGS_TARGET_RATE",
+        targetAmount: targetParsed.amount,
+        periods: days,
+        periodUnit: unit,
+        result: rate,
+        explanationVi: `Để đạt mục tiêu **${targetParsed.amount.toLocaleString("vi-VN")} VND** trong ${days} ${unit}, mỗi ${unit} bạn cần tiết kiệm:\n\n**${targetParsed.amount.toLocaleString("vi-VN")} VND ÷ ${days} ${unit} = ${rate.toLocaleString("vi-VN")} VND/${unit}**.`,
+      };
+    }
+  }
+
+  if (rateMatch2) {
+    const targetRaw = rateMatch2[1];
+    const days = parseInt(rateMatch2[2], 10);
+    const unit = (rateMatch2[3] || rateMatch2[4] || "ngày") as "ngày" | "tuần" | "tháng" | "năm";
+    const targetParsed = parseVietnameseAmount(targetRaw);
+    if (targetParsed.amount && days > 0) {
+      const rate = Math.ceil(targetParsed.amount / days);
+      return {
+        type: "SAVINGS_TARGET_RATE",
+        targetAmount: targetParsed.amount,
+        periods: days,
+        periodUnit: unit,
+        result: rate,
+        explanationVi: `Để đạt mục tiêu **${targetParsed.amount.toLocaleString("vi-VN")} VND** trong ${days} ${unit}, mỗi ${unit} bạn cần tiết kiệm:\n\n**${targetParsed.amount.toLocaleString("vi-VN")} VND ÷ ${days} ${unit} = ${rate.toLocaleString("vi-VN")} VND/${unit}**.`,
+      };
+    }
+  }
+
+  // 2. Savings accumulation:
+  // "Nếu mỗi ngày tiết kiệm 20.000đ trong 30 ngày, tôi có bao nhiêu?"
+  // "Tiết kiệm 20.000đ mỗi ngày trong 30 ngày"
+  // "Nếu tiết kiệm 50.000đ mỗi ngày trong 7 ngày thì được bao nhiêu?"
+  const accumMatch1 = lower.match(/(?:nếu\s+)?mỗi\s*(ngày|tuần|tháng|năm)\s*(?:tiết kiệm|để dành|tích lũy|dành dụm|chi|tiêu)\s+([^,]+?)[,\s]+(?:cả\s+(?:tháng|tuần|năm)\s+)?(?:trong|sau|được)?\s*(\d+)\s*(ngày|tuần|tháng|năm)/i);
+  const accumMatch2 = lower.match(/(?:nếu\s+)?(?:tiết kiệm|để dành|tích lũy|dành dụm)\s+([^,]+?)[,\s]+(?:mỗi|hàng)\s*(ngày|tuần|tháng|năm)[,\s]*(?:trong|sau|được)\s+(\d+)\s*(ngày|tuần|tháng|năm)/i);
+  const accumMatch3 = lower.match(/(?:nếu\s+)?(?:tiết kiệm|để dành|tích lũy|dành dụm)\s+([^,]+?)\s*(?:trong|sau)\s+(\d+)\s*(ngày|tuần|tháng|năm)/i);
+
+  if (accumMatch1) {
+    const unit = accumMatch1[1] as "ngày" | "tuần" | "tháng" | "năm";
+    const amtRaw = accumMatch1[2];
+    const days = parseInt(accumMatch1[3], 10);
+    const amtParsed = parseVietnameseAmount(amtRaw);
+    if (amtParsed.amount && days > 0) {
+      const total = amtParsed.amount * days;
+      return {
+        type: "SAVINGS_ACCUMULATION",
+        amount: amtParsed.amount,
+        periods: days,
+        periodUnit: unit,
+        result: total,
+        explanationVi: `Nếu mỗi ${unit} tiết kiệm **${amtParsed.amount.toLocaleString("vi-VN")} VND**, sau ${days} ${unit} bạn sẽ có:\n\n**${amtParsed.amount.toLocaleString("vi-VN")} VND × ${days} ${unit} = ${total.toLocaleString("vi-VN")} VND**.`,
+      };
+    }
+  }
+
+  if (accumMatch2) {
+    const amtRaw = accumMatch2[1];
+    const unit = accumMatch2[2] as "ngày" | "tuần" | "tháng" | "năm";
+    const days = parseInt(accumMatch2[3], 10);
+    const amtParsed = parseVietnameseAmount(amtRaw);
+    if (amtParsed.amount && days > 0) {
+      const total = amtParsed.amount * days;
+      return {
+        type: "SAVINGS_ACCUMULATION",
+        amount: amtParsed.amount,
+        periods: days,
+        periodUnit: unit,
+        result: total,
+        explanationVi: `Nếu mỗi ${unit} tiết kiệm **${amtParsed.amount.toLocaleString("vi-VN")} VND**, sau ${days} ${unit} bạn sẽ có:\n\n**${amtParsed.amount.toLocaleString("vi-VN")} VND × ${days} ${unit} = ${total.toLocaleString("vi-VN")} VND**.`,
+      };
+    }
+  }
+
+  if (accumMatch3 && !accumMatch2 && !accumMatch1) {
+    const amtRaw = accumMatch3[1];
+    const days = parseInt(accumMatch3[2], 10);
+    const unit = accumMatch3[3] as "ngày" | "tuần" | "tháng" | "năm";
+    const amtParsed = parseVietnameseAmount(amtRaw);
+    if (amtParsed.amount && days > 0) {
+      const total = amtParsed.amount * days;
+      return {
+        type: "SAVINGS_ACCUMULATION",
+        amount: amtParsed.amount,
+        periods: days,
+        periodUnit: unit,
+        result: total,
+        explanationVi: `Nếu tiết kiệm **${amtParsed.amount.toLocaleString("vi-VN")} VND** mỗi ${unit}, sau ${days} ${unit} bạn sẽ có:\n\n**${amtParsed.amount.toLocaleString("vi-VN")} VND × ${days} ${unit} = ${total.toLocaleString("vi-VN")} VND**.`,
+      };
+    }
+  }
+
+  // 3. Difference / Net Cash Flow calculation:
+  // "Nếu thu nhập 3.124.000đ và chi tiêu 65.000đ thì chênh lệch bao nhiêu?"
+  const diffMatch =
+    lower.match(/(?:thu nhập|lương|thu)\s+([0-9.,]+\s*(?:k|triệu|tr|nghìn|đ|vnd)?)\s*(?:và|,)?\s*(?:chi tiêu|chi|tiêu)\s+([0-9.,]+\s*(?:k|triệu|tr|nghìn|đ|vnd)?)[,\s]*(?:thì\s+)?(?:tôi\s+)?(?:chênh lệch|còn lại|còn dư|còn|thặng dư)/i) ||
+    lower.match(/(?:thu nhập|lương|thu)\s+([^,]+?)\s*(?:và|,)?\s*(?:chi tiêu|chi|tiêu)\s+([^,]+?)\s*(?:thì\s+)?(?:chênh lệch|còn lại|còn|thặng dư)/i) ||
+    lower.match(/(?:chênh lệch|còn lại)\s+(?:khi|nếu)?\s*(?:thu nhập|lương|thu)\s+([^,]+?)\s*(?:và|,)?\s*(?:chi tiêu|chi|tiêu)\s+([^,]+)/i);
+
+  if (diffMatch) {
+    const incParsed = parseVietnameseAmount(diffMatch[1]);
+    const expParsed = parseVietnameseAmount(diffMatch[2]);
+    if (incParsed.amount && expParsed.amount) {
+      const diff = incParsed.amount - expParsed.amount;
+      return {
+        type: "NET_CASH_FLOW",
+        income: incParsed.amount,
+        expense: expParsed.amount,
+        result: diff,
+        explanationVi:
+          `Với thu nhập **${incParsed.amount.toLocaleString("vi-VN")} VND** và chi tiêu **${expParsed.amount.toLocaleString("vi-VN")} VND**:\n\n` +
+          `- **Chênh lệch thu chi:** **${incParsed.amount.toLocaleString("vi-VN")} VND - ${expParsed.amount.toLocaleString("vi-VN")} VND = ${diff.toLocaleString("vi-VN")} VND**.\n` +
+          `- **Ý nghĩa tài chính:** Đây là khoản thặng dư dòng tiền chưa chi trong kỳ, *không phải số tiền đã tự động được gửi vào mục tiêu tiết kiệm*.`,
+      };
+    }
+  }
+
+  // 4. Percentage calculation:
+  // "2.650.000 trên 3.000.000 là bao nhiêu %?"
+  const pctMatch = lower.match(/(?:chi\s+)?([0-9.,]+\s*(?:k|triệu|tr|nghìn|đ|vnd)?)\s*(?:trên|\/|trong tổng số)\s*(?:thu nhập\s+)?([0-9.,]+\s*(?:k|triệu|tr|nghìn|đ|vnd)?)\s*(?:chiếm|là|được)?\s*bao nhiêu\s*(?:%|phần trăm)/i);
+  if (pctMatch) {
+    const part = parseVietnameseAmount(pctMatch[1]);
+    const whole = parseVietnameseAmount(pctMatch[2]);
+    if (part.amount && whole.amount && whole.amount > 0) {
+      const pct = (part.amount / whole.amount) * 100;
+      const pctStr = pct.toFixed(1).replace(/\.0$/, "");
+      return {
+        type: "PERCENTAGE",
+        amount: part.amount,
+        targetAmount: whole.amount,
+        result: pct,
+        explanationVi: `Tỷ lệ của **${part.amount.toLocaleString("vi-VN")} VND** trên **${whole.amount.toLocaleString("vi-VN")} VND** là:\n\n**(${part.amount.toLocaleString("vi-VN")} ÷ ${whole.amount.toLocaleString("vi-VN")}) × 100% = ${pctStr}%**.`,
+      };
+    }
+  }
+
+  return null;
+}
+
 export function detectWalletTarget(rawText: string): WalletTargetQuery {
   const text = rawText.toLowerCase().trim();
   const unaccented = removeVietnameseAccents(rawText);
@@ -405,6 +599,22 @@ export function routeUserIntent(
   const rawText = message.trim();
   const text = rawText.toLowerCase();
   const unaccented = removeVietnameseAccents(rawText);
+
+  // 0. Check Simple Math / Hypothetical Calculation (0ms, 100% deterministic, no DB needed)
+  const simpleCalculation = parseSimpleCalculationQuery(rawText);
+  if (simpleCalculation) {
+    return {
+      primaryIntent: "SIMPLE_CALCULATION",
+      canonicalIntent: "SIMPLE_CALCULATION",
+      intents: ["SIMPLE_CALCULATION"],
+      category: "GENERAL_CHAT",
+      requiresPersonalData: false,
+      requiresFinancialAnalysis: false,
+      requiresSystemRag: false,
+      requiresRealtimeSearch: false,
+      simpleCalculation,
+    };
+  }
 
   const intents: Set<UserIntent> = new Set();
   let multiTurnContext: RoutingResult["multiTurnContext"];
@@ -593,6 +803,15 @@ export function routeUserIntent(
 
   const isActionCommand = Boolean(crudIntent) || isUnpermittedActionCommand;
 
+  const isCreateGoal =
+    /(?:tạo|thêm|lập|đặt)\s+(?:mới\s+)?(?:một\s+)?mục tiêu(?:\s+tiết kiệm)?/i.test(text) ||
+    /muốn tạo mục tiêu tiết kiệm/i.test(text) ||
+    /tao muc tieu tiet kiem/i.test(unaccented);
+  if (isCreateGoal) {
+    intents.add("ACTION_REQUEST");
+    intents.add("SYSTEM_KNOWLEDGE");
+  }
+
   if (crudIntent) {
     intents.add("ACTION_REQUEST");
   } else if (isUnpermittedActionCommand) {
@@ -613,16 +832,16 @@ export function routeUserIntent(
 
   const isBalanceQuery =
     !isHypotheticalBalanceQuestion &&
-    (/tôi có bao nhiêu tiền|tổng tài sản|tổng tiền|\bsố dư\b(?!.*(?:có bị trừ|có mất))|tôi còn bao nhiêu tiền|còn bao nhiêu tiền|trong ví có|tiền mặt.*còn bao nhiêu|tiền mặt.*có bao nhiêu|có bao nhiêu tiền mặt|trong ngân hàng.*bao nhiêu|tiền.*ngân hàng.*bao nhiêu|khả dụng|tiền khả dụng|đã phân bổ bao nhiêu|phân bổ bao nhiêu tiền|kiểm tra số dư|ví nào.*nhiều.*tiền|nhiều tiền nhất|ví nào.*lớn nhất|ví.*phân bổ bao nhiêu/i.test(
+    (/tôi có (?:tổng cộng )?bao nhiêu tiền|tổng cộng bao nhiêu tiền|tôi có bao nhiêu tiền|tổng tài sản|tổng tiền|\bsố dư\b(?!.*(?:có bị trừ|có mất))|tôi còn bao nhiêu tiền|còn bao nhiêu tiền|trong ví có|tiền mặt.*còn bao nhiêu|tiền mặt.*có bao nhiêu|có bao nhiêu tiền mặt|trong ngân hàng.*bao nhiêu|tiền.*ngân hàng.*bao nhiêu|khả dụng|tiền khả dụng|đã phân bổ bao nhiêu|phân bổ bao nhiêu tiền|kiểm tra số dư|ví nào.*nhiều.*tiền|nhiều tiền nhất|ví nào.*lớn nhất|ví.*phân bổ bao nhiêu|bao nhiêu ví|mấy ví|danh sách ví|các ví của tôi/i.test(
       text,
     ) ||
     /tại sao.*còn.*khả dụng|sao.*chỉ còn|vì sao.*còn|tiền của tôi đi đâu/i.test(text) ||
-    /toi co bao nhieu tien|tong tai san|tong tien|\bso du\b(?!.*(?:co bi tru|co mat))|con bao nhieu tien|trong vi|tien mat.*con bao nhieu|co bao nhieu tien mat|trong ngan hang.*bao nhieu|tien trong ngan hang.*bao nhieu|tien kha dung|phan bo bao nhieu|vi nao.*nhieu.*tien/i.test(
+    /toi co bao nhieu tien|tong tai san|tong tien|\bso du\b(?!.*(?:co bi tru|co mat))|con bao nhieu tien|trong vi|tien mat.*con bao nhieu|co bao nhieu tien mat|trong ngan hang.*bao nhieu|tien trong ngan hang.*bao nhieu|tien kha dung|phan bo bao nhieu|vi nao.*nhieu.*tien|bao nhieu vi|may vi|danh sach vi|cac vi cua toi/i.test(
       unaccented,
     ));
 
   const isSpendingAnalysisQuery =
-    /(?:tôi\s+)?(?:đã\s+)?(?:chi|tiêu)\s+bao\s+nhiêu|tổng\s+chi\s+tiêu|chi\s+nhiều\s+nhất|so\s+với\s+tháng\s+trước|tiết\s+kiệm\s+ròng/i.test(
+    /(?:tôi\s+)?(?:đã\s+)?(?:chi|tiêu)\s+bao\s+nhiêu|tổng\s+chi\s+tiêu|chi\s+nhiều\s+(?:tiền\s+)?nhất|danh\s+mục.*nhiều\s+nhất|so\s+với\s+tháng\s+trước|tiết\s+kiệm\s+ròng/i.test(
       text,
     ) ||
     /(?:toi\s+)?(?:da\s+)?(?:chi|tieu)\s+bao\s+nhieu|tong\s+chi\s+tieu|chi\s+nhieu\s+nhat/i.test(
@@ -636,17 +855,17 @@ export function routeUserIntent(
     /giao dich gan day|lich su chi tieu cua toi/i.test(unaccented);
 
   const isPersonalBudgetStatus =
-    /ngân sách của tôi|tôi đã dùng bao nhiêu % ngân sách|ngân sách ăn uống của tôi còn/i.test(
+    /ngân sách của tôi|vượt ngân sách|có vượt ngân sách|chi thêm.*vượt|bao nhiêu %.*ngân sách|chi.*% trên tổng.*ngân sách|ngân sách.*còn bao nhiêu|hạn mức.*còn bao nhiêu|tình hình ngân sách|mức cảnh báo|ngân sách.*(cảnh báo|vượt|hạn mức|đã chi|hết bao nhiêu|cấp vốn|phong bì|thiết lập|danh sách)|có ngân sách nào.*vượt|vượt hạn mức/i.test(
       text,
     ) ||
-    /ngan sach cua toi|toi da dung bao nhieu %/i.test(unaccented);
+    /ngan sach cua toi|bao nhieu %.*ngan sach|ngan sach.*con bao nhieu|ngan sach.*canh bao|co ngan sach nao.*vuot/i.test(unaccented);
 
   const isPersonalSavingsGoal =
     !isSystemKnowledge &&
-    (/mục tiêu tiết kiệm|tôi đã tích lũy được bao nhiêu|mục tiêu laptop|số tiền đã tiết kiệm|tiến độ tiết kiệm|tôi có bao nhiêu tiền tiết kiệm/i.test(
+    (/mục tiêu tiết kiệm|tôi đã tích lũy|đã tích lũy bao nhiêu|tôi đã tiết kiệm|đã tiết kiệm được bao nhiêu|mục tiêu laptop|số tiền đã tiết kiệm|tiến độ tiết kiệm|tôi có bao nhiêu tiền tiết kiệm|cần thêm bao nhiêu.*đạt mục tiêu/i.test(
       text,
     ) ||
-    /muc tieu tiet kiem|so tien da tiet kiem|tien do tiet kiem/i.test(unaccented));
+    /muc tieu tiet kiem|so tien da tiet kiem|tien do tiet kiem|da tiet kiem duoc bao nhieu|tich luy bao nhieu/i.test(unaccented));
 
   const listQuery = parseTransactionListQuery(rawText);
   const statsQuery = listQuery ? null : parseTransactionStatisticsQuery(rawText);
@@ -725,6 +944,8 @@ export function routeUserIntent(
     primaryIntent = "ACTION_REQUEST";
   } else if (intents.has("CONVERSATION_SUMMARY")) {
     primaryIntent = "CONVERSATION_SUMMARY";
+  } else if (multiTurnRef.hasReference && (text.includes("mua") || text.includes("chi") || multiTurnRef.referencedPurchase)) {
+    primaryIntent = "FINANCIAL_ADVICE";
   } else if (intents.has("GENERAL_KNOWLEDGE") && !intents.has("PERSONAL_FINANCE")) {
     primaryIntent = "GENERAL_KNOWLEDGE";
   } else if (intents.has("REALTIME_INFORMATION")) {
@@ -732,6 +953,8 @@ export function routeUserIntent(
   } else if (intents.has("SYSTEM_KNOWLEDGE") && !intents.has("PERSONAL_FINANCE")) {
     primaryIntent = "SYSTEM_KNOWLEDGE";
   } else if (listQuery !== null) {
+    primaryIntent = "PERSONAL_FINANCE";
+  } else if (intents.has("PERSONAL_FINANCE") && (isPersonalSavingsGoal || isPersonalBudgetStatus || isBalanceQuery || listQuery !== null || statsQuery !== null || isSpendingAnalysisQuery)) {
     primaryIntent = "PERSONAL_FINANCE";
   } else if (intents.has("FINANCIAL_ADVICE")) {
     primaryIntent = "FINANCIAL_ADVICE";
@@ -751,10 +974,10 @@ export function routeUserIntent(
     category = "BUDGET_PLANNING";
   } else if (primaryIntent === "PERSONAL_FINANCE") {
     if (listQuery !== null) category = "LIST_TRANSACTIONS";
-    else if (statsQuery !== null) category = "TRANSACTION_STATISTICS";
-    else if (isSpendingAnalysisQuery) category = "SPENDING_ANALYSIS";
     else if (isPersonalBudgetStatus) category = "BUDGET_ADVICE";
     else if (isPersonalSavingsGoal) category = "SAVINGS_PLANNING";
+    else if (statsQuery !== null) category = "TRANSACTION_STATISTICS";
+    else if (isSpendingAnalysisQuery) category = "SPENDING_ANALYSIS";
     else category = "USER_FINANCIAL_DATA";
   } else if (primaryIntent === "FINANCIAL_ADVICE") {
     if (affordabilityParsed || text.includes("mua") || text.includes("chi") || multiTurnRef.hasReference) {

@@ -48,6 +48,7 @@ import {
   type UserIntent,
 } from "./ai-router.service.ts";
 import { tryResolveFastPath } from "./fast-path.service.ts";
+import { validateAndSanitizeAiOutput, createStreamOutputSanitizer } from "./ai-output-validation.service.ts";
 import type { BudgetConstrainedPlanResult } from "./budget-planning.service.ts";
 import { CRUD_ACTION_TOOLS, handleChatCrudIntent } from "./ai-crud-tools.service.ts";
 
@@ -766,6 +767,7 @@ export async function processChat(
     };
   }
 
+  let finalContent = result.content;
   if (planToolResult) {
     const { verifyAndSanitizeBudgetPlan } = await import("./budget-planning.service.ts");
     const verified = verifyAndSanitizeBudgetPlan(
@@ -774,16 +776,17 @@ export async function processChat(
       planToolResult,
     );
     if (verified.corrected) {
-      return {
-        reply: verified.sanitizedText,
-        status: 200,
-        isFastPath: false,
-      };
+      finalContent = verified.sanitizedText;
     }
   }
 
+  const sanitized = validateAndSanitizeAiOutput(finalContent, {
+    authoritativeSnapshot: options?.serverContext?.snapshot,
+    toolSummaries: toolResultsList,
+  });
+
   return {
-    reply: result.content,
+    reply: sanitized,
     status: 200,
     isFastPath: false,
   };
@@ -1084,7 +1087,12 @@ export async function* processChatStream(
     return;
   }
 
-  // Stream LLM tokens directly!
+  // Stream LLM tokens with real-time JSON / tool call suppression guard
+  const streamSanitizer = createStreamOutputSanitizer({
+    authoritativeSnapshot: options?.serverContext?.snapshot,
+    toolSummaries: toolResultsList,
+  });
+
   for await (const chunk of executeOllamaChatStream({
     baseUrl: ollamaBaseUrl,
     messages: ollamaMessages,
@@ -1102,10 +1110,23 @@ export async function* processChatStream(
       };
       return;
     }
-    yield {
-      token: chunk.token,
-      done: chunk.done,
-      isFastPath: false,
-    };
+
+    if (chunk.done) {
+      const remaining = streamSanitizer.flush();
+      if (remaining) {
+        yield { token: remaining, done: false, isFastPath: false };
+      }
+      yield { token: "", done: true, isFastPath: false };
+      return;
+    }
+
+    const sanitizedToken = streamSanitizer.processToken(chunk.token);
+    if (sanitizedToken) {
+      yield {
+        token: sanitizedToken,
+        done: false,
+        isFastPath: false,
+      };
+    }
   }
 }

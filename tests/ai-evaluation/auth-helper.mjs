@@ -1,7 +1,7 @@
 /**
  * tests/ai-evaluation/auth-helper.mjs
  * ==================================
- * Provides dynamically authenticated JWT tokens for test_copilot@sochitieu.com.
+ * Provides dynamically authenticated JWT tokens for test_copilot@sochitieu.com with retry.
  */
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xqclhgyrkwaipwokooxe.supabase.co';
@@ -18,24 +18,36 @@ export async function getTestAuthToken() {
     return cachedToken;
   }
 
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: {
-      'apikey': API_KEY,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      email: TEST_EMAIL,
-      password: TEST_PASSWORD
-    })
-  });
+  let lastErr = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          'apikey': API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: TEST_EMAIL,
+          password: TEST_PASSWORD
+        })
+      });
 
-  const data = await res.json();
-  if (!data.access_token) {
-    throw new Error(`Failed to authenticate ${TEST_EMAIL}: ${JSON.stringify(data)}`);
+      const data = await res.json();
+      if (!data.access_token) {
+        throw new Error(`Failed to authenticate ${TEST_EMAIL}: ${JSON.stringify(data)}`);
+      }
+
+      cachedToken = data.access_token;
+      tokenExpiresAt = now + (data.expires_in || 3600);
+      return cachedToken;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 1000 * attempt));
+      }
+    }
   }
 
-  cachedToken = data.access_token;
-  tokenExpiresAt = now + (data.expires_in || 3600);
-  return cachedToken;
+  throw lastErr;
 }

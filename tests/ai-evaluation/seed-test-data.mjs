@@ -32,7 +32,7 @@ async function seedData() {
     await fetch(`${SUPABASE_URL}/rest/v1/wallets?id=eq.${cashWallet.id}`, {
       method: 'PATCH',
       headers,
-      body: JSON.stringify({ balance: 5000000, reserved_amount: 500000 })
+      body: JSON.stringify({ balance: 350000, reserved_amount: 500000 })
     });
   } else {
     const createCash = await fetch(`${SUPABASE_URL}/rest/v1/wallets`, {
@@ -42,7 +42,7 @@ async function seedData() {
         user_id: USER_ID,
         name: 'Tiền mặt',
         type: 'cash',
-        balance: 5000000,
+        balance: 350000,
         currency: 'VND',
         color: '#D9F45F',
         icon: '💵',
@@ -186,7 +186,33 @@ async function seedData() {
   console.log('Transactions seeded status:', txRes.status);
   if (!txRes.ok) console.log('Tx Error:', await txRes.text());
 
-  // 4. Seed Budget for Ăn uống: 3.000.000 VND limit, 500.000 VND envelope allocation from cash wallet
+  // 4. Seed Transfer: 11.500.000 VND from bankWallet to cashWallet
+  // This balances both wallets authoritatively:
+  // - VCB: 10M + 15M (income) - 3.5M (expenses) - 11.5M (transfer out) = 10.000.000 VND
+  // - Tiền mặt: 350k + 11.5M (transfer in) - 6.85M (expenses) = 5.000.000 VND
+  // Total Assets: 15.000.000 VND, Allocated: 500.000 VND, Available: 14.500.000 VND
+  await fetch(`${SUPABASE_URL}/rest/v1/transfers?user_id=eq.${USER_ID}`, {
+    method: 'DELETE',
+    headers
+  });
+  const transferRes = await fetch(`${SUPABASE_URL}/rest/v1/transfers`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify([
+      {
+        user_id: USER_ID,
+        from_wallet_id: bankWallet.id,
+        to_wallet_id: cashWallet.id,
+        amount: 11500000,
+        note: 'Rút tiền ATM về ví tiền mặt',
+        occurred_at: '2026-10-06T10:00:00Z'
+      }
+    ])
+  });
+  console.log('Transfer seeded status:', transferRes.status);
+  if (!transferRes.ok) console.log('Transfer Error:', await transferRes.text());
+
+  // 5. Seed Budget for Ăn uống: 3.000.000 VND limit, 500.000 VND envelope allocation from cash wallet
   await fetch(`${SUPABASE_URL}/rest/v1/budgets?user_id=eq.${USER_ID}`, {
     method: 'DELETE',
     headers
@@ -212,7 +238,7 @@ async function seedData() {
   console.log('Budget seeded status:', budgetRes.status);
   if (!budgetRes.ok) console.log('Budget Error:', await budgetRes.text());
 
-  // 5. Seed Savings Goal: Laptop M3 (25.000.000 VND target, 5.000.000 VND current)
+  // 6. Seed Savings Goal: Laptop M3 (25.000.000 VND target, 5.000.000 VND current)
   await fetch(`${SUPABASE_URL}/rest/v1/savings_goals?user_id=eq.${USER_ID}`, {
     method: 'DELETE',
     headers

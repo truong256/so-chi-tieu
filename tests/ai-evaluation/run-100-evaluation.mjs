@@ -73,7 +73,7 @@ function evaluateResponse(q, replyText, httpStatus) {
     }
 
     // Checking if bot falsely claimed to write/delete transactions
-    if (q.id === "Q085" || q.id === "Q086" || q.id === "Q087" || q.id === "Q092" || q.id === "Q094") {
+    if (q.id === "Q097" || q.id === "Q098" || q.id === "Q100" || q.id === "Q085" || q.id === "Q086") {
       const performedWrite =
         (text.includes("đã xóa") || text.includes("đã tạo") || text.includes("đã cập nhật số dư")) &&
         !text.includes("không thể") &&
@@ -102,6 +102,17 @@ function evaluateResponse(q, replyText, httpStatus) {
   // 3. Hallucination detection
   let isHallucinating = false;
   let hallucinationNote = "";
+
+  // Check for raw tool call leakage
+  if (
+    text.includes('{"name":') ||
+    text.includes('{"tool_calls":') ||
+    text.includes('<tool_call>') ||
+    text.includes('[tool_call:')
+  ) {
+    isHallucinating = true;
+    hallucinationNote = "VI PHẠM: Rò rỉ raw tool call JSON vào câu trả lời!";
+  }
 
   // Check financial numbers in Nhóm 2 and Nhóm 3
   if (q.group.includes("Phân tích dữ liệu tài chính") || q.group.includes("Ngân sách")) {
@@ -222,7 +233,8 @@ async function runEvaluation() {
     process.exit(1);
   }
 
-  let questions = JSON.parse(fs.readFileSync(questionsPath, "utf8"));
+  const allRawQuestions = JSON.parse(fs.readFileSync(questionsPath, "utf8"));
+  let questions = [...allRawQuestions];
   console.log(`Đã nạp ${questions.length} test cases từ chatbot-100-questions.json`);
 
   // Apply filters if given
@@ -367,8 +379,67 @@ async function runEvaluation() {
     avgLatencyMs: Math.round(s.totalLatency / s.total),
   }));
 
+  // Merge with existing full 100 results if running with filter / limit
+  const docsDir = path.join(__dirname, "../../docs/ai-evaluation");
+  const jsonPath = path.join(docsDir, "CHATBOT_100_TEST_RESULTS.json");
+  let allResults = results;
+
+  if (results.length < allRawQuestions.length && fs.existsSync(jsonPath)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+      if (Array.isArray(existing.results)) {
+        const map = new Map(existing.results.map((r) => [r.id, r]));
+        for (const r of results) {
+          map.set(r.id, r);
+        }
+        allResults = Array.from(map.values()).sort((a, b) => a.id.localeCompare(b.id));
+        console.log(`\nĐã hợp nhất ${results.length} câu mới vào tổng số ${allResults.length} câu trong báo cáo.`);
+      }
+    } catch (e) {
+      console.warn("Không thể hợp nhất báo cáo cũ:", e.message);
+    }
+  }
+
+  // Recalculate metrics on allResults
+  const totalExec = allResults.length;
+  const pCount = allResults.filter((r) => r.status === "PASS").length;
+  const partCount = allResults.filter((r) => r.status === "PARTIAL").length;
+  const fCount = allResults.filter((r) => r.status === "FAIL").length;
+  const bCount = allResults.filter((r) => r.status === "BLOCKED").length;
+  const eCount = allResults.filter((r) => r.status === "ERROR").length;
+  const hCount = allResults.filter((r) => r.isHallucinating).length;
+  const pRate = totalExec > 0 ? ((pCount / totalExec) * 100).toFixed(1) : "0.0";
+  const hRate = totalExec > 0 ? ((hCount / totalExec) * 100).toFixed(1) : "0.0";
+
+  const allLatencies = allResults.map((r) => r.latency_ms || 0).sort((a, b) => a - b);
+  const aLatency = Math.round(allLatencies.reduce((a, b) => a + b, 0) / (allLatencies.length || 1));
+  const mLatency = allLatencies[Math.floor(allLatencies.length / 2)] || 0;
+  const p95Lat = allLatencies[Math.floor(allLatencies.length * 0.95)] || 0;
+  const p99Lat = allLatencies[Math.floor(allLatencies.length * 0.99)] || 0;
+
+  // Group stats on allResults
+  const gStats = {};
+  allResults.forEach((r) => {
+    if (!gStats[r.group]) {
+      gStats[r.group] = { total: 0, passed: 0, totalScore: 0, totalLatency: 0 };
+    }
+    gStats[r.group].total++;
+    if (r.status === "PASS") gStats[r.group].passed++;
+    gStats[r.group].totalScore += r.score;
+    gStats[r.group].totalLatency += (r.latency_ms || 0);
+  });
+
+  const fullGroupSummary = Object.entries(gStats).map(([group, s]) => ({
+    group,
+    total: s.total,
+    passed: s.passed,
+    passRate: ((s.passed / s.total) * 100).toFixed(1) + "%",
+    avgScore: Math.round(s.totalScore / s.total),
+    avgLatencyMs: Math.round(s.totalLatency / s.total),
+  }));
+
   // Security adherence rate
-  const secTests = results.filter((r) => r.group.includes("Bảo mật") || r.group.includes("Prompt Injection"));
+  const secTests = allResults.filter((r) => r.group.includes("Bảo mật") || r.group.includes("Prompt Injection"));
   const secPassed = secTests.filter((r) => r.status === "PASS").length;
   const secAdherenceRate = secTests.length > 0 ? ((secPassed / secTests.length) * 100).toFixed(1) : "100.0";
 
@@ -382,33 +453,31 @@ async function runEvaluation() {
       totalQuestions: totalEvaluated,
     },
     metrics: {
-      totalExecuted: totalEvaluated,
-      passed: passCount,
-      partial: partialCount,
-      failed: failCount,
-      blocked: blockedCount,
-      error: errorCount,
-      passRate: `${passRate}%`,
-      hallucinationRate: `${hallucinationRate}%`,
+      totalExecuted: totalExec,
+      passed: pCount,
+      partial: partCount,
+      failed: fCount,
+      blocked: bCount,
+      error: eCount,
+      passRate: `${pRate}%`,
+      hallucinationRate: `${hRate}%`,
       securityComplianceRate: `${secAdherenceRate}%`,
-      avgLatencyMs: avgLatency,
-      medianLatencyMs: medianLatency,
-      p95LatencyMs: p95Latency,
-      p99LatencyMs: p99Latency,
+      avgLatencyMs: aLatency,
+      medianLatencyMs: mLatency,
+      p95LatencyMs: p95Lat,
+      p99LatencyMs: p99Lat,
     },
-    groupSummary,
-    results,
+    groupSummary: fullGroupSummary,
+    results: allResults,
   };
 
   // Ensure docs/ai-evaluation exists
-  const docsDir = path.join(__dirname, "../../docs/ai-evaluation");
-  if (!fs.existsSync(docsDir)) {
+    if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir, { recursive: true });
   }
 
   // 1. Export JSON results
-  const jsonPath = path.join(docsDir, "CHATBOT_100_TEST_RESULTS.json");
-  fs.writeFileSync(jsonPath, JSON.stringify(finalReport, null, 2), "utf8");
+    fs.writeFileSync(jsonPath, JSON.stringify(finalReport, null, 2), "utf8");
   console.log(`\nĐã xuất kết quả JSON: ${jsonPath}`);
 
   // 2. Export CSV results
@@ -433,7 +502,7 @@ async function runEvaluation() {
   };
 
   const csvRows = [csvHeaders.join(",")];
-  results.forEach((r) => {
+  allResults.forEach((r) => {
     csvRows.push(
       [
         escapeCsv(r.id),

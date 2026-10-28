@@ -28,27 +28,49 @@ export function extractBearerToken(request: Request): string {
   return token;
 }
 
+// In-memory cache for validated Supabase tokens (60s TTL) to prevent network flapping
+const verifiedTokenCache = new Map<string, { user: VerifiedSupabaseUser; expiresAt: number }>();
+
 export async function verifySupabaseAccessToken(
   token: string,
   config: SupabaseAuthConfig,
 ): Promise<VerifiedSupabaseUser> {
+  const now = Date.now();
+  const cached = verifiedTokenCache.get(token);
+  if (cached && cached.expiresAt > now) {
+    return cached.user;
+  }
+
   const supabaseUrl = config.supabaseUrl.trim().replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "");
   const supabasePublishableKey = config.supabasePublishableKey.trim();
   if (!supabaseUrl || !supabasePublishableKey) {
     throw new AuthenticationError("Cấu hình xác thực Supabase chưa đầy đủ.", 500);
   }
 
-  let response: Response;
-  try {
-    response = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: {
-        apikey: supabasePublishableKey,
-        authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-      signal: AbortSignal.timeout(7000),
-    });
-  } catch {
+  let response: Response | null = null;
+  let fetchError: unknown = null;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        headers: {
+          apikey: supabasePublishableKey,
+          authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(12000),
+      });
+      break;
+    } catch (err) {
+      fetchError = err;
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, 500));
+      }
+    }
+  }
+
+  if (!response) {
+    void fetchError;
     throw new AuthenticationError("Không thể xác minh phiên đăng nhập lúc này.", 503);
   }
 
@@ -60,13 +82,22 @@ export async function verifySupabaseAccessToken(
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw new AuthenticationError("Phản hồi xác thực không hợp lệ.", 503);
   }
-  const record = payload as Record<string, unknown>;
-  if (typeof record.id !== "string" || !record.id) {
+
+  const userRecord = payload as { id?: unknown; email?: unknown };
+  if (typeof userRecord.id !== "string" || !userRecord.id) {
     throw new AuthenticationError("Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", 401);
   }
 
-  return {
-    id: record.id,
-    email: typeof record.email === "string" ? record.email : undefined,
+  const verified: VerifiedSupabaseUser = {
+    id: userRecord.id,
+    email: typeof userRecord.email === "string" ? userRecord.email : undefined,
   };
+
+  // Cache valid verification for 60 seconds
+  verifiedTokenCache.set(token, {
+    user: verified,
+    expiresAt: now + 60_000,
+  });
+
+  return verified;
 }
