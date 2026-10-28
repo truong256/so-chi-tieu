@@ -2424,8 +2424,40 @@ a { color: inherit; text-decoration: none; }
   margin-top: 4px;
   border-top: 1px dashed var(--border-input);
 }
-.budget-detail-row.highlight b {
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
   font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+.status-pill.normal {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+.status-pill.near_limit {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+.status-pill.reached_limit {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+.status-pill.exceeded_limit {
+  background: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+.status-pill.out_of_funds {
+  background: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+.status-pill.closed {
+  background: rgba(156, 163, 175, 0.15);
+  color: #9ca3af;
 }
 
 .allocation-info-box {

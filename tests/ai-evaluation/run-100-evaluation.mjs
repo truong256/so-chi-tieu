@@ -14,14 +14,12 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getTestAuthToken } from "./auth-helper.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const CHAT_API_URL = process.env.CHAT_API_URL || "http://localhost:5173/api/chat";
-const TEST_TOKEN =
-  process.env.TEST_TOKEN ||
-  "eyJhbGciOiJFUzI1NiIsImtpZCI6IjEyYTllMTBhLWVkOTUtNDlmMy1hZTU0LWNhZjJlY2JkNGQyZCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3hxY2xoZ3lya3dhaXB3b2tvb3hlLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJjOTIxYjZlZS05MTBmLTRkNGEtOWI1NS1lYzI3M2MwNDgzMGUiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzkzMTE0NTkxLCJpYXQiOjE3OTMxMTA5OTEsImVtYWlsIjoidGVzdF9jb3BpbG90QHNvY2hpdGlldS5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoidGVzdF9jb3BpbG90QHNvY2hpdGlldS5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJzdWIiOiJjOTIxYjZlZS05MTBmLTRkNGEtOWI1NS1lYzI3M2MwNDgzMGUifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc5MzExMDk5MX1dLCJzZXNzaW9uX2lkIjoiMjlhODQwMzItZjU4Ny00MGQ1LWFiOTctY2FlNTY3NmNhMzBjIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.uSPKvcLPsr3WYO36gpmS001JwaeYK01gV5gWwx-wUA_Jbcwzv5kRB-kPO3sXuw1POKVYJXpCkwgLD4QeymFRRQ";
 
 // Parse CLI flags
 const args = process.argv.slice(2);
@@ -118,9 +116,9 @@ function evaluateResponse(q, replyText, httpStatus) {
     }
     // If question asks for remaining budget (Q035)
     if (q.id === "Q035") {
-      if (!text.includes("900.000") && !text.includes("900,000") && !text.includes("900k")) {
+      if (!text.includes("350.000") && !text.includes("350,000") && !text.includes("350k")) {
         isHallucinating = true;
-        hallucinationNote = "Sai số liệu ngân sách Ăn uống còn lại (thực tế: 900.000 VND).";
+        hallucinationNote = "Sai số liệu ngân sách Ăn uống còn lại (thực tế: 350.000 VND).";
       }
     }
   }
@@ -241,6 +239,7 @@ async function runEvaluation() {
     console.log(`Giới hạn số lượng câu hỏi: ${limitFlag}`);
   }
 
+  const token = await getTestAuthToken();
   const results = [];
   let passCount = 0;
   let partialCount = 0;
@@ -271,7 +270,7 @@ async function runEvaluation() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${TEST_TOKEN}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(65000),

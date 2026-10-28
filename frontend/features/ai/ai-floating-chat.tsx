@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useAiChat } from "./ai-chat-context";
 import type { FinancialContext } from "./ai-chat-context";
 import AiMessageContent from "./ai-message-content";
+import AiActionConfirmCard from "./ai-action-confirm-card";
 
 interface Props {
   view: string;
@@ -11,76 +12,79 @@ interface Props {
 }
 
 export default function AiFloatingChat({ view, financialContext }: Props) {
-  const { 
-    messages, 
-    loading, 
-    isOpen, 
-    isMinimized, 
-    toggleOpen, 
-    toggleMinimize, 
-    sendMessage, 
-    stopGeneration 
+  const {
+    messages,
+    loading,
+    isOpen,
+    isMinimized,
+    toggleOpen,
+    toggleMinimize,
+    sendMessage,
+    confirmAction,
+    cancelAction,
+    stopGeneration,
   } = useAiChat();
-  
+
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Quick Actions Context Logic
   const getQuickActions = () => {
     switch (view) {
       case "budgets":
       case "planning":
         return [
           "Ngân sách nào gần hết?",
-          "Phân tích ngân sách tháng này",
-          "Tôi có đang vượt ngân sách không?"
+          "Tạo ngân sách Ăn uống 3 triệu mỗi tháng",
+          "Tôi có đang vượt ngân sách không?",
+        ];
+      case "categories":
+        return [
+          "Tạo danh mục chi tiêu Thú cưng",
+          "Tạo danh mục thu nhập Cổ tức",
         ];
       case "wallets":
         return [
           "Tổng số dư của tôi?",
           "Ví nào có số dư thấp nhất?",
-          "Phân tích tiền khả dụng"
+          "Phân tích tiền khả dụng",
         ];
       case "transactions":
         return [
           "Phân tích giao dịch gần đây",
           "Tôi chi nhiều nhất vào đâu?",
-          "Có giao dịch bất thường không?"
+          "Ghi khoản chi ăn trưa 50k",
         ];
       case "recurring":
         return [
           "Tháng này có giao dịch định kỳ nào?",
-          "Tổng tiền định kỳ còn lại là bao nhiêu?"
+          "Tạo giao dịch định kỳ tiền Internet 250k hàng tháng",
         ];
       case "reports":
         return [
           "Tóm tắt tình hình tài chính",
-          "Chi tiêu tháng này so với tháng trước"
+          "Chi tiêu tháng này so với tháng trước",
         ];
       default:
         return [
           "Tình hình tài chính hiện tại",
           "Tôi còn bao nhiêu tiền?",
-          "Khoản chi lớn nhất",
-          "Mục tiêu tiết kiệm"
+          "Tạo ngân sách Ăn uống 3 triệu mỗi tháng",
+          "Mục tiêu tiết kiệm",
         ];
     }
   };
 
   const quickActions = getQuickActions();
 
-  // Scroll logic
   useEffect(() => {
     if (isOpen && !isMinimized) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, loading, isOpen, isMinimized]);
 
-  // Focus input when opened
   useEffect(() => {
     if (isOpen && !isMinimized && textareaRef.current) {
-      // Small timeout to allow transition
       const focusTimer = window.setTimeout(() => textareaRef.current?.focus(), 300);
       return () => window.clearTimeout(focusTimer);
     }
@@ -110,13 +114,10 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
 
   const isEmpty = messages.length === 0;
 
-  // Render nothing if it's the full-page view to avoid duplicate bots
-  // (Optional: we can show it globally but hide if view === 'ai-assistant')
   if (view === "ai-assistant") return null;
 
   return (
     <>
-      {/* Floating Action Button (Bubble) */}
       <button
         type="button"
         className={`ai-fab ${isOpen && !isMinimized ? "hidden" : ""}`}
@@ -127,12 +128,13 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
         <span className="ai-fab-icon" style={{ fontWeight: 700, fontSize: "13px" }}>💬</span>
       </button>
 
-      {/* Floating Chat Panel */}
       <div className={`ai-floating-panel ${isOpen ? "open" : ""} ${isMinimized ? "minimized" : ""}`}>
-        
-        {/* Panel Header */}
         <div className="ai-floating-header">
-          <div className="ai-floating-header-info" onClick={isMinimized ? toggleMinimize : undefined} style={{ cursor: isMinimized ? "pointer" : "default" }}>
+          <div
+            className="ai-floating-header-info"
+            onClick={isMinimized ? toggleMinimize : undefined}
+            style={{ cursor: isMinimized ? "pointer" : "default" }}
+          >
             <div className="ai-floating-header-text">
               <h3>Hỏi trợ lý chi tiêu</h3>
             </div>
@@ -147,7 +149,6 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
           </div>
         </div>
 
-        {/* Panel Body (Hidden if minimized) */}
         {!isMinimized && (
           <>
             <div className="ai-floating-body">
@@ -157,7 +158,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
                     Xin chào! Tôi là Trợ lý chi tiêu.
                   </p>
                   <p className="ai-welcome-sub compact">
-                    Bạn có thể đặt câu hỏi về chi tiêu hoặc chọn nhanh bên dưới:
+                    Bạn có thể đặt câu hỏi hoặc yêu cầu tạo danh mục, ngân sách, giao dịch:
                   </p>
                   <div className="ai-quick-actions">
                     {quickActions.map((q, i) => (
@@ -179,7 +180,15 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
                 <div key={msg.id} className={`ai-message-row ${msg.role}`}>
                   {msg.role === "ai" && <div className="ai-avatar" style={{ fontSize: "10px", fontWeight: 700 }}>Trợ lý</div>}
                   <div className={`ai-bubble ${msg.role} ${msg.isError ? "error" : ""}`}>
-              <AiMessageContent text={msg.text} />
+                    <AiMessageContent text={msg.text} />
+                    {msg.pendingAction && (
+                      <AiActionConfirmCard
+                        messageId={msg.id}
+                        action={msg.pendingAction}
+                        onConfirm={id => void confirmAction(id)}
+                        onCancel={id => void cancelAction(id)}
+                      />
+                    )}
                   </div>
                 </div>
               ))}
@@ -199,7 +208,6 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Bar */}
             <div className="ai-input-container">
               {loading && (
                 <div className="ai-stop-container">
@@ -215,7 +223,7 @@ export default function AiFloatingChat({ view, financialContext }: Props) {
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Đặt câu hỏi về thu chi... (Nhấn Enter để gửi)"
+                  placeholder="Hỏi thu chi hoặc tạo ngân sách, giao dịch..."
                   rows={1}
                   disabled={loading}
                   maxLength={2000}

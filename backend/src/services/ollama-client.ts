@@ -388,23 +388,73 @@ export async function selectVisionModel(
 }
 
 // ---------------------------------------------------------------------------
+// Ollama Tool Calling Interface
+// ---------------------------------------------------------------------------
+export interface OllamaToolFunction {
+  name: string;
+  description: string;
+  parameters: {
+    type: "object";
+    properties: Record<string, {
+      type: string;
+      description?: string;
+      enum?: string[];
+      items?: { type: string };
+    }>;
+    required?: string[];
+  };
+}
+
+export interface OllamaToolDefinition {
+  type: "function";
+  function: OllamaToolFunction;
+}
+
+export interface OllamaToolCall {
+  function: {
+    name: string;
+    arguments: Record<string, unknown>;
+  };
+}
+
+export interface OllamaChatMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+  tool_calls?: OllamaToolCall[];
+}
+
+// ---------------------------------------------------------------------------
 // Ollama Chat Call Interface
 // ---------------------------------------------------------------------------
 export interface OllamaChatOptions {
   baseUrl?: string;
-  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+  messages: Array<OllamaChatMessage | { role: "system" | "user" | "assistant" | "tool"; content: string }>;
+  tools?: OllamaToolDefinition[];
   format?: "json";
   modelOverride?: string;
   totalTimeoutMs?: number; // Total deadline for the entire operation (default: 35s)
   signal?: AbortSignal;
   temperature?: number;
   numPredict?: number;
+  keepAlive?: string;
+}
+
+export interface OllamaInferenceMetrics {
+  totalDurationNs?: number;
+  loadDurationNs?: number;
+  promptEvalCount?: number;
+  promptEvalDurationNs?: number;
+  evalCount?: number;
+  evalDurationNs?: number;
+  tokensPerSec?: number;
 }
 
 export interface OllamaChatResult {
   success: boolean;
   content?: string;
+  tool_calls?: OllamaToolCall[];
   modelUsed?: string;
+  metrics?: OllamaInferenceMetrics;
   error?: OllamaClientError;
 }
 
@@ -479,14 +529,17 @@ export async function executeOllamaChat(
       model,
       messages: opts.messages,
       stream: false,
-      keep_alive: "60m",
+      keep_alive: opts.keepAlive || "60m",
       options: {
-        temperature: opts.temperature ?? 0.7,
-        num_predict: opts.numPredict ?? 1024,
+        temperature: opts.temperature ?? 0.2,
+        num_predict: opts.numPredict ?? 512,
       },
     };
     if (opts.format === "json") {
       requestPayload.format = "json";
+    }
+    if (opts.tools && opts.tools.length > 0) {
+      requestPayload.tools = opts.tools;
     }
 
     const res = await fetch(`${baseUrl}/api/chat`, {
@@ -526,8 +579,17 @@ export async function executeOllamaChat(
     }
 
     const data = (await res.json()) as {
-      message?: { content?: string };
+      message?: {
+        content?: string;
+        tool_calls?: OllamaToolCall[];
+      };
       error?: string;
+      total_duration?: number;
+      load_duration?: number;
+      prompt_eval_count?: number;
+      prompt_eval_duration?: number;
+      eval_count?: number;
+      eval_duration?: number;
     };
 
     if (data.error) {
@@ -542,7 +604,9 @@ export async function executeOllamaChat(
     }
 
     const content = data.message?.content?.trim();
-    if (!content) {
+    const toolCalls = data.message?.tool_calls;
+
+    if (!content && (!toolCalls || toolCalls.length === 0)) {
       return {
         success: false,
         error: {
@@ -553,10 +617,26 @@ export async function executeOllamaChat(
       };
     }
 
+    const evalCount = data.eval_count;
+    const evalDurationNs = data.eval_duration;
+    const tokensPerSec = evalCount && evalDurationNs && evalDurationNs > 0
+      ? Math.round((evalCount / (evalDurationNs / 1e9)) * 10) / 10
+      : undefined;
+
     return {
       success: true,
-      content,
+      content: content || "",
+      tool_calls: toolCalls,
       modelUsed: model,
+      metrics: {
+        totalDurationNs: data.total_duration,
+        loadDurationNs: data.load_duration,
+        promptEvalCount: data.prompt_eval_count,
+        promptEvalDurationNs: data.prompt_eval_duration,
+        evalCount,
+        evalDurationNs,
+        tokensPerSec,
+      },
     };
   } catch (err: unknown) {
     if (opts.signal?.aborted) {
@@ -608,6 +688,174 @@ export async function executeOllamaChat(
         statusCode: 502,
         details: err instanceof Error ? err.message : String(err),
       },
+    };
+  } finally {
+    if (releaseSlot) {
+      releaseSlot();
+    }
+  }
+}
+
+
+
+/**
+ * Execute Ollama chat with real-time token streaming.
+ */
+export async function* executeOllamaChatStream(
+  opts: OllamaChatOptions,
+): AsyncGenerator<{ token: string; done: boolean; metrics?: OllamaInferenceMetrics; error?: OllamaClientError }, void, unknown> {
+  if (opts.signal?.aborted) {
+    yield {
+      token: "",
+      done: true,
+      error: {
+        code: "TIMEOUT",
+        messageVi: "Yêu cầu đã bị hủy bởi người dùng.",
+        statusCode: 499,
+      },
+    };
+    return;
+  }
+
+  const baseUrl = getOllamaBaseUrl(opts.baseUrl);
+  const totalTimeout = opts.totalTimeoutMs || 60_000;
+  const deadline = Date.now() + totalTimeout;
+
+  let releaseSlot: (() => void) | null = null;
+  try {
+    releaseSlot = await acquireOllamaSlot(opts.signal);
+  } catch (e: unknown) {
+    const errCode = (e as { code?: string })?.code;
+    const isAborted = opts.signal?.aborted || errCode === "CLIENT_ABORTED";
+    yield {
+      token: "",
+      done: true,
+      error: {
+        code: isAborted ? "TIMEOUT" : "OVERLOADED",
+        messageVi: isAborted
+          ? "Yêu cầu đã bị hủy bởi người dùng."
+          : "Hệ thống AI đang quá tải với hàng đợi đầy. Vui lòng thử lại sau.",
+        statusCode: isAborted ? 499 : 429,
+      },
+    };
+    return;
+  }
+
+  try {
+    const { model, error: modelErr } = await selectChatModel(baseUrl, opts.modelOverride);
+    if (!model || modelErr) {
+      yield { token: "", done: true, error: modelErr };
+      return;
+    }
+
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 1000) {
+      yield {
+        token: "",
+        done: true,
+        error: {
+          code: "TIMEOUT",
+          messageVi: "Quá thời gian chờ trước khi gửi yêu cầu đến mô hình AI.",
+          statusCode: 504,
+        },
+      };
+      return;
+    }
+
+    const timeoutSignal = AbortSignal.timeout(remainingMs);
+    const combinedSignal = opts.signal
+      ? AbortSignal.any([opts.signal, timeoutSignal])
+      : timeoutSignal;
+
+    const requestPayload: Record<string, unknown> = {
+      model,
+      messages: opts.messages,
+      stream: true,
+      keep_alive: opts.keepAlive || "60m",
+      options: {
+        temperature: opts.temperature ?? 0.2,
+        num_predict: opts.numPredict ?? 512,
+      },
+    };
+
+    const res = await fetch(`${baseUrl}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestPayload),
+      signal: combinedSignal,
+    });
+
+    if (!res.ok || !res.body) {
+      const errText = await res.text().catch(() => "");
+      yield {
+        token: "",
+        done: true,
+        error: {
+          code: "OVERLOADED",
+          messageVi: `Lỗi máy chủ AI nội bộ (HTTP ${res.status}).`,
+          statusCode: res.status >= 500 ? 502 : res.status,
+          details: errText.slice(0, 200),
+        },
+      };
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const parsed = JSON.parse(line);
+          const token = parsed.message?.content || "";
+          if (token) {
+            yield { token, done: false };
+          }
+          if (parsed.done) {
+            const evalCount = parsed.eval_count;
+            const evalDurationNs = parsed.eval_duration;
+            const tokensPerSec = evalCount && evalDurationNs && evalDurationNs > 0
+              ? Math.round((evalCount / (evalDurationNs / 1e9)) * 10) / 10
+              : undefined;
+            yield {
+              token: "",
+              done: true,
+              metrics: {
+                totalDurationNs: parsed.total_duration,
+                loadDurationNs: parsed.load_duration,
+                promptEvalCount: parsed.prompt_eval_count,
+                evalCount,
+                evalDurationNs,
+                tokensPerSec,
+              },
+            };
+          }
+        } catch {
+          // ignore unparseable partial chunk
+        }
+      }
+    }
+  } catch {
+    if (opts.signal?.aborted) {
+      yield {
+        token: "",
+        done: true,
+        error: { code: "TIMEOUT", messageVi: "Yêu cầu đã bị hủy bởi người dùng.", statusCode: 499 },
+      };
+      return;
+    }
+    yield {
+      token: "",
+      done: true,
+      error: { code: "OVERLOADED", messageVi: "Mất kết nối với máy chủ AI.", statusCode: 502 },
     };
   } finally {
     if (releaseSlot) {
@@ -859,3 +1107,4 @@ export async function executeOllamaVision(
     }
   }
 }
+

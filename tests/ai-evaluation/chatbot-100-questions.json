@@ -3,10 +3,10 @@
     "id": "Q001",
     "group": "Nhóm 1 — Kiến thức hệ thống",
     "category": "system_overview",
-    "question": "Hệ thống Sổ Chi Tiêu dùng để làm gì?",
+    "question": "Hệ thống Sổ Chi Tiêu có chức năng gì?",
     "difficulty": "Easy",
     "criticality": "Medium",
-    "expected_answer": "Ứng dụng quản lý tài chính cá nhân toàn diện: Quản lý ví, Thu & Chi, Ngân sách thông minh, Mục tiêu tiết kiệm, Giao dịch định kỳ, Quét hóa đơn AI, Báo cáo & Xuất Excel, Admin portal.",
+    "expected_answer": "Ứng dụng quản lý tài chính cá nhân toàn diện: Quản lý ví & số dư khả dụng, Ghi nhận Thu & Chi, Ngân sách thông minh, Mục tiêu tiết kiệm, Giao dịch định kỳ, Quét hóa đơn AI, Báo cáo & Xuất Excel, Trợ lý AI Financial Copilot.",
     "scoring_criteria": {
       "accuracy": 35,
       "intent": 20,
@@ -16,12 +16,12 @@
     },
     "keywords": [
       "quản lý",
-      "tài chính",
       "ví",
       "thu",
       "chi",
       "ngân sách",
-      "tiết kiệm"
+      "tiết kiệm",
+      "excel"
     ]
   },
   {
@@ -342,10 +342,10 @@
     "id": "Q016",
     "group": "Nhóm 2 — Phân tích dữ liệu tài chính",
     "category": "financial_analysis",
-    "question": "Tháng này tôi đã chi tiêu bao nhiêu?",
+    "question": "Tôi đã tiêu bao nhiêu trong tháng?",
     "difficulty": "Easy",
     "criticality": "High",
-    "expected_answer": "4.850.000 VND (tổng chi tiêu tháng 10/2026).",
+    "expected_answer": "Tổng chi tiêu tháng 10/2026 của bạn là 4.850.000 VND (gồm các danh mục chính: Nhà ở 1.500.000đ, Ăn uống 2.650.000đ, Mua sắm 700.000đ).",
     "scoring_criteria": {
       "accuracy": 40,
       "intent": 20,
@@ -355,8 +355,8 @@
     },
     "keywords": [
       "4.850.000",
-      "vnd",
-      "chi tiêu"
+      "chi tiêu",
+      "tháng"
     ]
   },
   {
@@ -533,10 +533,10 @@
     "id": "Q025",
     "group": "Nhóm 2 — Phân tích dữ liệu tài chính",
     "category": "financial_analysis",
-    "question": "Tổng số dư tất cả các ví tiền VND của tôi hiện có bao nhiêu?",
+    "question": "Tôi có bao nhiêu tiền?",
     "difficulty": "Easy",
     "criticality": "High",
-    "expected_answer": "15.000.000 VND (Tiền mặt 5.000.000 VND + Tài khoản VCB 10.000.000 VND).",
+    "expected_answer": "Tổng tài sản của bạn là 980.000 VND (Ví tiền mặt: 645.000 VND, Ví ngân hàng: 335.000 VND), trong đó đã phân bổ 645.000 VND cho ngân sách/tiết kiệm, và số dư khả dụng chi tiêu hiện tại là 335.000 VND.",
     "scoring_criteria": {
       "accuracy": 40,
       "intent": 20,
@@ -545,10 +545,11 @@
       "vietnamese": 15
     },
     "keywords": [
-      "15.000.000",
-      "tổng số dư",
-      "vcb",
-      "tiền mặt"
+      "980.000",
+      "335.000",
+      "khả dụng",
+      "phân bổ",
+      "ví"
     ]
   },
   {
@@ -659,10 +660,10 @@
     "id": "Q031",
     "group": "Nhóm 3 — Ngân sách",
     "category": "budgets",
-    "question": "Ngân sách là gì trong hệ thống Sổ Chi Tiêu?",
+    "question": "Ngân sách là gì?",
     "difficulty": "Easy",
     "criticality": "Medium",
-    "expected_answer": "Ngân sách (Budgets) là hạn mức chi tiêu trần được đặt ra cho một danh mục trong một khoảng thời gian (tháng) nhằm kiểm soát và ngăn ngừa chi tiêu quá mức.",
+    "expected_answer": "Ngân sách là bản kế hoạch tài chính dự kiến phân bổ thu nhập cho các khoản chi tiêu cụ thể trong một khoảng thời gian (theo tháng/năm) để kiểm soát tài chính và ngăn ngừa chi vượt mức. Trợ lý giải thích khách quan và không tự ý hiển thị số dư cá nhân.",
     "scoring_criteria": {
       "accuracy": 35,
       "intent": 20,
@@ -671,9 +672,10 @@
       "vietnamese": 10
     },
     "keywords": [
-      "ngân sách",
+      "kế hoạch",
+      "thu nhập",
+      "chi tiêu",
       "hạn mức",
-      "danh mục",
       "kiểm soát"
     ]
   },
@@ -728,7 +730,7 @@
     "question": "Tôi đã sử dụng bao nhiêu phần trăm ngân sách Ăn uống?",
     "difficulty": "Medium",
     "criticality": "High",
-    "expected_answer": "Đã sử dụng 70% (2.100.000 VND / 3.000.000 VND). Trạng thái an toàn (< 80%).",
+    "expected_answer": "Đã sử dụng khoảng 88.3% (chi tiêu thực tế 2.650.000 VND / hạn mức 3.000.000 VND). Trạng thái cảnh báo sắp đạt hạn mức (>= 80%).",
     "scoring_criteria": {
       "accuracy": 40,
       "intent": 20,
@@ -737,9 +739,9 @@
       "vietnamese": 10
     },
     "keywords": [
-      "70%",
+      "88",
       "ăn uống",
-      "2.100.000",
+      "2.650.000",
       "3.000.000"
     ]
   },
@@ -750,7 +752,7 @@
     "question": "Ngân sách Ăn uống của tôi còn lại bao nhiêu tiền?",
     "difficulty": "Easy",
     "criticality": "High",
-    "expected_answer": "Còn lại 900.000 VND (3.000.000 VND - 2.100.000 VND).",
+    "expected_answer": "Hạn mức còn lại có thể chi là 350.000 VND (3.000.000 VND hạn mức - 2.650.000 VND đã chi). Quỹ phong bì cấp vốn còn 500.000 VND.",
     "scoring_criteria": {
       "accuracy": 40,
       "intent": 20,
@@ -759,7 +761,7 @@
       "vietnamese": 10
     },
     "keywords": [
-      "900.000",
+      "350.000",
       "còn lại",
       "ăn uống"
     ]
@@ -793,7 +795,7 @@
     "question": "Nếu tôi mua thêm một bữa ăn 250.000đ thì ngân sách Ăn uống còn lại bao nhiêu?",
     "difficulty": "Hard",
     "criticality": "High",
-    "expected_answer": "Ngân sách Ăn uống hiện còn 900.000đ. Mua thêm 250.000đ sẽ còn lại: 900.000 - 250.000 = 650.000 VND. Vẫn an toàn trong hạn mức.",
+    "expected_answer": "Hạn mức Ăn uống hiện còn 350.000đ. Mua thêm 250.000đ sẽ còn lại: 350.000 - 250.000 = 100.000 VND. Vẫn an toàn trong hạn mức.",
     "scoring_criteria": {
       "accuracy": 40,
       "intent": 25,
@@ -802,20 +804,19 @@
       "vietnamese": 10
     },
     "keywords": [
-      "650.000",
-      "900.000",
-      "250.000",
-      "an toàn"
+      "100.000",
+      "350.000",
+      "250.000"
     ]
   },
   {
     "id": "Q038",
     "group": "Nhóm 3 — Ngân sách",
     "category": "budgets_whatif",
-    "question": "Nếu tôi mua một bữa tiệc 1.000.000đ thì ngân sách Ăn uống có bị vượt hạn mức không?",
+    "question": "Tôi có đủ tiền mua điện thoại không?",
     "difficulty": "Hard",
     "criticality": "High",
-    "expected_answer": "Có, sẽ bị vượt hạn mức 100.000 VND vì ngân sách Ăn uống hiện chỉ còn lại 900.000 VND (900.000 - 1.000.000 = -100.000 VND).",
+    "expected_answer": "Hệ thống kiểm tra số dư khả dụng hiện tại là 335.000 VND. Nếu bạn mua điện thoại với giá thông thường (từ vài triệu đến hàng chục triệu VND), số dư khả dụng hiện tại sẽ chưa đủ chi trả và bạn nên bổ sung mức giá cụ thể để AI đánh giá chi tiết.",
     "scoring_criteria": {
       "accuracy": 40,
       "intent": 25,
@@ -824,10 +825,10 @@
       "vietnamese": 10
     },
     "keywords": [
-      "vượt",
-      "100.000",
-      "900.000",
-      "hạn mức"
+      "335.000",
+      "khả dụng",
+      "điện thoại",
+      "đủ"
     ]
   },
   {
@@ -855,10 +856,10 @@
     "id": "Q040",
     "group": "Nhóm 3 — Ngân sách",
     "category": "budgets",
-    "question": "Làm thế nào để điều chỉnh hoặc xóa một ngân sách đã thiết lập?",
+    "question": "Tôi nên làm gì với số tiền còn lại?",
     "difficulty": "Easy",
     "criticality": "Low",
-    "expected_answer": "Truy cập tab Ngân sách, bấm biểu tượng chỉnh sửa (bút chì) hoặc menu ba chấm tại thẻ ngân sách tương ứng để cập nhật số tiền hoặc bấm Xóa.",
+    "expected_answer": "Tư vấn 3 bước có cấu trúc: Bước 1: Đảm bảo chi tiêu thiết yếu cho các nhu cầu sinh hoạt đến hết tháng; Bước 2: Trích quỹ cho các mục tiêu tiết kiệm quan trọng; Bước 3: Dùng phần thặng dư cho chi tiêu tùy ý hoặc quỹ dự phòng khẩn cấp.",
     "scoring_criteria": {
       "accuracy": 35,
       "intent": 20,
@@ -867,9 +868,10 @@
       "vietnamese": 10
     },
     "keywords": [
-      "chỉnh sửa",
-      "xóa",
-      "ngân sách"
+      "thiết yếu",
+      "tiết kiệm",
+      "ngân sách",
+      "bước"
     ]
   },
   {
@@ -1515,7 +1517,7 @@
     "id": "Q067",
     "group": "Nhóm 6 — Hội thoại nhiều lượt",
     "category": "multi_turn",
-    "question": "Nếu tôi lấy ví đó mua đồ 600k thì số dư mới là bao nhiêu?",
+    "question": "Với số tiền đó, tôi nên tiết kiệm bao nhiêu?",
     "difficulty": "Hard",
     "criticality": "High",
     "is_multi_turn": true,
@@ -1523,14 +1525,14 @@
     "turn_history": [
       {
         "role": "user",
-        "content": "Ví tiền mặt của tôi có bao nhiêu tiền?"
+        "content": "Tôi có bao nhiêu tiền?"
       },
       {
         "role": "assistant",
-        "content": "Ví Tiền mặt của bạn hiện có 5.000.000 VND (khả dụng 4.500.000 VND)."
+        "content": "Tổng tài sản của bạn là 980.000 VND, đã phân bổ 645.000 VND và số dư khả dụng là 335.000 VND (Ví tiền mặt có 300.000 VND khả dụng, Ví ngân hàng có 35.000 VND khả dụng)."
       }
     ],
-    "expected_answer": "Số dư mới của ví Tiền mặt sẽ là: 5.000.000 - 600.000 = 4.400.000 VND (khả dụng 3.900.000 VND).",
+    "expected_answer": "Với số dư khả dụng 335.000 VND, theo quy tắc tiết kiệm 20% - 30%, bạn nên trích khoảng 70.000 VND đến 100.000 VND để tiết kiệm hoặc dự phòng khẩn cấp, phần còn lại (khoảng 235.000 - 265.000 VND) giữ lại cho các chi tiêu cần thiết.",
     "scoring_criteria": {
       "accuracy": 40,
       "intent": 25,
@@ -1539,9 +1541,10 @@
       "vietnamese": 10
     },
     "keywords": [
-      "4.400.000",
-      "600.000",
-      "tiền mặt"
+      "335.000",
+      "tiết kiệm",
+      "khoảng",
+      "quy tắc"
     ]
   },
   {
@@ -1653,10 +1656,10 @@
     "id": "Q071",
     "group": "Nhóm 7 — Câu hỏi khó, mơ hồ và ngoài phạm vi",
     "category": "vague_advice",
-    "question": "Tôi muốn tiết kiệm nhiều hơn nhưng không biết bắt đầu từ đâu, bạn có thể định hướng giúp tôi?",
+    "question": "Người giàu nhất thế giới hiện nay là ai?",
     "difficulty": "Medium",
     "criticality": "Medium",
-    "expected_answer": "Gợi ý quy tắc 50/30/20 hoặc bám sát số liệu hiện tại: Tạo ngân sách Ăn uống, đặt mục tiêu tiết kiệm rõ ràng (như Laptop M3) và theo dõi thặng dư hàng tháng.",
+    "expected_answer": "Elon Musk hiện là người giàu nhất thế giới (sở hữu Tesla, SpaceX, xAI), thường xuyên cạnh tranh vị trí số 1 với Bernard Arnault (tập đoàn LVMH) và Jeff Bezos (Amazon). Trợ lý AI trả lời trực tiếp kiến thức thế giới, tuyệt đối không in báo cáo tài chính hay số dư cá nhân của người dùng.",
     "scoring_criteria": {
       "accuracy": 35,
       "intent": 25,
@@ -1665,20 +1668,19 @@
       "vietnamese": 10
     },
     "keywords": [
-      "bắt đầu",
-      "ngân sách",
-      "tiết kiệm",
-      "mục tiêu"
+      "Elon Musk",
+      "giàu nhất",
+      "thế giới"
     ]
   },
   {
     "id": "Q072",
     "group": "Nhóm 7 — Câu hỏi khó, mơ hồ và ngoài phạm vi",
     "category": "vague_advice",
-    "question": "Hãy giúp tôi quản lý tài chính tốt hơn.",
+    "question": "Hôm nay có tin tức kinh tế nổi bật nào?",
     "difficulty": "Medium",
     "criticality": "Medium",
-    "expected_answer": "Hướng dẫn cụ thể 3 bước trong Sổ Chi Tiêu: 1. Ghi chép thu chi đều đặn, 2. Cài đặt ngân sách chi tiêu, 3. Đặt mục tiêu tiết kiệm tích lũy.",
+    "expected_answer": "Hệ thống thông báo trung thực giới hạn: hiện chưa tích hợp công cụ tìm kiếm tin tức Internet tự động thời gian thực (Web Search Engine API), do đó không tự bịa đặt tin tức thời sự. Cung cấp tỷ giá ngoại tệ thực tế từ hệ thống (USD/VND) và khuyến nghị theo dõi các trang báo tài chính chính thống.",
     "scoring_criteria": {
       "accuracy": 35,
       "intent": 25,
@@ -1687,19 +1689,20 @@
       "vietnamese": 10
     },
     "keywords": [
-      "ghi chép",
-      "ngân sách",
-      "tiết kiệm"
+      "hệ thống",
+      "tỷ giá",
+      "usd",
+      "tin tức"
     ]
   },
   {
     "id": "Q073",
     "group": "Nhóm 7 — Câu hỏi khó, mơ hồ và ngoài phạm vi",
     "category": "spending_control",
-    "question": "Tôi đang tiêu nhiều tiền quá, phải làm sao bây giờ?",
+    "question": "Xin chào, bạn có thể giúp gì?",
     "difficulty": "Medium",
     "criticality": "Medium",
-    "expected_answer": "Phân tích danh mục lớn nhất (Ăn uống 54.6%), khuyên rà soát các khoản chi không thiết yếu và kích hoạt cảnh báo ngân sách 80%.",
+    "expected_answer": "Chào bạn! Tôi là Trợ lý AI của Sổ Chi Tiêu. Tôi có thể hỗ trợ bạn kiểm tra số dư ví & số dư khả dụng, phân tích thu chi thực tế, theo dõi hạn mức ngân sách, lập kế hoạch mục tiêu tiết kiệm, tư vấn tài chính và giải đáp cách sử dụng hệ thống.",
     "scoring_criteria": {
       "accuracy": 35,
       "intent": 25,
@@ -1708,19 +1711,22 @@
       "vietnamese": 10
     },
     "keywords": [
-      "ăn uống",
+      "chào",
+      "trợ lý",
+      "số dư",
       "ngân sách",
-      "cắt giảm"
+      "tiết kiệm",
+      "thu chi"
     ]
   },
   {
     "id": "Q074",
     "group": "Nhóm 7 — Câu hỏi khó, mơ hồ và ngoài phạm vi",
     "category": "speculation_refusal",
-    "question": "Dự đoán chính xác số tiền tôi sẽ có trong tài khoản sau 10 năm nữa.",
+    "question": "Người giàu nhất thế giới là ai và tôi có bao nhiêu tiền?",
     "difficulty": "Hard",
     "criticality": "High",
-    "expected_answer": "Từ chối đưa ra con số viển vông vô căn cứ; giải thích tài chính dài hạn phụ thuộc thu nhập, lạm phát và tỷ lệ tiết kiệm; hướng dẫn duy trì thặng dư hiện tại.",
+    "expected_answer": "Trả lời đầy đủ cả hai phần: 1. Người giàu nhất thế giới hiện nay là Elon Musk; 2. Tổng tài sản của bạn là 980.000 VND, trong đó số dư khả dụng thực tế là 335.000 VND (Ví tiền mặt khả dụng 300.000 VND, Ví ngân hàng khả dụng 35.000 VND).",
     "scoring_criteria": {
       "accuracy": 40,
       "intent": 20,
@@ -1729,10 +1735,10 @@
       "vietnamese": 15
     },
     "keywords": [
-      "không thể dự đoán",
-      "chính xác",
-      "phụ thuộc",
-      "kế hoạch"
+      "Elon Musk",
+      "980.000",
+      "335.000",
+      "khả dụng"
     ]
   },
   {
