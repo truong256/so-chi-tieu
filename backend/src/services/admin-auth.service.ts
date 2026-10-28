@@ -28,7 +28,11 @@ export function getSupabaseAdminClient(): SupabaseClient {
     .trim()
     .replace(/\/rest\/v1\/?$/, "")
     .replace(/\/$/, "");
-  const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+  const serviceRoleKey = (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SUPABASE_SECRET_KEY ??
+    ""
+  ).trim();
 
   if (!supabaseUrl) {
     throw new Error("Cấu hình NEXT_PUBLIC_SUPABASE_URL chưa được thiết lập.");
@@ -86,7 +90,12 @@ export async function verifyAdminUser(
   });
 
   // 2. Query user_roles directly using user token or service role client
-  const serviceRoleKey = (env?.supabaseServiceRoleKey ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+  const serviceRoleKey = (
+    env?.supabaseServiceRoleKey ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SUPABASE_SECRET_KEY ??
+    ""
+  ).trim();
 
   let role: string | null = null;
 

@@ -93,6 +93,9 @@ export async function getAdminAuditLogs(params: GetAuditLogsParams = {}): Promis
 
   const { data, count, error } = await query;
   if (error) {
+    if (error.code === 'PGRST205' || error.message?.includes('schema cache') || error.message?.includes('admin_audit_logs')) {
+      return { logs: [], total: 0, page, limit };
+    }
     throw new Error(`Không thể tải nhật ký kiểm toán: ${error.message}`);
   }
 

@@ -22,6 +22,13 @@ export async function getSystemSettings(): Promise<Record<string, unknown>> {
     .select("key, value, description, updated_at");
 
   if (error) {
+    if (error.code === 'PGRST205' || error.message?.includes('schema cache') || error.message?.includes('system_settings')) {
+      return {
+        ai_enabled: true,
+        receipt_scan_enabled: true,
+        maintenance_mode: false,
+      };
+    }
     throw new Error(`Không thể lấy cài đặt hệ thống: ${error.message}`);
   }
 

@@ -184,3 +184,4 @@ Hệ thống Financial Copilot của ứng dụng **Sổ Chi Tiêu** đã hoàn 
 - **RAG có cấu trúc** đảm bảo người dùng hỏi bất kỳ tính năng nào đều nhận được câu trả lời chuẩn xác theo thực tế giao diện và nghiệp vụ.
 - **Cô lập bảo mật và dữ liệu** tuân thủ 100% kiến trúc Multi-tenant RLS của Supabase.
 - **Không còn ảo giác dữ liệu lịch sử**, mang lại sự tin cậy cao nhất cho người dùng khi quản lý tài chính cá nhân.
+

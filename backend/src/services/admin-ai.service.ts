@@ -99,6 +99,18 @@ export async function getAiUsageStats(period: "today" | "7d" | "30d" = "7d"): Pr
     .order("created_at", { ascending: true });
 
   if (error) {
+    if (error.code === 'PGRST205' || error.message?.includes('schema cache') || error.message?.includes('ai_usage_logs')) {
+      return {
+        totalRequests: 0,
+        successful: 0,
+        errorCount: 0,
+        successRate: 100,
+        avgLatencyMs: 0,
+        featureBreakdown: { chat: 0, parseTransaction: 0, receiptParse: 0 },
+        timeSeries: [],
+        errorBreakdown: [],
+      };
+    }
     throw new Error(`Không thể lấy thống kê AI: ${error.message}`);
   }
 
