@@ -1,6 +1,7 @@
 /**
  * Exchange Rate Service — Server-side exchange rate caching and fetching.
  * Base currency is VND.
+ * Strictly supports conversion between VND and USD.
  */
 
 export interface ExchangeRatesData {
@@ -11,16 +12,10 @@ export interface ExchangeRatesData {
 }
 
 // Fallback rates if external network / APIs are unreachable
+// Strictly restricted to VND and USD
 const FALLBACK_RATES: Record<string, number> = {
   VND: 1,
-  USD: 1 / 25450,    // ~ 0.00003929
-  EUR: 1 / 27800,    // ~ 0.00003597
-  JPY: 1 / 165,      // ~ 0.00606
-  GBP: 1 / 32600,    // ~ 0.00003067
-  SGD: 1 / 19100,    // ~ 0.00005235
-  THB: 1 / 735,      // ~ 0.00136
-  CNY: 1 / 3550,     // ~ 0.0002817
-  KRW: 1 / 18.5,     // ~ 0.05405
+  USD: 1 / 25450, // ~ 0.00003929 (Tỷ giá tham chiếu 1 USD = 25.450 VND)
 };
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour cache
@@ -47,9 +42,8 @@ export async function getExchangeRates(): Promise<ExchangeRatesData> {
           base: "VND",
           timestamp: now,
           rates: {
-            ...FALLBACK_RATES,
-            ...data.rates,
             VND: 1,
+            USD: data.rates.USD,
           },
           source: "open.er-api.com",
         };
@@ -72,9 +66,8 @@ export async function getExchangeRates(): Promise<ExchangeRatesData> {
           base: "VND",
           timestamp: now,
           rates: {
-            ...FALLBACK_RATES,
-            ...data.rates,
             VND: 1,
+            USD: data.rates.USD,
           },
           source: "exchangerate-api.com",
         };

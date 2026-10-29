@@ -1,6 +1,7 @@
 /**
  * Currency Service — Handles live exchange rate fetching, caching, conversion and formatting.
  * Base currency in database is always VND.
+ * Currently strictly supports conversion between VND and USD.
  */
 
 export interface ExchangeRates {
@@ -12,11 +13,7 @@ export interface ExchangeRates {
 
 export const DEFAULT_FALLBACK_RATES: Record<string, number> = {
   VND: 1,
-  USD: 1 / 25450, // ~ 0.0000392927
-  EUR: 1 / 27800, // ~ 0.00003597
-  JPY: 1 / 165,   // ~ 0.00606
-  GBP: 1 / 32600, // ~ 0.00003067
-  SGD: 1 / 19100, // ~ 0.00005235
+  USD: 1 / 25450, // ~ 0.0000392927 (Tỷ giá tham chiếu 1 USD = 25.450 VND)
 };
 
 let inMemoryRates: ExchangeRates = {
@@ -58,9 +55,8 @@ export async function getExchangeRates(): Promise<ExchangeRates> {
         inMemoryRates = {
           ...data,
           rates: {
-            ...DEFAULT_FALLBACK_RATES,
-            ...data.rates,
             VND: 1,
+            USD: data.rates.USD,
           },
         };
 
@@ -90,6 +86,7 @@ export function getCurrentRates(): Record<string, number> {
 
 /**
  * Convert base amount (in VND) to target currency using exchange rates.
+ * Strictly supports conversion between VND and USD.
  */
 export function convertVndToTarget(
   amountInVnd: number,
@@ -98,8 +95,12 @@ export function convertVndToTarget(
 ): number {
   if (!amountInVnd || isNaN(amountInVnd)) return 0;
   if (targetCurrency === "VND") return amountInVnd;
+  if (targetCurrency !== "USD") {
+    // Only VND <-> USD is supported
+    return amountInVnd;
+  }
 
-  const rate = rates[targetCurrency] ?? DEFAULT_FALLBACK_RATES[targetCurrency];
+  const rate = rates.USD ?? DEFAULT_FALLBACK_RATES.USD;
   if (!rate || rate <= 0) return amountInVnd;
 
   return amountInVnd * rate;
@@ -107,6 +108,7 @@ export function convertVndToTarget(
 
 /**
  * Convert an amount in target currency back to base VND.
+ * Strictly supports conversion between VND and USD.
  */
 export function convertTargetToVnd(
   amountInTarget: number,
@@ -115,8 +117,12 @@ export function convertTargetToVnd(
 ): number {
   if (!amountInTarget || isNaN(amountInTarget)) return 0;
   if (sourceCurrency === "VND") return Math.round(amountInTarget);
+  if (sourceCurrency !== "USD") {
+    // Only VND <-> USD is supported
+    return Math.round(amountInTarget);
+  }
 
-  const rate = rates[sourceCurrency] ?? DEFAULT_FALLBACK_RATES[sourceCurrency];
+  const rate = rates.USD ?? DEFAULT_FALLBACK_RATES.USD;
   if (!rate || rate <= 0) return Math.round(amountInTarget);
 
   return Math.round(amountInTarget / rate);
@@ -124,6 +130,7 @@ export function convertTargetToVnd(
 
 /**
  * Formats a base VND amount into the target currency display string.
+ * Strictly supports VND and USD.
  */
 export function formatMoney(
   amountInVnd: number,
@@ -131,18 +138,19 @@ export function formatMoney(
   language: "vi" | "en" = "vi",
   rates: Record<string, number> = inMemoryRates.rates
 ): string {
-  const converted = convertVndToTarget(amountInVnd, targetCurrency, rates);
+  const supportedCurrency = targetCurrency === "USD" ? "USD" : "VND";
+  const converted = convertVndToTarget(amountInVnd, supportedCurrency, rates);
   const locale = language === "vi" ? "vi-VN" : "en-US";
 
   try {
-    const isZeroDecimal = targetCurrency === "VND" || targetCurrency === "JPY" || targetCurrency === "KRW";
+    const isZeroDecimal = supportedCurrency === "VND";
     return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: targetCurrency,
+      currency: supportedCurrency,
       minimumFractionDigits: isZeroDecimal ? 0 : 2,
       maximumFractionDigits: isZeroDecimal ? 0 : 2,
     }).format(converted);
   } catch {
-    return `${converted.toLocaleString(locale)} ${targetCurrency}`;
+    return `${converted.toLocaleString(locale)} ${supportedCurrency}`;
   }
 }

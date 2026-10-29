@@ -2185,6 +2185,8 @@ export async function executeFinancialTool(
               `THÔNG TIN TỶ GIÁ NGOẠI TỆ THỜI GIAN THỰC (Cập nhật: ${nowIso} UTC+7):`,
               `- Nguồn kiểm chứng: ${ratesData.source || "Hệ thống tỷ giá chính thức"}`,
               `- Tỷ giá tham chiếu USD/VND: 1 USD ≈ ${usdRate.toLocaleString("vi-VN")} VND`,
+              `- Tỷ giá tham chiếu VND/USD: 1.000.000 VND ≈ ${(1000000 / usdRate).toFixed(2)} USD`,
+              `- Phạm vi quy đổi: Hệ thống chỉ hỗ trợ chuyển đổi qua lại giữa Tiền Việt (VND) và Tiền Đô (USD).`,
               `- Thời điểm cập nhật: ${new Date(ratesData.timestamp).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`,
             ];
             return {

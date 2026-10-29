@@ -699,10 +699,32 @@ export function parseSimpleCalculationQuery(
     };
   }
 
-  // 9. Currency Conversion (USD to VND)
-  const convMatch = lower.match(/(?:đổi|quy đổi)?\s*(\d+(?:[.,]\d+)?)\s*(?:usd|đô la|đô|dollar|\$)\s*(?:đổi|quy đổi|sang|thành|bằng|ra)?\s*(?:được\s+)?(?:bao nhiêu)?\s*(?:vnd|tiền việt|đồng|đ)?\??/i);
-  if (convMatch && !/ví.*usd|có bao nhiêu.*usd|tổng tài sản/i.test(lower) && !lower.includes("10.000.000")) {
-    const rawVal = convMatch[1].replace(",", ".");
+  // 9a. Unsupported foreign currencies (System strictly only supports VND <-> USD conversion)
+  const OTHER_CURRENCIES = /\b(eur|euro|jpy|yên|yen|gbp|bảng anh|bảng|sgd|đô sing|thb|baht|bath|cny|tệ|nhân dân tệ|krw|won|aud|cad|chf|rub|inr)\b/i;
+  if (
+    OTHER_CURRENCIES.test(lower) &&
+    /(?:đổi|quy đổi|chuyển đổi|bằng bao nhiêu|có giá bao nhiêu|tỷ giá)/i.test(lower)
+  ) {
+    return {
+      type: "CURRENCY_CONVERSION",
+      amount: 0,
+      fromCurrency: "OTHER",
+      toCurrency: "VND",
+      result: 0,
+      explanationVi:
+        `**THÔNG BÁO VỀ CHUYỂN ĐỔI TIỀN TỆ:**\n\n` +
+        `- Hiện tại, hệ thống Sổ Chi Tiêu **chỉ hỗ trợ chuyển đổi qua lại giữa Tiền Việt (VND) và Tiền Đô (USD)**.\n` +
+        `- Các ngoại tệ khác (như EUR, JPY, GBP, THB, SGD, CNY, KRW...) **chưa được hỗ trợ** quy đổi trong hệ thống.\n\n` +
+        `*Gợi ý:* Bạn có thể thực hiện quy đổi giữa VND và USD, ví dụ:\n` +
+        `• *"Đổi 100 USD sang VND"*\n` +
+        `• *"Đổi 5.000.000 VND sang USD"*`,
+    };
+  }
+
+  // 9b. Currency Conversion (USD to VND)
+  const usdToVndMatch = lower.match(/(?:đổi|quy đổi)?\s*(\d+(?:[.,]\d+)?)\s*(?:usd|đô la|đô|dollar|\$)\s*(?:đổi|quy đổi|sang|thành|bằng|ra)?\s*(?:được\s+)?(?:bao nhiêu)?\s*(?:vnd|tiền việt|đồng|đ)?\??/i);
+  if (usdToVndMatch && !/ví.*usd|có bao nhiêu.*usd|tổng tài sản/i.test(lower) && !lower.includes("10.000.000")) {
+    const rawVal = usdToVndMatch[1].replace(",", ".");
     const numUsd = parseFloat(rawVal);
     if (Number.isFinite(numUsd) && numUsd > 0) {
       const fixedRate = 25450;
@@ -718,8 +740,36 @@ export function parseSimpleCalculationQuery(
           `**QUY ĐỔI TIỀN TỆ (USD → VND):**\n\n` +
           `- **Số tiền quy đổi:** **${numUsd.toLocaleString("en-US")} USD**\n` +
           `- **Tỷ giá tham khảo:** **1 USD = ${fixedRate.toLocaleString("vi-VN")} VND** (Nguồn: open.er-api.com)\n` +
-          `- **Giá trị quy đổi:** **${numUsd.toLocaleString("en-US")} × ${fixedRate.toLocaleString("vi-VN")} = ${totalVnd.toLocaleString("vi-VN")} VND**.\n\n` +
-          `*Lưu ý:* Đây là tỷ giá tham khảo trên thị trường ngoại hối. Hệ thống không tự ý ghi nhận giao dịch quy đổi tiền khi bạn chưa gửi yêu cầu xác nhận.`,
+          `- **Giá trị quy đổi:** **${numUsd.toLocaleString("en-US")} USD × ${fixedRate.toLocaleString("vi-VN")} = ${totalVnd.toLocaleString("vi-VN")} VND**.\n\n` +
+          `*Lưu ý:* Hệ thống chỉ hỗ trợ chuyển đổi qua lại giữa tiền Việt (VND) và tiền Đô (USD). Đây là tỷ giá tham khảo trên thị trường ngoại hối.`,
+      };
+    }
+  }
+
+  // 9c. Currency Conversion (VND to USD)
+  const vndToUsdMatch =
+    lower.match(/(?:đổi|quy đổi)\s+([^,]+?)\s*(?:vnd|tiền việt|đồng|đ)?\s*(?:sang|thành|ra)\s*(?:được\s+)?(?:bao nhiêu\s+)?(?:usd|đô la|đô|dollar|\$)/i) ||
+    lower.match(/([^,]+?)\s*(?:vnd|tiền việt|đồng|đ)?\s*(?:đổi ra|bằng|sang|được|đổi sang|đổi được)\s*(?:bao nhiêu\s+)?(?:usd|đô la|đô|dollar|\$)/i);
+
+  if (vndToUsdMatch && !/ví.*usd|có bao nhiêu.*usd|tổng tài sản/i.test(lower)) {
+    const parsedVnd = parseVietnameseAmount(vndToUsdMatch[1]);
+    if (parsedVnd.amount && parsedVnd.amount > 0) {
+      const amountVnd = parsedVnd.amount;
+      const fixedRate = 25450;
+      const totalUsd = Math.round((amountVnd / fixedRate) * 100) / 100;
+      return {
+        type: "CURRENCY_CONVERSION",
+        amount: amountVnd,
+        fromCurrency: "VND",
+        toCurrency: "USD",
+        exchangeRate: fixedRate,
+        result: totalUsd,
+        explanationVi:
+          `**QUY ĐỔI TIỀN TỆ (VND → USD):**\n\n` +
+          `- **Số tiền quy đổi:** **${amountVnd.toLocaleString("vi-VN")} VND**\n` +
+          `- **Tỷ giá tham khảo:** **1 USD = ${fixedRate.toLocaleString("vi-VN")} VND** (Nguồn: open.er-api.com)\n` +
+          `- **Giá trị quy đổi:** **${amountVnd.toLocaleString("vi-VN")} VND ÷ ${fixedRate.toLocaleString("vi-VN")} ≈ ${totalUsd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD**.\n\n` +
+          `*Lưu ý:* Hệ thống chỉ hỗ trợ chuyển đổi qua lại giữa tiền Việt (VND) và tiền Đô (USD). Đây là tỷ giá tham khảo trên thị trường ngoại hối.`,
       };
     }
   }

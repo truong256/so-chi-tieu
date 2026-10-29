@@ -1001,3 +1001,4 @@ const outputPath = path.resolve('tests/ai-evaluation/savings-reasoning-100-quest
 fs.writeFileSync(outputPath, JSON.stringify(questions, null, 2), 'utf8');
 
 console.log(`Generated ${questions.length} savings benchmark questions in ${outputPath}`);
+

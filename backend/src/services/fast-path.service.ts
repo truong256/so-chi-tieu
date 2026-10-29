@@ -173,10 +173,21 @@ export async function tryResolveFastPath(
         latencyMs: Date.now() - start,
       };
     }
-    if (/hệ thống hỗ trợ những loại tiền tệ nào/i.test(lower)) {
+    if (/hệ thống hỗ trợ những loại tiền tệ nào|chuyển đổi tiền tệ.*hỗ trợ/i.test(lower)) {
       return {
         handled: true,
-        reply: "Hệ thống Sổ Chi Tiêu hiện hỗ trợ 2 đơn vị tiền tệ chính: **VND (Việt Nam Đồng)** và **USD (Đô la Mỹ)**.",
+        reply: "Hệ thống Sổ Chi Tiêu hiện chỉ hỗ trợ chuyển đổi qua lại và quản lý tài sản giữa 2 đơn vị tiền tệ chính: **VND (Việt Nam Đồng)** và **USD (Đô la Mỹ)**.",
+        source: "FAST_PATH_DETERMINISTIC",
+        latencyMs: Date.now() - start,
+      };
+    }
+    if (
+      /hệ thống có (?:đổi|quy đổi|chuyển đổi) (?:tiền )?(?:euro|eur|jpy|yên|gbp|bảng|thb|baht|sgd|cny|tệ|ngoại tệ khác)/i.test(lower) ||
+      /chuyển đổi (?:tiền )?(?:euro|eur|jpy|yên|gbp|bảng|thb|baht|sgd|cny|tệ) sang (?:tiền việt|vnd|usd)/i.test(lower)
+    ) {
+      return {
+        handled: true,
+        reply: "Hiện tại, hệ thống Sổ Chi Tiêu **chỉ hỗ trợ chuyển đổi qua lại giữa Tiền Việt (VND) và Tiền Đô (USD)**. Các ngoại tệ khác (EUR, JPY, GBP, THB, SGD, CNY, KRW...) chưa được hỗ trợ quy đổi.",
         source: "FAST_PATH_DETERMINISTIC",
         latencyMs: Date.now() - start,
       };

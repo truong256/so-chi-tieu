@@ -3395,10 +3395,6 @@ export default function Dashboard({ user, onSignOut }: { user: UserInfo; onSignO
                       <select name="currency" defaultValue={profile.currency}>
                         <option value="VND">VND (₫ - Đồng Việt Nam)</option>
                         <option value="USD">USD ($ - US Dollar)</option>
-                        <option value="EUR">EUR (€ - Euro)</option>
-                        <option value="SGD">SGD (S$ - Singapore Dollar)</option>
-                        <option value="JPY">JPY (¥ - Japanese Yen)</option>
-                        <option value="THB">THB (฿ - Thai Baht)</option>
                       </select>
                       {profile.currency !== "VND" && (
                         <small style={{ display: "block", marginTop: 4, color: "#166534", fontWeight: 600 }}>

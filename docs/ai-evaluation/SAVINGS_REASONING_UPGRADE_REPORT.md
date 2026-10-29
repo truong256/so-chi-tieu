@@ -118,3 +118,4 @@ Bộ kiểm thử được thiết kế tự động hóa trong [`tests/ai-evalu
 | *"Nếu tôi tăng lên 70k/ngày thì sao?"* | ❌ Bỏ ngữ cảnh hoặc trả lời mơ hồ | ✅ Phản hồi: Tích lũy 70k/ngày sẽ đạt 5 triệu sau **72 ngày** (sớm hơn kế hoạch 18 ngày). |
 | *"Toi muon tiet kiem 5 trieu trong 3 thang thi moi ngay can danh ra bao nhieu?"* (Tiếng Việt không dấu) | ❌ Lọt vào bộ tạo ngân sách CRUD | ✅ Nhận diện chính xác mục tiêu tổng cộng và trả lời **55.556 VND/ngày**. |
 | Độ trễ phản hồi (Response Latency) | 2.500ms – 5.000ms (chờ LLM suy luận) | **29ms – 86ms** (xử lý tất định Fast-Path 100% an toàn). |
+

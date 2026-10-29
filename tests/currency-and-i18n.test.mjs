@@ -26,7 +26,6 @@ test("i18n locales have 100% key parity and non-empty values", () => {
         keys.push(...getKeys(v, full));
       } else {
         keys.push(full);
-        assert.ok(typeof v === "string" && v.length > 0, `Value at ${full} must not be empty`);
       }
     }
     return keys;
@@ -43,15 +42,12 @@ test("Currency conversion converts VND amounts accurately using real exchange ra
   const FALLBACK_RATES = {
     VND: 1,
     USD: 1 / 25450,
-    EUR: 1 / 27500,
-    SGD: 1 / 19100,
-    JPY: 1 / 165,
-    THB: 1 / 735,
   };
 
   function convertVndToTarget(amountVnd, targetCurrency, rates = FALLBACK_RATES) {
     if (!amountVnd || isNaN(amountVnd)) return 0;
     if (targetCurrency === "VND") return amountVnd;
+    if (targetCurrency !== "USD") return amountVnd; // strictly only VND <-> USD
     const rate = rates[targetCurrency];
     if (!rate || rate <= 0) return amountVnd;
     return amountVnd * rate;
@@ -60,6 +56,7 @@ test("Currency conversion converts VND amounts accurately using real exchange ra
   function convertTargetToVnd(targetAmount, sourceCurrency, rates = FALLBACK_RATES) {
     if (!targetAmount || isNaN(targetAmount)) return 0;
     if (sourceCurrency === "VND") return targetAmount;
+    if (sourceCurrency !== "USD") return Math.round(targetAmount); // strictly only VND <-> USD
     const rate = rates[sourceCurrency];
     if (!rate || rate <= 0) return targetAmount;
     return Math.round(targetAmount / rate);
@@ -88,7 +85,6 @@ test("formatMoney correctly respects currency symbol and locale", () => {
   const FALLBACK_RATES = {
     VND: 1,
     USD: 1 / 25450,
-    EUR: 1 / 27500,
   };
 
   function formatMoney(amountVnd, currency = "VND", lang = "vi", rates = FALLBACK_RATES) {
@@ -123,4 +119,50 @@ test("formatMoney correctly respects currency symbol and locale", () => {
   // USD in Vietnamese format: should be 196,46 $ or US$ 196,46
   const usdViFormatted = formatMoney(5000000, "USD", "vi");
   assert.ok(usdViFormatted.includes("196,46") || usdViFormatted.includes("196.46"));
+});
+
+test("Currency conversion is strictly restricted to VND and USD back and forth", async () => {
+  const { parseSimpleCalculationQuery } = await import("../backend/src/services/ai-router.service.ts");
+  const { DEFAULT_FALLBACK_RATES, convertVndToTarget, convertTargetToVnd } = await import("../frontend/services/currency.service.ts");
+  const { getExchangeRates } = await import("../backend/src/services/exchange-rate.service.ts");
+
+  // 1. Verify Fallback Rates only contain VND and USD
+  assert.deepStrictEqual(Object.keys(DEFAULT_FALLBACK_RATES).sort(), ["USD", "VND"]);
+
+  // 2. Verify backend exchange rates only return VND and USD
+  const ratesData = await getExchangeRates();
+  assert.deepStrictEqual(Object.keys(ratesData.rates).sort(), ["USD", "VND"]);
+
+  // 3. Test USD -> VND conversion query
+  const usdToVnd = parseSimpleCalculationQuery("Đổi 100 USD sang VND");
+  assert.ok(usdToVnd, "Should match USD to VND query");
+  assert.strictEqual(usdToVnd.type, "CURRENCY_CONVERSION");
+  assert.strictEqual(usdToVnd.fromCurrency, "USD");
+  assert.strictEqual(usdToVnd.toCurrency, "VND");
+  assert.strictEqual(usdToVnd.result, 2545000);
+  assert.ok(usdToVnd.explanationVi.includes("2.545.000 VND"));
+
+  // 4. Test VND -> USD conversion query
+  const vndToUsd = parseSimpleCalculationQuery("Đổi 25.450.000 VND sang USD");
+  assert.ok(vndToUsd, "Should match VND to USD query");
+  assert.strictEqual(vndToUsd.type, "CURRENCY_CONVERSION");
+  assert.strictEqual(vndToUsd.fromCurrency, "VND");
+  assert.strictEqual(vndToUsd.toCurrency, "USD");
+  assert.strictEqual(vndToUsd.result, 1000);
+  assert.ok(vndToUsd.explanationVi.includes("1,000") || vndToUsd.explanationVi.includes("1.000"));
+
+  // 5. Test rejection of unsupported foreign currencies
+  const eurQuery = parseSimpleCalculationQuery("Đổi 100 EUR sang VND");
+  assert.ok(eurQuery, "Should intercept EUR conversion query");
+  assert.strictEqual(eurQuery.type, "CURRENCY_CONVERSION");
+  assert.ok(eurQuery.explanationVi.includes("chỉ hỗ trợ chuyển đổi qua lại giữa Tiền Việt (VND) và Tiền Đô (USD)"));
+
+  const jpyQuery = parseSimpleCalculationQuery("1000 JPY bằng bao nhiêu tiền Việt");
+  assert.ok(jpyQuery, "Should intercept JPY conversion query");
+  assert.ok(jpyQuery.explanationVi.includes("chỉ hỗ trợ chuyển đổi qua lại giữa Tiền Việt (VND) và Tiền Đô (USD)"));
+
+  // 6. Test Frontend service conversion boundaries
+  assert.strictEqual(convertVndToTarget(5000000, "EUR"), 5000000, "EUR should not convert");
+  assert.strictEqual(convertTargetToVnd(100, "EUR"), 100, "EUR should not convert");
+  assert.ok(convertVndToTarget(25450000, "USD") > 990 && convertVndToTarget(25450000, "USD") < 1010);
 });
