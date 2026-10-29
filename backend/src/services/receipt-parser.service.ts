@@ -119,7 +119,7 @@ Hãy phân tích hình ảnh hóa đơn đính kèm và trích xuất đúng 1 J
     prompt: userPrompt,
     base64Images: [cleanBase64],
     format: "json",
-    totalTimeoutMs: options.totalTimeoutMs || 60_000,
+    totalTimeoutMs: options.totalTimeoutMs || 90_000,
     signal: options.signal,
   });
 

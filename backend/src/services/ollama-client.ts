@@ -473,7 +473,7 @@ export async function executeOllamaChat(
   }
 
   const baseUrl = getOllamaBaseUrl(opts.baseUrl);
-  const totalTimeout = opts.totalTimeoutMs || 60_000;
+  const totalTimeout = opts.totalTimeoutMs || 120_000;
   const deadline = Date.now() + totalTimeout;
 
   // 1. Acquire concurrency slot
@@ -954,7 +954,7 @@ export async function executeOllamaVision(
       stream: false,
       options: {
         temperature: 0.1,
-        num_predict: 1024,
+        num_predict: 512,
       },
     };
     if (opts.format === "json") {

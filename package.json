@@ -17,7 +17,8 @@
     "test": "npm run build:worker && node --experimental-strip-types --test tests/*.test.mjs",
     "test:unit": "node --experimental-strip-types --test tests/*.test.mjs",
     "validate:artifact": "bash scripts/validate-artifact.sh",
-    "lint": "node scripts/run-lint.mjs"
+    "lint": "node scripts/run-lint.mjs",
+    "scan:receipt": "node scripts/scan-receipt.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.2",

@@ -9,7 +9,7 @@ import {
 } from "@/backend/src/services/supabase-auth.service";
 import { DEFAULT_OLLAMA_BASE_URL } from "@/backend/src/services/ollama-models";
 
-export const maxDuration = 65; // Allow up to 65 seconds for vision model image analysis
+export const maxDuration = 120; // Allow up to 65 seconds for vision model image analysis
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
