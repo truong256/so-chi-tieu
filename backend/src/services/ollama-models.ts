@@ -19,10 +19,12 @@ export const OLLAMA_TEXT_MODELS = [
 
 /** Vision models — used by AI Receipt Parser (OCR + extraction). */
 export const OLLAMA_VISION_MODELS = [
-  "llava:7b",              // Primary vision model with image understanding
+  "llava",                 // Primary: standard Ollama tag
+  "llava:7b",              // Explicit 7b tag
   "llava:13b",             // Fallback: more capable
   "llama3.2-vision:11b",   // Multimodal vision fallback
-  "moondream",             // Fallback: lightweight vision model
+  "moondream",             // Lightweight fast vision model
+  "moondream:latest",      // Direct latest tag
 ];
 
 /** Default Ollama base URL (can be overridden via env). */

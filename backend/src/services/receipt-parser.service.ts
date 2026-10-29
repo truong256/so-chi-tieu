@@ -18,7 +18,7 @@ import {
   normalizeIsoDate,
   normalizeTime,
   parseAiJsonObject,
-} from "./ai-output-validation.service";
+} from "./ai-output-validation.service.ts";
 import { executeOllamaVision, type OllamaClientError } from "./ollama-client.ts";
 
 export interface ParseReceiptOptions {
